@@ -70,7 +70,7 @@ table.lb tr.row-last td{background:#FFF8F8;}
 .bA{background:#E3EFE7;color:var(--pitch);}
 .bB{background:#E1EEF3;color:#1A6E8A;}
 .bC{background:#F6EADB;color:#A05A18;}
-.bW{background:#ECEAE2;color:var(--muted);}
+.bD{background:#EDE8F5;color:#6B3FA0;}
 .prize-tag{font-size:.7rem;font-weight:600;color:var(--pitch);}
 .prize-tag.gold{color:var(--gold-dark);}
 .prize-tag.spoon{color:#C0392B;}
@@ -327,9 +327,8 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <h3>Entry &amp; the draw</h3>
         <ol>
           <li><b>£5 each</b>, paid before the draw. No pay, no play.</li>
-          <li>48 teams split into <b>Tier A</b> (1–14), <b>Tier B</b> (15–28), <b>Tier C</b> (29–42) by FIFA ranking. Bottom six form the <b>Wildcard Pot</b>.</li>
-          <li>Each player draws one team blind from Tier A, B, and C.</li>
-          <li>Six wildcards go to six lucky names from a hat — a free fourth team. Manage expectations.</li>
+          <li>48 teams split into four tiers of 12 by FIFA ranking: <b>Tier 1</b> (contenders) through <b>Tier 4</b> (wildcards).</li>
+          <li>Each player draws one team blind from each tier — four teams total.</li>
         </ol>
       </div>
       <div class="panel">
@@ -361,10 +360,10 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     <details class="tiers">
       <summary>View the full tier breakdown</summary>
       <div class="tier-cols">
-        <div><h4 class="ta">Tier A · contenders</h4><ul id="listA"></ul></div>
-        <div><h4 class="tb">Tier B · dark horses</h4><ul id="listB"></ul></div>
-        <div><h4 class="tc">Tier C · long shots</h4><ul id="listC"></ul></div>
-        <div><h4 class="tw">Wildcard pot</h4><ul id="listW"></ul></div>
+        <div><h4 class="ta">Tier 1 · contenders</h4><ul id="listA"></ul></div>
+        <div><h4 class="tb">Tier 2 · challengers</h4><ul id="listB"></ul></div>
+        <div><h4 class="tc">Tier 3 · outsiders</h4><ul id="listC"></ul></div>
+        <div><h4 class="tw">Tier 4 · wildcards</h4><ul id="listD"></ul></div>
       </div>
     </details>
   </section>
@@ -625,16 +624,16 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const TIERS = {
-  A: ['Spain','Argentina','France','England','Brazil','Portugal','Netherlands','Belgium','Germany','Croatia','Morocco','Colombia','Mexico','Uruguay'],
-  B: ['United States','Switzerland','Senegal','Japan','Iran','South Korea','Ecuador','Austria','Türkiye','Australia','Canada','Norway','Sweden','Panama'],
-  C: ['Egypt','Algeria','Paraguay','Tunisia','Scotland','Ivory Coast','Czechia','Qatar','Uzbekistan','Saudi Arabia','Iraq','DR Congo','South Africa','Bosnia & Herzegovina'],
-  W: ['Jordan','Cape Verde','Ghana','Haiti','Curaçao','New Zealand']
+  A: ['Spain','Argentina','France','England','Brazil','Portugal','Netherlands','Belgium','Germany','Croatia','Morocco','Colombia'],
+  B: ['Mexico','Uruguay','United States','Switzerland','Senegal','Japan','Iran','South Korea','Ecuador','Austria','Türkiye','Australia'],
+  C: ['Canada','Norway','Sweden','Panama','Egypt','Algeria','Paraguay','Tunisia','Scotland','Ivory Coast','Czechia','Qatar'],
+  D: ['Uzbekistan','Saudi Arabia','Iraq','DR Congo','South Africa','Bosnia & Herzegovina','Jordan','Cape Verde','Ghana','Haiti','Curaçao','New Zealand']
 };
-const ALL_TEAMS   = [...TIERS.A,...TIERS.B,...TIERS.C,...TIERS.W];
+const ALL_TEAMS   = [...TIERS.A,...TIERS.B,...TIERS.C,...TIERS.D];
 const TIER_MAP    = {};
 for (const [t,ts] of Object.entries(TIERS)) ts.forEach(x => TIER_MAP[x]=t);
-const TIER_RANK   = {A:1,B:2,C:3,W:4};
-const TIER_LABELS = {A:'Tier A · contenders',B:'Tier B · dark horses',C:'Tier C · long shots',W:'Wildcard pot'};
+const TIER_RANK   = {A:1,B:2,C:3,D:4};
+const TIER_LABELS = {A:'Tier 1 · contenders',B:'Tier 2 · challengers',C:'Tier 3 · outsiders',D:'Tier 4 · wildcards'};
 
 // football-data.org → internal stage codes
 const API_STAGE = {
@@ -672,7 +671,7 @@ const tickerBase = ALL_TEAMS.join('  ·  ') + '  ·  ';
 document.getElementById('ticker').textContent = tickerBase + tickerBase;
 
 // Tier lists (rules page)
-['A','B','C','W'].forEach(t => {
+['A','B','C','D'].forEach(t => {
   const ul = document.getElementById('list'+t);
   TIERS[t].forEach(team => { const li=document.createElement('li'); li.textContent=team; ul.appendChild(li); });
 });
@@ -904,7 +903,7 @@ function renderLeaderboard() {
     if (isLast && sorted.length>=4) row.className='row-last';
 
     const tms = assignments[player];
-    const badges = ['A','B','C','W'].map(tier =>
+    const badges = ['A','B','C','D'].map(tier =>
       tms[tier] ? `<span class="badge b${tier}" title="${esc(tms[tier])}">${esc(tms[tier])}</span>` : ''
     ).join('');
 
@@ -954,13 +953,11 @@ function renderWallchart(src) {
     const card = document.createElement('div'); card.className='player-card';
     let html = '<h4>'+esc(n)+'</h4>';
     const picks = results[n]||[];
-    ['A','B','C'].forEach(t => {
+    ['A','B','C','D'].forEach(t => {
       const g = picks.find(p => p.tier===t);
       html += g ? `<div class="slot filled"><span>${esc(g.team)}</span><span class="badge b${t}">${t}</span></div>`
                 : `<div class="slot empty">Tier ${t}</div>`;
     });
-    const w = picks.find(p => p.tier==='W');
-    if (w) html += `<div class="slot filled"><span>${esc(w.team)}</span><span class="badge bW">WC</span></div>`;
     card.innerHTML = html;
     wc.appendChild(card);
   });
@@ -1013,15 +1010,10 @@ function startDraw() {
   const n = names.length;
   if (n > 48) { alert('Max 48 players.'); return; }
   const plan = [];
-  ['A','B','C'].forEach(tier => {
+  ['A','B','C','D'].forEach(tier => {
     const ps=shuffle(names.slice()), ts=shuffle(TIERS[tier].slice());
-    // assign one team per player (uses first n teams from this tier)
     ps.forEach((p,i) => plan.push({p,team:ts[i%ts.length],tier}));
   });
-  // wildcards: up to min(n, 6) players get a bonus team
-  const wcCount = Math.min(n, TIERS.W.length);
-  const wps=shuffle(names.slice()).slice(0,wcCount), wts=shuffle(TIERS.W.slice());
-  wps.forEach((p,i) => plan.push({p,team:wts[i],tier:'W'}));
   localDraw = {names,plan,idx:0};
   renderDrawStep();
 }
