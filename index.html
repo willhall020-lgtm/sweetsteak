@@ -351,9 +351,8 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Scoring</h3>
       <table class="score-tbl">
-        <tr><td>Group stage win</td><td>+3 pts</td></tr>
+        <tr><td>Win (any stage)</td><td>+3 pts</td></tr>
         <tr><td>Group stage draw</td><td>+1 pt (per team)</td></tr>
-        <tr><td>Knockout win (any round, incl. 3rd place)</td><td>+4 pts</td></tr>
         <tr><td>Every goal scored (excl. penalties)</td><td>+1 pt per goal</td></tr>
         <tr><td>Giant-killing — beat a team 1 tier above</td><td>+3 pts bonus</td></tr>
         <tr><td>Giant-killing — beat a team 2 tiers above</td><td>+6 pts bonus (2×)</td></tr>
@@ -879,7 +878,7 @@ function computeScores(assignments, matches) {
     if (winner) {
       const wp = t2p[winner];
       if (wp) {
-        scores[wp].matchPts += isKO ? 4 : 3;
+        scores[wp].matchPts += 3;
         const tierDiff = TIER_RANK[TIER_MAP[loser]] - TIER_RANK[TIER_MAP[winner]];
         if (tierDiff >= 3)      scores[wp].bonusPts += 12;
         else if (tierDiff >= 2) scores[wp].bonusPts += 6;
