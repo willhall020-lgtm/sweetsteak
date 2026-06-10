@@ -198,6 +198,57 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .share-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;}
 .share-box .label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.4rem;}
 .share-url{font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;color:rgba(255,255,255,.85);margin-bottom:.7rem;}
+
+/* ─── MOBILE ─────────────────────────────────────────────────────────────── */
+#landing{overflow-y:auto;}
+
+@media(max-width:600px){
+  /* Tab bar fits on narrow phones */
+  .tab-bar button{padding:.7rem .65rem;font-size:.75rem;letter-spacing:.04em;}
+
+  /* Leaderboard: hide breakdown cols, keep rank/player/teams/pts */
+  table.lb{min-width:0;}
+  table.lb th:nth-child(4),table.lb th:nth-child(5),
+  table.lb th:nth-child(6),table.lb th:nth-child(7),
+  table.lb td:nth-child(4),table.lb td:nth-child(5),
+  table.lb td:nth-child(6),table.lb td:nth-child(7){display:none;}
+  .lb-pts{font-size:1.2rem;}
+  .lb-pts.top{font-size:1.35rem;}
+
+  /* Wallchart 2-col grid */
+  .wallchart{grid-template-columns:1fr 1fr;gap:.6rem;}
+  .player-card{padding:.6rem .65rem;}
+  .player-card h4{font-size:.85rem;}
+  .slot{font-size:.75rem;padding:.22rem .4rem;}
+
+  /* Draw stage */
+  .draw-stage{padding:1.5rem 1rem;}
+  .names-list{max-height:240px;}
+  /* Bigger touch targets for remove buttons */
+  .name-row .rm{min-width:38px;min-height:38px;display:flex;align-items:center;justify-content:center;}
+  /* Long team names won't overflow reveal zone */
+  .reveal-team{font-size:clamp(1.5rem,5.5vw,2.4rem);word-break:break-word;}
+  .up-next{font-size:1.1rem;word-break:break-word;}
+
+  /* Buttons */
+  button{padding:.7rem 1.3rem;}
+  .btn-row{gap:.5rem;}
+
+  /* Prevent iOS auto-zoom (triggered by font-size < 16px on inputs) */
+  input,select,textarea{font-size:16px!important;}
+
+  /* Admin */
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .admin-tabs button{padding:.5rem .8rem;font-size:.8rem;}
+
+  /* Rules */
+  .panel{padding:1rem 1rem;}
+}
+
+@media(max-width:390px){
+  .tab-bar button{padding:.65rem .4rem;font-size:.68rem;letter-spacing:.01em;}
+  .wallchart{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -426,7 +477,6 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
             <button class="btn-ghost" id="redoBtn">Redraw</button>
           </div>
           <p class="toast hidden" id="copyToast">Copied to clipboard.</p>
-          <p class="toast green hidden" id="saveToast">Saved — leaderboard is live!</p>
           <p class="toast hidden" id="saveErrToast" style="color:#F8A;"></p>
         </div>
       </div>
@@ -1148,7 +1198,6 @@ document.getElementById('saveDrawBtn').addEventListener('click', async () => {
     body:JSON.stringify({...localDraw,completed:true})
   });
   if (r.ok) {
-    document.getElementById('saveToast').classList.remove('hidden');
     await loadDraw();
   } else {
     const errToast = document.getElementById('saveErrToast');
