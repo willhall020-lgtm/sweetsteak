@@ -93,10 +93,15 @@ details.tiers{background:var(--card);border:1px solid var(--rule);border-radius:
 details.tiers summary{cursor:pointer;padding:1rem 1.4rem;font-weight:600;font-size:.92rem;}
 .tier-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;padding:.5rem 1rem 1.25rem;}
 @media(max-width:600px){.tier-cols{grid-template-columns:repeat(2,1fr);}}
-.tier-col-head{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .4rem;padding:.15rem .5rem;border-radius:3px;color:#fff;}
+.tier-col-head{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .4rem;padding:.15rem .5rem;border-radius:3px;}
 .tier-team-list{list-style:none;padding:0;margin:0;}
 .tier-team-list li{font-size:.78rem;padding:2px 0;border-bottom:1px dotted var(--rule);display:flex;align-items:center;gap:.35rem;}
 .rank-num{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);min-width:1.5rem;}
+.maths-detail{display:none;}
+.show-maths .maths-detail{display:revert;}
+.pot-avg{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);text-align:right;margin-bottom:.75rem;grid-column:1/-1;}
+.player-total{font-family:'IBM Plex Mono',monospace;font-size:.72rem;background:var(--paper);border-radius:4px;padding:.15rem .5rem;margin-bottom:.4rem;color:var(--pitch);font-weight:500;}
+.slot-meta{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);}
 .score-tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:.5rem;}
 .score-tbl td{padding:.38rem .5rem;border-bottom:1px dashed var(--rule);}
 .score-tbl td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;}
@@ -422,6 +427,9 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
           <p class="toast green hidden" id="saveToast">Saved — leaderboard is live!</p>
           <p class="toast hidden" id="saveErrToast" style="color:#F8A;"></p>
         </div>
+      </div>
+      <div style="margin-top:1.25rem;text-align:right;">
+        <button class="btn-ghost" id="toggleMathsBtn" style="font-size:.8rem;padding:.3rem .8rem;">Show how teams were assigned</button>
       </div>
       <div class="wallchart" id="wallchart"></div>
     </div>
@@ -969,17 +977,29 @@ function renderWallchart(src) {
   const wc = document.getElementById('wallchart');
   wc.innerHTML = '';
 
+  const n = src.names.length;
+  const potAvg = (TOTAL_VALUE / n).toFixed(1);
+
+  const avgEl = document.createElement('p');
+  avgEl.className = 'pot-avg maths-detail';
+  avgEl.textContent = `Pot average: ${potAvg} pts  (${TOTAL_VALUE} total ÷ ${n} players)`;
+  wc.appendChild(avgEl);
+
   src.names.forEach(nm => {
     const card = document.createElement('div'); card.className='player-card';
     const picks = results[nm]||[];
+    const total = picks.reduce((s,p) => s + teamValue(p.team), 0);
     let html = `<h4>${esc(nm)}</h4>`;
     if (picks.length === 0) {
       html += `<div class="slot empty" style="justify-content:center;">No teams yet</div>`;
     } else {
       picks.forEach(pick => {
         const tier = TIER_MAP[pick.team];
-        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="badge b${tier}">${tier}</span></div>`;
+        const rank = teamRank(pick.team);
+        const val  = teamValue(pick.team);
+        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="slot-meta maths-detail">#${rank} · ${val}pts</span><span class="badge b${tier}">${tier}</span></div>`;
       });
+      html += `<div class="player-total maths-detail">Total: ${total} pts</div>`;
     }
     card.innerHTML = html;
     wc.appendChild(card);
@@ -1093,6 +1113,11 @@ function drawNext() {
   },1200);
 }
 
+document.getElementById('toggleMathsBtn').addEventListener('click', () => {
+  const wc = document.getElementById('wallchart');
+  const on = wc.classList.toggle('show-maths');
+  document.getElementById('toggleMathsBtn').textContent = on ? 'Hide maths' : 'Show how teams were assigned';
+});
 document.getElementById('startBtn').addEventListener('click', startDraw);
 document.getElementById('drawBtn').addEventListener('click', drawNext);
 document.getElementById('allBtn').addEventListener('click', () => { localDraw.idx=localDraw.plan.length; renderDrawStep(); });
