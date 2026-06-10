@@ -953,11 +953,13 @@ function renderWallchart(src) {
     const card = document.createElement('div'); card.className='player-card';
     let html = '<h4>'+esc(n)+'</h4>';
     const picks = results[n]||[];
-    ['A','B','C','D'].forEach(t => {
-      const g = picks.find(p => p.tier===t);
-      html += g ? `<div class="slot filled"><span>${esc(g.team)}</span><span class="badge b${t}">${t}</span></div>`
-                : `<div class="slot empty">Tier ${t}</div>`;
-    });
+    if (picks.length === 0) {
+      html += `<div class="slot empty" style="justify-content:center;">No teams yet</div>`;
+    } else {
+      picks.forEach(pick => {
+        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="badge b${pick.tier}">${pick.tier}</span></div>`;
+      });
+    }
     card.innerHTML = html;
     wc.appendChild(card);
   });
