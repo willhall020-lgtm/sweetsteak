@@ -75,6 +75,20 @@ table.lb tr.row-last td{background:#FFF8F8;}
 .prize-tag.gold{color:var(--gold-dark);}
 .prize-tag.spoon{color:#C0392B;}
 
+/* EXPAND ROW */
+.lb-player-row{cursor:pointer;user-select:none;}
+.lb-chevron{font-size:.65rem;color:var(--muted);display:inline-block;transition:transform .15s;margin-left:.2rem;vertical-align:middle;opacity:.7;}
+.lb-player-row.open .lb-chevron{transform:rotate(90deg);}
+.lb-expand-row>td{padding:0;background:#F7F4ED;}
+.lb-expand-row:hover>td{background:#F7F4ED!important;}
+table.detail-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
+table.detail-tbl td{padding:.35rem .7rem;border-bottom:1px solid var(--rule);}
+table.detail-tbl tr:last-child td{border-bottom:none;}
+.d-team{width:1%;white-space:nowrap;padding-right:.5rem!important;}
+.d-event{color:var(--muted);}
+.d-pts{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--pitch);white-space:nowrap;padding-left:.5rem!important;}
+.detail-empty{padding:.65rem .7rem;font-size:.82rem;color:var(--muted);font-style:italic;}
+
 /* RULES */
 .rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
 @media(max-width:620px){.rules-grid{grid-template-columns:1fr;}}
@@ -904,10 +918,12 @@ function computeProgress(matches) {
 }
 
 const PROG_PTS = {r16:2,qf:4,sf:6,final:8,champion:10};
+const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
+const PROG_EVENT_LABEL  = {r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
 
 function computeScores(assignments, matches) {
   const scores = {};
-  Object.keys(assignments).forEach(p => scores[p]={goals:0,matchPts:0,progressPts:0,bonusPts:0,total:0});
+  Object.keys(assignments).forEach(p => scores[p]={goals:0,matchPts:0,progressPts:0,bonusPts:0,total:0,detail:[]});
 
   const t2p = {};
   for (const [player,teams] of Object.entries(assignments))
@@ -917,9 +933,10 @@ function computeScores(assignments, matches) {
     const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
     const hp = t2p[homeTeam], ap = t2p[awayTeam];
     const isKO = stage !== 'group';
+    const sl = MATCH_STAGE_LABEL[stage] || stage;
 
-    if (hp) scores[hp].goals += homeGoals;
-    if (ap) scores[ap].goals += awayGoals;
+    if (hp) { scores[hp].goals += homeGoals; if (homeGoals > 0) scores[hp].detail.push({team:homeTeam, event:`${homeGoals} goal${homeGoals!==1?'s':''} vs ${awayTeam} (${sl})`, pts:homeGoals}); }
+    if (ap) { scores[ap].goals += awayGoals; if (awayGoals > 0) scores[ap].detail.push({team:awayTeam, event:`${awayGoals} goal${awayGoals!==1?'s':''} vs ${homeTeam} (${sl})`, pts:awayGoals}); }
 
     let winner=null, loser=null;
     if (homeGoals > awayGoals)       {winner=homeTeam;loser=awayTeam;}
@@ -930,14 +947,17 @@ function computeScores(assignments, matches) {
       const wp = t2p[winner];
       if (wp) {
         scores[wp].matchPts += 3;
+        scores[wp].detail.push({team:winner, event:`Beat ${loser} (${sl})`, pts:3});
         const tierDiff = TIER_RANK[TIER_MAP[loser]] - TIER_RANK[TIER_MAP[winner]];
-        if (tierDiff >= 3)      scores[wp].bonusPts += 12;
-        else if (tierDiff >= 2) scores[wp].bonusPts += 6;
-        else if (tierDiff >= 1) scores[wp].bonusPts += 3;
+        let gkBonus = 0;
+        if (tierDiff >= 3) gkBonus = 12;
+        else if (tierDiff >= 2) gkBonus = 6;
+        else if (tierDiff >= 1) gkBonus = 3;
+        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus}); }
       }
     } else if (!isKO) {
-      if (hp) scores[hp].matchPts += 1;
-      if (ap) scores[ap].matchPts += 1;
+      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:`Drew with ${awayTeam} (${sl})`, pts:1}); }
+      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:`Drew with ${homeTeam} (${sl})`, pts:1}); }
     }
   }
 
@@ -946,13 +966,25 @@ function computeScores(assignments, matches) {
     const player = t2p[team];
     if (!player) continue;
     for (const ms of PROG_ORDER) {
-      if (PROG_PTS[ms]) scores[player].progressPts += PROG_PTS[ms];
+      if (PROG_PTS[ms]) {
+        scores[player].progressPts += PROG_PTS[ms];
+        scores[player].detail.push({team, event:PROG_EVENT_LABEL[ms]||ms, pts:PROG_PTS[ms]});
+      }
       if (ms === stage) break;
     }
   }
 
   for (const s of Object.values(scores)) s.total = s.goals + s.matchPts + s.progressPts + s.bonusPts;
   return scores;
+}
+
+function buildDetailHTML(detail) {
+  if (!detail || detail.length === 0) return `<p class="detail-empty">No points scored yet.</p>`;
+  const rows = detail.map(d => {
+    const tier = TIER_MAP[d.team] || 'A';
+    return `<tr><td class="d-team"><span class="badge b${tier}">${esc(d.team)}</span></td><td class="d-event">${esc(d.event)}</td><td class="d-pts">+${d.pts}</td></tr>`;
+  }).join('');
+  return `<table class="detail-tbl"><tbody>${rows}</tbody></table>`;
 }
 
 function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
@@ -1019,8 +1051,10 @@ function renderLeaderboard() {
   sorted.forEach(([player, s], i) => {
     const rank = i+1, isLast = rank===sorted.length;
     const row = document.createElement('tr');
-    if (rank===1) row.className='row-1';
-    if (isLast && sorted.length>=4) row.className='row-last';
+    const rowClasses = ['lb-player-row'];
+    if (rank===1) rowClasses.push('row-1');
+    if (isLast && sorted.length>=4) rowClasses.push('row-last');
+    row.className = rowClasses.join(' ');
 
     const tms = assignments[player] || [];
     const badges = tms.map(team => {
@@ -1034,7 +1068,7 @@ function renderLeaderboard() {
     if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — ${prizes ? prizes.spoon : '£5'}</div>`;
 
     row.innerHTML = `
-      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span></td>
+      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span><span class="lb-chevron">›</span></td>
       <td><div class="lb-name">${esc(player)}</div>${prize}</td>
       <td><div class="teams-cell">${badges}</div></td>
       <td class="r">${s.goals}</td>
@@ -1044,6 +1078,16 @@ function renderLeaderboard() {
       <td class="r"><span class="lb-pts ${rank===1?'top':''} ${isLast&&sorted.length>=4?'bot':''}">${s.total}</span></td>
     `;
     tbody.appendChild(row);
+
+    const expandRow = document.createElement('tr');
+    expandRow.className = 'lb-expand-row hidden';
+    expandRow.innerHTML = `<td colspan="8">${buildDetailHTML(s.detail)}</td>`;
+    tbody.appendChild(expandRow);
+
+    row.addEventListener('click', () => {
+      const nowHidden = expandRow.classList.toggle('hidden');
+      row.classList.toggle('open', !nowHidden);
+    });
   });
 }
 
