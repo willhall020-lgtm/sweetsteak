@@ -1018,15 +1018,20 @@ function startDraw() {
   const playerTeams = {};
   names.forEach(p => playerTeams[p] = []);
 
-  // Phase 1: give every player 1 team from T1, T2, T3 (in turn)
-  // Each tier has 12 teams — if N > 12, only first 12 players in the shuffle get one
+  // Phase 1: give every player floor(12/N) teams from T1, T2, T3
+  // e.g. N=6 → 2 each; N=12 → 1 each; N=14 → 0 (all go to bonus)
+  const tierSize = TIERS.A.length; // 12
+  const basePerTier = Math.floor(tierSize / n);
   ['A','B','C'].forEach(tier => {
-    const order = shuffle(names.slice());
-    order.forEach((p, i) => {
-      if (i < pools[tier].length) playerTeams[p].push({tier, team: pools[tier][i]});
-    });
-    // mark remaining teams as leftover for phase 2
-    pools[tier] = n < pools[tier].length ? pools[tier].slice(n) : [];
+    for (let round = 0; round < basePerTier; round++) {
+      const order = shuffle(names.slice());
+      order.forEach((p, i) => {
+        const teamIdx = round * n + i;
+        if (teamIdx < pools[tier].length) playerTeams[p].push({tier, team: pools[tier][teamIdx]});
+      });
+    }
+    // remaining teams (12 % N per tier) go to bonus pool
+    pools[tier] = pools[tier].slice(basePerTier * n);
   });
 
   // Phase 2: rank players by T1 pick — worst Tier A = highest index in TIERS.A
@@ -1048,8 +1053,8 @@ function startDraw() {
   // Distribute bonus round-robin starting from player with worst T1
   bonus.forEach((item, i) => playerTeams[byWorstT1[i % n]].push({...item, bonus: true}));
 
-  // Build plan: T1 → T2 → T3 rounds (random order within round),
-  // then bonus round in worst-T1-first order
+  // Build plan: reveal main teams tier by tier (T1 all picks → T2 all → T3 all)
+  // within each tier, shuffle reveal order
   const plan = [];
   ['A','B','C'].forEach(tier => {
     const picks = [];
