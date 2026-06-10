@@ -355,22 +355,24 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <tr><td>Group stage draw</td><td>+1 pt (per team)</td></tr>
         <tr><td>Knockout win (any round, incl. 3rd place)</td><td>+4 pts</td></tr>
         <tr><td>Every goal scored (excl. penalties)</td><td>+1 pt per goal</td></tr>
-        <tr><td>Giant-killing — beat a team from a higher tier</td><td>+3 pts bonus</td></tr>
+        <tr><td>Giant-killing — beat a team 1 tier above</td><td>+3 pts bonus</td></tr>
+        <tr><td>Giant-killing — beat a team 2 tiers above</td><td>+6 pts bonus (2×)</td></tr>
+        <tr><td>Giant-killing — beat a team 3 tiers above</td><td>+12 pts bonus (4×)</td></tr>
         <tr><td>Reach Round of 16</td><td>+2 pts</td></tr>
         <tr><td>Reach Quarter-finals</td><td>+4 pts</td></tr>
         <tr><td>Reach Semi-finals</td><td>+6 pts</td></tr>
         <tr><td>Reach Final</td><td>+8 pts</td></tr>
         <tr><td>Win the tournament</td><td>+10 pts</td></tr>
       </table>
-      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+30 pts in total). Giant-killing applies on wins only, not draws.</p>
+      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+30 pts in total). Giant-killing applies on wins only, not draws. Tiers: 1 (Contenders) = ranks 1–12, 2 (Challengers) = 13–24, 3 (Outsiders) = 25–36, 4 (Wildcards) = 37–48.</p>
     </div>
     <details class="tiers">
       <summary>View all 48 teams — ranked &amp; tiered</summary>
       <div class="tier-cols">
-        <div><h5 class="tier-col-head bA">Tier A</h5><ul id="tier-list-A" class="tier-team-list"></ul></div>
-        <div><h5 class="tier-col-head bB">Tier B</h5><ul id="tier-list-B" class="tier-team-list"></ul></div>
-        <div><h5 class="tier-col-head bC">Tier C</h5><ul id="tier-list-C" class="tier-team-list"></ul></div>
-        <div><h5 class="tier-col-head bD">Tier D</h5><ul id="tier-list-D" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bA">Tier 1 · Contenders</h5><ul id="tier-list-A" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bB">Tier 2 · Challengers</h5><ul id="tier-list-B" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bC">Tier 3 · Outsiders</h5><ul id="tier-list-C" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bD">Tier 4 · Wildcards</h5><ul id="tier-list-D" class="tier-team-list"></ul></div>
       </div>
     </details>
   </section>
@@ -653,6 +655,7 @@ const TOTAL_VALUE = RANKED_TEAMS.reduce((s,t) => s + teamValue(t), 0); // 1176
 // Derive tiers from rank (for leaderboard giant-kill scoring)
 const TIER_MAP  = {};
 const TIER_RANK = {A:1,B:2,C:3,D:4};
+const TIER_LABELS = {A:'Tier 1 · Contenders',B:'Tier 2 · Challengers',C:'Tier 3 · Outsiders',D:'Tier 4 · Wildcards'};
 RANKED_TEAMS.forEach((t,i) => { TIER_MAP[t] = i<12?'A':i<24?'B':i<36?'C':'D'; });
 
 // football-data.org → internal stage codes
@@ -876,7 +879,10 @@ function computeScores(assignments, matches) {
       const wp = t2p[winner];
       if (wp) {
         scores[wp].matchPts += isKO ? 4 : 3;
-        if (TIER_RANK[TIER_MAP[winner]] > TIER_RANK[TIER_MAP[loser]]) scores[wp].bonusPts += 3;
+        const tierDiff = TIER_RANK[TIER_MAP[loser]] - TIER_RANK[TIER_MAP[winner]];
+        if (tierDiff >= 3)      scores[wp].bonusPts += 12;
+        else if (tierDiff >= 2) scores[wp].bonusPts += 6;
+        else if (tierDiff >= 1) scores[wp].bonusPts += 3;
       }
     } else if (!isKO) {
       if (hp) scores[hp].matchPts += 1;
@@ -960,6 +966,7 @@ function applyDrawState() {
     showPane('done');
     document.getElementById('saveDrawBtn').classList.add('hidden');
     document.getElementById('redoBtn').classList.toggle('hidden', !IS_ADMIN);
+    document.getElementById('toggleMathsBtn').classList.remove('hidden');
   }
 }
 
