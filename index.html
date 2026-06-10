@@ -160,63 +160,101 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
 footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3rem;border-top:1px solid var(--rule);margin-top:3rem;}
 
 /* LANDING */
-#landing{position:fixed;inset:0;background:var(--paper);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.25rem;}
+#landing{position:fixed;inset:0;background:var(--pitch);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;}
 #landing.hidden{display:none!important;}
-.landing-card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:2rem 2rem 1.75rem;width:100%;max-width:440px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
-.landing-card .logo{font-family:'Anton',sans-serif;font-size:1.6rem;text-transform:uppercase;color:var(--pitch);margin-bottom:.25rem;}
-.landing-card .logo span{color:var(--gold);}
-.landing-card .sub{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem;}
+.landing-logo{font-family:'Anton',sans-serif;font-size:clamp(2rem,7vw,3rem);text-transform:uppercase;color:#fff;text-align:center;margin-bottom:.2rem;line-height:1.1;}
+.landing-logo span{color:var(--gold);}
+.landing-sub{font-size:.85rem;color:rgba(255,255,255,.65);text-align:center;margin-bottom:2rem;}
+.landing-options{display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%;max-width:480px;}
+@media(max-width:440px){.landing-options{grid-template-columns:1fr;}}
+.landing-opt{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18);border-radius:14px;padding:1.5rem 1.25rem;cursor:pointer;transition:background .15s,border-color .15s;text-align:center;}
+.landing-opt:hover,.landing-opt.active{background:rgba(255,255,255,.13);border-color:var(--gold);}
+.landing-opt .opt-icon{font-size:1.8rem;margin-bottom:.5rem;}
+.landing-opt .opt-title{font-family:'Anton',sans-serif;font-size:1.1rem;text-transform:uppercase;color:#fff;letter-spacing:.04em;}
+.landing-opt .opt-desc{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:.25rem;}
+.landing-panel{width:100%;max-width:480px;margin-top:1.25rem;}
+.landing-form-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.5rem 1.5rem 1.25rem;}
 .field{margin-bottom:1rem;}
-.field label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;}
-.field input{width:100%;padding:.6rem .8rem;border:1px solid var(--rule);border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;background:var(--paper);color:var(--ink);}
-.field input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;}
-.field .hint{font-size:.73rem;color:var(--muted);margin-top:.3rem;}
-.landing-err{font-size:.82rem;color:#C0392B;margin-bottom:.75rem;display:none;}
+.field label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.35rem;}
+.field input{width:100%;padding:.6rem .8rem;border:1px solid rgba(255,255,255,.2);border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;background:rgba(255,255,255,.08);color:#fff;}
+.field input::placeholder{color:rgba(255,255,255,.3);}
+.field input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;background:rgba(255,255,255,.12);}
+.field .hint{font-size:.73rem;color:rgba(255,255,255,.4);margin-top:.3rem;}
+.landing-err{font-size:.82rem;color:#F8A8A8;margin-bottom:.75rem;display:none;}
 .landing-err.show{display:block;}
-.share-box{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;}
-.share-box .label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dark);font-weight:600;margin-bottom:.4rem;}
-.share-url{font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;color:var(--ink);margin-bottom:.7rem;}
+.share-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;}
+.share-box .label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.4rem;}
+.share-url{font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;color:rgba(255,255,255,.85);margin-bottom:.7rem;}
 </style>
 </head>
 <body>
 
 <!-- LANDING (shown when no ?g= group code in URL) -->
 <div id="landing">
-  <div class="landing-card">
-    <div class="logo">World Cup <span>2026</span></div>
-    <p class="sub">Create a sweepstake for your group. Share the link. May the best mate win.</p>
+  <div class="landing-logo">World Cup <span>2026</span><br>Sweepstake</div>
+  <p class="landing-sub">Pick your teams. Track the tournament. Settle the score.</p>
 
-    <div id="landing-form">
-      <div class="field">
-        <label for="lg-name">Group name</label>
-        <input type="text" id="lg-name" placeholder="e.g. Office Sweepstake" maxlength="60">
-      </div>
-      <div class="field">
-        <label for="lg-price">Entry price</label>
-        <input type="text" id="lg-price" placeholder="e.g. £5" maxlength="20" value="£5">
-      </div>
-      <div class="field">
-        <label for="lg-pin">Admin PIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(min 4 chars)</span></label>
-        <input type="password" id="lg-pin" placeholder="Choose a PIN" maxlength="30">
-        <p class="hint">Keep this safe — you'll need it to save the draw and reset the board.</p>
-      </div>
-      <p class="landing-err" id="lg-err"></p>
-      <div class="btn-row" style="justify-content:flex-start;margin-top:1.25rem;">
-        <button class="btn-gold" id="lg-create">Create sweepstake</button>
-      </div>
+  <div class="landing-options">
+    <div class="landing-opt" id="opt-create" tabindex="0">
+      <div class="opt-icon">🏆</div>
+      <div class="opt-title">Create a game</div>
+      <div class="opt-desc">Set up a new sweepstake for your group</div>
     </div>
+    <div class="landing-opt" id="opt-join" tabindex="0">
+      <div class="opt-icon">🎟️</div>
+      <div class="opt-title">Join a game</div>
+      <div class="opt-desc">Enter a code to join an existing game</div>
+    </div>
+  </div>
 
-    <div id="landing-share" class="hidden">
-      <div class="share-box">
-        <p class="label">Your shareable link</p>
-        <p class="share-url" id="lg-url"></p>
-        <div class="btn-row" style="justify-content:flex-start;">
-          <button class="btn-ink" id="lg-copy" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
-          <button class="btn-gold" id="lg-go" style="padding:.5rem 1.2rem;font-size:.85rem;">Open &rarr;</button>
+  <div class="landing-panel">
+
+    <!-- CREATE PANEL -->
+    <div id="panel-create" class="landing-form-card hidden">
+      <div id="create-form">
+        <div class="field">
+          <label for="lg-name">Group name</label>
+          <input type="text" id="lg-name" placeholder="e.g. Office Sweepstake 2026" maxlength="60">
+        </div>
+        <div class="field">
+          <label for="lg-price">Entry price</label>
+          <input type="text" id="lg-price" placeholder="e.g. £5" maxlength="20" value="£5">
+        </div>
+        <div class="field">
+          <label for="lg-pin">Admin PIN <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.7">(min 4 chars)</span></label>
+          <input type="password" id="lg-pin" placeholder="Choose a PIN" maxlength="30">
+          <p class="hint">Keep this safe — you'll need it to save the draw and reset the board.</p>
+        </div>
+        <p class="landing-err" id="lg-err"></p>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:1.25rem;">
+          <button class="btn-gold" id="lg-create-btn">Create game</button>
         </div>
       </div>
-      <p style="font-size:.78rem;color:var(--muted);margin-top:.75rem;">Share this link with your group. Everyone who visits it sees the same leaderboard and draw.</p>
+      <div id="create-share" class="hidden">
+        <div class="share-box">
+          <p class="label">Your shareable link</p>
+          <p class="share-url" id="lg-url"></p>
+          <div class="btn-row" style="justify-content:flex-start;">
+            <button class="btn-ghost" id="lg-copy" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
+            <button class="btn-gold" id="lg-go" style="padding:.5rem 1.2rem;font-size:.85rem;">Enter game &rarr;</button>
+          </div>
+        </div>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.45);margin-top:.75rem;">Share this link with your group. Everyone on the link sees the same leaderboard.</p>
+      </div>
     </div>
+
+    <!-- JOIN PANEL -->
+    <div id="panel-join" class="landing-form-card hidden">
+      <div class="field">
+        <label for="lg-code">Game code</label>
+        <input type="text" id="lg-code" placeholder="e.g. x7m3qk" maxlength="6" autocomplete="off" style="text-transform:lowercase;font-family:'IBM Plex Mono',monospace;font-size:1.1rem;letter-spacing:.1em;">
+      </div>
+      <p class="landing-err" id="lg-join-err"></p>
+      <div class="btn-row" style="justify-content:flex-start;margin-top:.25rem;">
+        <button class="btn-gold" id="lg-join-btn">Join game</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -230,7 +268,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   <button class="active" data-view="leaderboard">Leaderboard</button>
   <button data-view="rules">Rules</button>
   <button data-view="draw">Draw</button>
-  <button data-view="admin">Admin</button>
+  <button data-view="admin" id="tab-admin">Settings</button>
 </nav>
 
 <main>
@@ -372,9 +410,23 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   </section>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN / SETTINGS -->
 <div id="view-admin" class="view">
-  <section>
+
+  <!-- SETTINGS VIEW (members) -->
+  <section id="settings-view">
+    <p class="kicker">Your game</p>
+    <h2 class="display">Settings</h2>
+    <div class="panel" style="margin-top:1.5rem;">
+      <h3>Game</h3>
+      <p style="font-size:.92rem;margin-bottom:1rem;" id="settings-group-name">—</p>
+      <button class="btn-danger" id="leaveGameBtn">Leave game</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;">Removes this game from your device. You can rejoin with the code.</p>
+    </div>
+  </section>
+
+  <!-- ADMIN VIEW -->
+  <section id="admin-view" class="hidden">
     <p class="kicker">Commissioner</p>
     <h2 class="display">Admin</h2>
     <div class="admin-tabs">
@@ -400,8 +452,14 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <p>Deletes the saved draw from the database. The draw can then be re-run. This cannot be undone — use with extreme caution.</p>
         <button class="btn-danger" id="resetDrawBtn">Reset draw…</button>
       </div>
+      <div class="panel" style="margin-top:1.25rem;">
+        <h3>Leave game</h3>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
+        <button class="btn-danger" id="adminLeaveBtn">Leave game</button>
+      </div>
     </div>
   </section>
+
 </div>
 
 </main>
@@ -415,16 +473,43 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 // ─── GROUP CODE ───────────────────────────────────────────────────────────────
 const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
 
+// ─── ROLE HELPERS ─────────────────────────────────────────────────────────────
+function getRole(code) { return localStorage.getItem('sg_role_' + code) || 'member'; }
+function setRole(code, role) { localStorage.setItem('sg_role_' + code, role); }
+function clearRole(code) { localStorage.removeItem('sg_role_' + code); }
+
+const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
+
+// ─── LANDING ──────────────────────────────────────────────────────────────────
 (function initLanding() {
   const landing = document.getElementById('landing');
   if (GROUP_CODE) { landing.classList.add('hidden'); return; }
 
-  // No group code — show landing, hide app chrome
+  // No group code — show landing only
   document.querySelector('.tab-bar').style.display = 'none';
   document.querySelector('main').style.display = 'none';
   document.querySelector('footer').style.display = 'none';
 
-  document.getElementById('lg-create').addEventListener('click', async () => {
+  // Option toggle
+  const optCreate = document.getElementById('opt-create');
+  const optJoin   = document.getElementById('opt-join');
+  const panelCreate = document.getElementById('panel-create');
+  const panelJoin   = document.getElementById('panel-join');
+
+  function showPanel(which) {
+    optCreate.classList.toggle('active', which === 'create');
+    optJoin.classList.toggle('active', which === 'join');
+    panelCreate.classList.toggle('hidden', which !== 'create');
+    panelJoin.classList.toggle('hidden', which !== 'join');
+  }
+
+  optCreate.addEventListener('click', () => showPanel('create'));
+  optJoin.addEventListener('click', () => showPanel('join'));
+  optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
+  optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
+
+  // ── CREATE ──
+  document.getElementById('lg-create-btn').addEventListener('click', async () => {
     const name  = document.getElementById('lg-name').value.trim();
     const price = document.getElementById('lg-price').value.trim();
     const pin   = document.getElementById('lg-pin').value;
@@ -434,7 +519,7 @@ const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
     if (!name) { err.textContent = 'Enter a group name.'; err.classList.add('show'); return; }
     if (pin.length < 4) { err.textContent = 'PIN must be at least 4 characters.'; err.classList.add('show'); return; }
 
-    const btn = document.getElementById('lg-create');
+    const btn = document.getElementById('lg-create-btn');
     btn.disabled = true; btn.textContent = 'Creating…';
 
     try {
@@ -444,12 +529,18 @@ const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
         body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin })
       });
       const data = await r.json();
-      if (!r.ok) { err.textContent = data.error || 'Failed — try again.'; err.classList.add('show'); btn.disabled=false; btn.textContent='Create sweepstake'; return; }
+      if (!r.ok) {
+        err.textContent = data.error || 'Failed — try again.';
+        err.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Create game';
+        return;
+      }
 
+      setRole(data.code, 'admin');
       const url = window.location.origin + window.location.pathname + '?g=' + data.code;
       document.getElementById('lg-url').textContent = url;
-      document.getElementById('landing-form').classList.add('hidden');
-      document.getElementById('landing-share').classList.remove('hidden');
+      document.getElementById('create-form').classList.add('hidden');
+      document.getElementById('create-share').classList.remove('hidden');
 
       document.getElementById('lg-copy').addEventListener('click', () => {
         navigator.clipboard?.writeText(url).catch(() => {});
@@ -457,9 +548,50 @@ const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
       });
       document.getElementById('lg-go').addEventListener('click', () => { window.location.href = url; });
     } catch (e) {
-      err.textContent = 'Network error — try again.'; err.classList.add('show');
-      btn.disabled=false; btn.textContent='Create sweepstake';
+      err.textContent = 'Network error — try again.';
+      err.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Create game';
     }
+  });
+
+  // ── JOIN ──
+  document.getElementById('lg-join-btn').addEventListener('click', async () => {
+    const code = document.getElementById('lg-code').value.trim().toLowerCase();
+    const err  = document.getElementById('lg-join-err');
+    err.classList.remove('show');
+
+    if (code.length < 4) { err.textContent = 'Enter a valid game code.'; err.classList.add('show'); return; }
+
+    const btn = document.getElementById('lg-join-btn');
+    btn.disabled = true; btn.textContent = 'Checking…';
+
+    try {
+      const r = await fetch('/api/draw?g=' + code);
+      if (r.status === 404) {
+        err.textContent = 'Game not found. Check the code and try again.';
+        err.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Join game';
+        return;
+      }
+      if (!r.ok) {
+        err.textContent = 'Something went wrong — try again.';
+        err.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Join game';
+        return;
+      }
+      // Valid — store as member and navigate
+      if (getRole(code) !== 'admin') setRole(code, 'member');
+      window.location.href = window.location.pathname + '?g=' + code;
+    } catch (e) {
+      err.textContent = 'Network error — try again.';
+      err.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Join game';
+    }
+  });
+
+  // Allow Enter key in join input
+  document.getElementById('lg-code').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('lg-join-btn').click();
   });
 })();
 
@@ -551,9 +683,11 @@ async function loadDraw() {
     if (r.status === 404) { showInvalidGroup(); return; }
     if (!r.ok) return;
     drawData = await r.json();
-    // Update header with group metadata
+    // Update header and settings with group metadata
     if (drawData.group_name) {
       document.title = drawData.group_name + ' · Sweepstake';
+      const sn = document.getElementById('settings-group-name');
+      if (sn) sn.textContent = drawData.group_name;
     }
     if (drawData.group_name || drawData.entry_price) {
       const strap = document.getElementById('headerStrap');
@@ -918,8 +1052,25 @@ document.getElementById('resetDrawBtn').addEventListener('click', async () => {
   }
 });
 
+// ─── LEAVE GAME ───────────────────────────────────────────────────────────────
+function leaveGame() {
+  if (!confirm('Leave this game? You can rejoin with the code.')) return;
+  clearRole(GROUP_CODE);
+  window.location.href = window.location.pathname;
+}
+document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
+document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 if (GROUP_CODE) {
+  // Show admin tab label and correct inner view based on role
+  if (IS_ADMIN) {
+    document.getElementById('tab-admin').textContent = 'Admin';
+    document.getElementById('admin-view').classList.remove('hidden');
+    document.getElementById('settings-view').classList.add('hidden');
+  }
+  // Populate settings group name once draw loads (done in loadDraw)
+
   loadDraw();
   loadMatches();
   setInterval(loadMatches, 60_000);
