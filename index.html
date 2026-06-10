@@ -327,8 +327,8 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <h3>Entry &amp; the draw</h3>
         <ol>
           <li><b>£5 each</b>, paid before the draw. No pay, no play.</li>
-          <li>48 teams split into four tiers of 12 by FIFA ranking: <b>Tier 1</b> (contenders) through <b>Tier 4</b> (wildcards).</li>
-          <li>Each player draws one team blind from each tier — four teams total.</li>
+          <li>All 48 teams are drawn, no matter the number of players. Teams are split into four tiers of 12 by FIFA ranking: <b>Tier 1</b> (contenders) through <b>Tier 4</b> (wildcards).</li>
+          <li>Each player draws one team from each tier. If the number of players doesn't divide evenly into 48, the extra (Tier 4) teams are assigned first to the players who drew the lowest-ranked Tier 1 team.</li>
         </ol>
       </div>
       <div class="panel">
@@ -1009,12 +1009,52 @@ function startDraw() {
   if (names.length < 2) { alert('Add at least 2 players.'); return; }
   const n = names.length;
   if (n > 48) { alert('Max 48 players.'); return; }
+
+  // Shuffle each tier pool
+  const pools = {};
+  ['A','B','C','D'].forEach(t => pools[t] = shuffle(TIERS[t].slice()));
+
+  const playerTeams = {};
+  names.forEach(p => playerTeams[p] = []);
+
+  // Phase 1: assign T1, T2, T3 — one team per player each (up to 12 players per tier)
+  ['A','B','C'].forEach(tier => {
+    const order = shuffle(names.slice());
+    order.forEach((p, i) => {
+      if (pools[tier][i] !== undefined) playerTeams[p].push({tier, team: pools[tier][i]});
+    });
+    pools[tier] = pools[tier].slice(n); // anything beyond n is leftover
+  });
+
+  // Phase 2: rank players by T1 pick quality (worst T1 = gets T4 first)
+  // No T1 team → treated as worst (Infinity rank)
+  const t1Rank = p => {
+    const t1 = playerTeams[p].find(a => a.tier === 'A');
+    return t1 ? TIERS.A.indexOf(t1.team) : Infinity;
+  };
+  const byWorstT1 = [...names].sort((a, b) => t1Rank(b) - t1Rank(a));
+
+  // Build remaining pool: T4 first (priority), then any T1/T2/T3 leftovers
+  const remaining = [
+    ...pools.D.map(team => ({tier:'D', team})),
+    ...pools.A.map(team => ({tier:'A', team})),
+    ...pools.B.map(team => ({tier:'B', team})),
+    ...pools.C.map(team => ({tier:'C', team})),
+  ];
+
+  // Distribute round-robin to players sorted by worst T1
+  remaining.forEach((item, i) => playerTeams[byWorstT1[i % n]].push(item));
+
+  // Build plan: reveal tier by tier (T1, T2, T3, T4)
   const plan = [];
   ['A','B','C','D'].forEach(tier => {
-    const ps=shuffle(names.slice()), ts=shuffle(TIERS[tier].slice());
-    ps.forEach((p,i) => plan.push({p,team:ts[i%ts.length],tier}));
+    const picks = [];
+    names.forEach(p => playerTeams[p].filter(a => a.tier === tier).forEach(a => picks.push({p, tier, team: a.team})));
+    shuffle(picks);
+    plan.push(...picks);
   });
-  localDraw = {names,plan,idx:0};
+
+  localDraw = {names, plan, idx:0};
   renderDrawStep();
 }
 
