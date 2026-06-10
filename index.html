@@ -429,7 +429,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         </div>
       </div>
       <div style="margin-top:1.25rem;text-align:right;">
-        <button class="btn-ghost" id="toggleMathsBtn" style="font-size:.8rem;padding:.3rem .8rem;">Show how teams were assigned</button>
+        <button class="btn-ghost hidden" id="toggleMathsBtn" style="font-size:.8rem;padding:.3rem .8rem;">Show how teams were assigned</button>
       </div>
       <div class="wallchart" id="wallchart"></div>
     </div>
@@ -1006,6 +1006,7 @@ function renderWallchart(src) {
     card.innerHTML = html;
     wc.appendChild(card);
   });
+  document.getElementById('toggleMathsBtn').classList.remove('hidden');
 }
 
 function copyDrawText(draw) {
