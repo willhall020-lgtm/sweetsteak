@@ -104,10 +104,17 @@ details.tiers .tier-cols{display:grid;grid-template-columns:repeat(auto-fit,minm
 /* DRAW */
 .draw-stage{background:var(--pitch);color:#fff;border-radius:14px;padding:2rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
 .draw-stage::before{content:"";position:absolute;left:50%;top:-60px;width:240px;height:240px;border:2px solid rgba(255,255,255,.15);border-radius:50%;transform:translateX(-50%);pointer-events:none;}
-.names-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:1.25rem 0;}
-.names-grid input{width:100%;padding:.55rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-family:'Inter',sans-serif;font-size:.9rem;}
-.names-grid input::placeholder{color:rgba(255,255,255,.5);}
-.names-grid input:focus{outline:2px solid var(--gold);outline-offset:1px;background:rgba(255,255,255,.16);}
+.names-list{display:flex;flex-direction:column;gap:6px;margin:1rem 0;max-height:320px;overflow-y:auto;}
+.name-row{display:flex;gap:6px;align-items:center;}
+.name-row input{flex:1;padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-family:'Inter',sans-serif;font-size:.9rem;}
+.name-row input::placeholder{color:rgba(255,255,255,.4);}
+.name-row input:focus{outline:2px solid var(--gold);outline-offset:1px;background:rgba(255,255,255,.15);}
+.name-row .rm{background:none;border:none;color:rgba(255,255,255,.4);font-size:1.1rem;padding:0 .3rem;cursor:pointer;line-height:1;border-radius:4px;flex-shrink:0;}
+.name-row .rm:hover{color:#fff;background:rgba(255,255,255,.1);}
+.setup-controls{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:.5rem;}
+.setup-controls select{padding:.45rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-family:'Inter',sans-serif;font-size:.85rem;cursor:pointer;}
+.setup-controls select option{background:#1a3a2a;color:#fff;}
+.player-count{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.5);}
 button{font-family:'Inter',sans-serif;font-weight:600;font-size:.95rem;border:none;border-radius:999px;padding:.75rem 1.8rem;cursor:pointer;transition:transform .08s;}
 button:active{transform:scale(.97);}
 button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
@@ -219,6 +226,12 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <div class="field">
           <label for="lg-price">Entry price</label>
           <input type="text" id="lg-price" placeholder="e.g. £5" maxlength="20" value="£5">
+        </div>
+        <div class="field">
+          <label for="lg-players">Number of players</label>
+          <select id="lg-players" style="width:100%;padding:.6rem .8rem;border:1px solid rgba(255,255,255,.2);border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;background:rgba(255,255,255,.08);color:#fff;">
+            <option value="" style="background:#1a3a2a">— select —</option>
+          </select>
         </div>
         <div class="field">
           <label for="lg-pin">Admin PIN <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.7">(min 4 chars)</span></label>
@@ -374,9 +387,13 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     <div id="draw-live">
       <div class="draw-stage">
         <div id="setup">
-          <p class="pick-label">Enter the fourteen</p>
-          <div class="names-grid" id="namesGrid"></div>
+          <p class="pick-label">Who's playing?</p>
+          <div class="setup-controls">
+            <span class="player-count" id="playerCountDisplay">0 players</span>
+          </div>
+          <div class="names-list" id="namesGrid"></div>
           <div class="btn-row">
+            <button class="btn-ghost" id="addPlayerBtn">+ Add player</button>
             <button class="btn-gold" id="startBtn">Start the draw</button>
           </div>
         </div>
@@ -513,15 +530,21 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
   optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
   optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
 
+  // Populate player count dropdown on landing form
+  const lgPlayers = document.getElementById('lg-players');
+  for (let i=2;i<=48;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i+' players'; o.style.background='#1a3a2a'; lgPlayers.appendChild(o); }
+
   // ── CREATE ──
   document.getElementById('lg-create-btn').addEventListener('click', async () => {
-    const name  = document.getElementById('lg-name').value.trim();
-    const price = document.getElementById('lg-price').value.trim();
-    const pin   = document.getElementById('lg-pin').value;
-    const err   = document.getElementById('lg-err');
+    const name        = document.getElementById('lg-name').value.trim();
+    const price       = document.getElementById('lg-price').value.trim();
+    const pin         = document.getElementById('lg-pin').value;
+    const playerCount = parseInt(document.getElementById('lg-players').value) || null;
+    const err         = document.getElementById('lg-err');
     err.classList.remove('show');
 
     if (!name) { err.textContent = 'Enter a group name.'; err.classList.add('show'); return; }
+    if (!playerCount) { err.textContent = 'Select number of players.'; err.classList.add('show'); return; }
     if (pin.length < 4) { err.textContent = 'PIN must be at least 4 characters.'; err.classList.add('show'); return; }
 
     const btn = document.getElementById('lg-create-btn');
@@ -531,7 +554,7 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
       const r = await fetch('/api/group', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin })
+        body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin, player_count: playerCount })
       });
       const data = await r.json();
       if (!r.ok) {
@@ -612,7 +635,6 @@ const TIER_MAP    = {};
 for (const [t,ts] of Object.entries(TIERS)) ts.forEach(x => TIER_MAP[x]=t);
 const TIER_RANK   = {A:1,B:2,C:3,W:4};
 const TIER_LABELS = {A:'Tier A · contenders',B:'Tier B · dark horses',C:'Tier C · long shots',W:'Wildcard pot'};
-const DEFAULT_PLAYERS = ['jimbo','ella','zo','younger','meg','crip','bill','george stephens','marf','haz','issey','sweeting','charlie','grace whut'];
 
 // football-data.org → internal stage codes
 const API_STAGE = {
@@ -697,6 +719,10 @@ async function loadDraw() {
     if (drawData.group_name || drawData.entry_price) {
       const strap = document.getElementById('headerStrap');
       if (strap) strap.innerHTML = `${esc(drawData.group_name || 'Sweepstake')} · 48 teams · <b>${esc(drawData.entry_price || '£5')} each</b> · No swaps, no trades, no moral objections.`;
+    }
+    // Pre-fill name slots from stored player_count
+    if (!drawData.completed && drawData.player_count && ng.children.length === 0) {
+      for (let i = 0; i < drawData.player_count; i++) addNameRow();
     }
     applyDrawState();
     renderLeaderboard();
@@ -953,21 +979,48 @@ function copyDrawText(draw) {
 function fallbackCopy(text) { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); }
 
 // Build name inputs
+// ─── PLAYER NAME INPUTS ───────────────────────────────────────────────────────
 const ng = document.getElementById('namesGrid');
-for (let i=0;i<14;i++) {
+
+function updateCountDisplay() {
+  document.getElementById('playerCountDisplay').textContent = ng.children.length + ' player' + (ng.children.length===1?'':'s');
+}
+
+function addNameRow(value='') {
+  if (ng.children.length >= 48) return;
+  const row = document.createElement('div'); row.className='name-row';
+  const idx = ng.children.length + 1;
   const inp = document.createElement('input');
-  inp.type='text'; inp.value=DEFAULT_PLAYERS[i]; inp.placeholder='Player '+(i+1); inp.id='n'+i;
-  ng.appendChild(inp);
+  inp.type='text'; inp.value=value; inp.placeholder='Player '+idx;
+  const rm = document.createElement('button'); rm.className='rm'; rm.textContent='×'; rm.type='button';
+  rm.addEventListener('click', () => { row.remove(); updateCountDisplay(); });
+  // pressing Enter adds next row
+  inp.addEventListener('keydown', e => { if (e.key==='Enter') { addNameRow(); ng.lastChild?.querySelector('input')?.focus(); } });
+  row.appendChild(inp); row.appendChild(rm);
+  ng.appendChild(row);
+  updateCountDisplay();
+}
+
+document.getElementById('addPlayerBtn').addEventListener('click', () => { addNameRow(); ng.lastChild?.querySelector('input')?.focus(); });
+
+function getNames() {
+  return Array.from(ng.querySelectorAll('input')).map((inp,i) => inp.value.trim()||'Player '+(i+1));
 }
 
 function startDraw() {
-  const names = Array.from({length:14},(_,i) => document.getElementById('n'+i).value.trim()||'Player '+(i+1));
-  const plan  = [];
+  const names = getNames();
+  if (names.length < 2) { alert('Add at least 2 players.'); return; }
+  const n = names.length;
+  if (n > 48) { alert('Max 48 players.'); return; }
+  const plan = [];
   ['A','B','C'].forEach(tier => {
     const ps=shuffle(names.slice()), ts=shuffle(TIERS[tier].slice());
-    ps.forEach((p,i) => plan.push({p,team:ts[i],tier}));
+    // assign one team per player (uses first n teams from this tier)
+    ps.forEach((p,i) => plan.push({p,team:ts[i%ts.length],tier}));
   });
-  const wps=shuffle(names.slice()).slice(0,6), wts=shuffle(TIERS.W.slice());
+  // wildcards: up to min(n, 6) players get a bonus team
+  const wcCount = Math.min(n, TIERS.W.length);
+  const wps=shuffle(names.slice()).slice(0,wcCount), wts=shuffle(TIERS.W.slice());
   wps.forEach((p,i) => plan.push({p,team:wts[i],tier:'W'}));
   localDraw = {names,plan,idx:0};
   renderDrawStep();

@@ -4,15 +4,16 @@ async function getDb() {
   const sql = neon(process.env.DATABASE_URL);
   await sql`
     CREATE TABLE IF NOT EXISTS sweepstake_groups (
-      group_code  TEXT PRIMARY KEY,
-      group_name  TEXT NOT NULL DEFAULT 'Sweepstake',
-      entry_price TEXT NOT NULL DEFAULT '£5',
-      admin_pin   TEXT NOT NULL DEFAULT 'admin',
-      completed   BOOLEAN NOT NULL DEFAULT FALSE,
-      names       JSONB NOT NULL DEFAULT '[]'::jsonb,
-      plan        JSONB NOT NULL DEFAULT '[]'::jsonb,
-      idx         INT  NOT NULL DEFAULT 0,
-      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      group_code   TEXT PRIMARY KEY,
+      group_name   TEXT NOT NULL DEFAULT 'Sweepstake',
+      entry_price  TEXT NOT NULL DEFAULT '£5',
+      player_count INT  NOT NULL DEFAULT 14,
+      admin_pin    TEXT NOT NULL DEFAULT 'admin',
+      completed    BOOLEAN NOT NULL DEFAULT FALSE,
+      names        JSONB NOT NULL DEFAULT '[]'::jsonb,
+      plan         JSONB NOT NULL DEFAULT '[]'::jsonb,
+      idx          INT  NOT NULL DEFAULT 0,
+      updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
   return sql;
@@ -34,12 +35,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     const rows = await sql`
-      SELECT completed, names, plan, idx, group_name, entry_price
+      SELECT completed, names, plan, idx, group_name, entry_price, player_count
       FROM sweepstake_groups WHERE group_code = ${code}
     `;
     if (!rows.length) return res.status(404).json({ error: 'Group not found' });
-    const { completed, names, plan, idx, group_name, entry_price } = rows[0];
-    return res.json({ completed, names, plan, idx, group_name, entry_price });
+    const { completed, names, plan, idx, group_name, entry_price, player_count } = rows[0];
+    return res.json({ completed, names, plan, idx, group_name, entry_price, player_count });
   }
 
   if (req.method === 'POST') {
