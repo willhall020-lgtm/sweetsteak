@@ -456,6 +456,11 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       </div>
     </div>
 
+    <div id="draw-pending" class="draw-locked hidden">
+      <p class="display">Draw Pending</p>
+      <p style="opacity:.85;margin:.4rem 0;font-size:.9rem;">The draw hasn't happened yet. Check back soon.</p>
+    </div>
+
     <div id="draw-live">
       <div class="draw-stage">
         <div id="setup">
@@ -821,8 +826,8 @@ async function loadDraw() {
       const strap = document.getElementById('headerStrap');
       if (strap) strap.innerHTML = `${esc(drawData.group_name || 'Sweepstake')} · 48 teams · <b>${esc(drawData.entry_price || '£5')} each</b>`;
     }
-    // Pre-fill name slots from stored player_count
-    if (!drawData.completed && drawData.player_count && ng.children.length === 0) {
+    // Pre-fill name slots from stored player_count (admin only)
+    if (IS_ADMIN && !drawData.completed && drawData.player_count && ng.children.length === 0) {
       for (let i = 0; i < drawData.player_count; i++) addNameRow();
     }
     applyDrawState();
@@ -1109,6 +1114,9 @@ function applyDrawState() {
     document.getElementById('saveDrawBtn').classList.add('hidden');
     document.getElementById('redoBtn').classList.toggle('hidden', !IS_ADMIN);
     document.getElementById('toggleMathsBtn').classList.remove('hidden');
+  } else if (!IS_ADMIN) {
+    document.getElementById('draw-live').classList.add('hidden');
+    document.getElementById('draw-pending').classList.remove('hidden');
   }
 }
 
