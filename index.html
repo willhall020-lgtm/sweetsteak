@@ -955,9 +955,11 @@ function renderLeaderboard() {
 // ─── DRAW ─────────────────────────────────────────────────────────────────────
 function applyDrawState() {
   if (drawData?.completed) {
-    document.getElementById('draw-locked').classList.remove('hidden');
-    document.getElementById('draw-live').classList.add('hidden');
-    renderWallchart(drawData);
+    localDraw = {...drawData, idx: drawData.plan?.length || 0};
+    renderWallchart(localDraw);
+    showPane('done');
+    document.getElementById('saveDrawBtn').classList.add('hidden');
+    document.getElementById('redoBtn').classList.toggle('hidden', !IS_ADMIN);
   }
 }
 
@@ -1079,6 +1081,8 @@ function startDraw() {
   localDraw = {names, plan, idx: plan.length};
   renderWallchart(localDraw);
   showPane('done');
+  document.getElementById('saveDrawBtn').classList.remove('hidden');
+  document.getElementById('redoBtn').classList.remove('hidden');
 }
 
 function renderDrawStep() {
@@ -1159,8 +1163,7 @@ document.getElementById('resetDrawBtn').addEventListener('click', async () => {
   const r = await fetch('/api/draw?g=' + GROUP_CODE, { method:'DELETE', headers:{'X-Admin-Pin':pin} });
   if (r.ok) {
     drawData = null;
-    document.getElementById('draw-locked').classList.add('hidden');
-    document.getElementById('draw-live').classList.remove('hidden');
+    localDraw = {names:[], plan:[], idx:0};
     document.getElementById('wallchart').innerHTML='';
     showPane('setup');
     renderLeaderboard();
