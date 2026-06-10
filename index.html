@@ -158,13 +158,71 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
 .hidden{display:none!important;}
 
 footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3rem;border-top:1px solid var(--rule);margin-top:3rem;}
+
+/* LANDING */
+#landing{position:fixed;inset:0;background:var(--paper);z-index:200;display:flex;align-items:center;justify-content:center;padding:1.25rem;}
+#landing.hidden{display:none!important;}
+.landing-card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:2rem 2rem 1.75rem;width:100%;max-width:440px;box-shadow:0 4px 24px rgba(0,0,0,.07);}
+.landing-card .logo{font-family:'Anton',sans-serif;font-size:1.6rem;text-transform:uppercase;color:var(--pitch);margin-bottom:.25rem;}
+.landing-card .logo span{color:var(--gold);}
+.landing-card .sub{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem;}
+.field{margin-bottom:1rem;}
+.field label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;}
+.field input{width:100%;padding:.6rem .8rem;border:1px solid var(--rule);border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;background:var(--paper);color:var(--ink);}
+.field input:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;}
+.field .hint{font-size:.73rem;color:var(--muted);margin-top:.3rem;}
+.landing-err{font-size:.82rem;color:#C0392B;margin-bottom:.75rem;display:none;}
+.landing-err.show{display:block;}
+.share-box{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:1rem 1.1rem;margin-top:1rem;}
+.share-box .label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dark);font-weight:600;margin-bottom:.4rem;}
+.share-url{font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;color:var(--ink);margin-bottom:.7rem;}
 </style>
 </head>
 <body>
 
+<!-- LANDING (shown when no ?g= group code in URL) -->
+<div id="landing">
+  <div class="landing-card">
+    <div class="logo">World Cup <span>2026</span></div>
+    <p class="sub">Create a sweepstake for your group. Share the link. May the best mate win.</p>
+
+    <div id="landing-form">
+      <div class="field">
+        <label for="lg-name">Group name</label>
+        <input type="text" id="lg-name" placeholder="e.g. Office Sweepstake" maxlength="60">
+      </div>
+      <div class="field">
+        <label for="lg-price">Entry price</label>
+        <input type="text" id="lg-price" placeholder="e.g. £5" maxlength="20" value="£5">
+      </div>
+      <div class="field">
+        <label for="lg-pin">Admin PIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(min 4 chars)</span></label>
+        <input type="password" id="lg-pin" placeholder="Choose a PIN" maxlength="30">
+        <p class="hint">Keep this safe — you'll need it to save the draw and reset the board.</p>
+      </div>
+      <p class="landing-err" id="lg-err"></p>
+      <div class="btn-row" style="justify-content:flex-start;margin-top:1.25rem;">
+        <button class="btn-gold" id="lg-create">Create sweepstake</button>
+      </div>
+    </div>
+
+    <div id="landing-share" class="hidden">
+      <div class="share-box">
+        <p class="label">Your shareable link</p>
+        <p class="share-url" id="lg-url"></p>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn-ink" id="lg-copy" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
+          <button class="btn-gold" id="lg-go" style="padding:.5rem 1.2rem;font-size:.85rem;">Open &rarr;</button>
+        </div>
+      </div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:.75rem;">Share this link with your group. Everyone who visits it sees the same leaderboard and draw.</p>
+    </div>
+  </div>
+</div>
+
 <header>
   <h1 class="display">World Cup <span class="yr">2026</span><br>Sweepstake</h1>
-  <p class="strap">14 players · 48 teams · <b>£70 pot</b> · No swaps, no trades, no moral objections.</p>
+  <p class="strap" id="headerStrap">48 teams · No swaps, no trades, no moral objections.</p>
   <div class="ticker-wrap"><div class="ticker" id="ticker" aria-hidden="true"></div></div>
 </header>
 
@@ -226,10 +284,10 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       <div class="panel">
         <h3>Prizes — £70 pot</h3>
         <table class="prizes">
-          <tr><td>Most points<br><span class="sub">Bragging rights included.</span></td><td class="amt big">£40</td></tr>
-          <tr><td>Second place<br><span class="sub">So close.</span></td><td class="amt">£15</td></tr>
-          <tr><td>Third place<br><span class="sub">At least you're not last.</span></td><td class="amt">£10</td></tr>
-          <tr><td>Wooden Spoon<br><span class="sub">Fewest points. Your £5 stake back.</span></td><td class="amt">£5</td></tr>
+          <tr><td>Most points<br><span class="sub"></span></td><td class="amt big">£40</td></tr>
+          <tr><td>Second place<br><span class="sub"></span></td><td class="amt">£15</td></tr>
+          <tr><td>Third place<br><span class="sub"></span></td><td class="amt">£10</td></tr>
+          <tr><td>Wooden Spoon<br><span class="sub"></span></td><td class="amt">£5</td></tr>
         </table>
       </div>
     </div>
@@ -354,6 +412,57 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 </footer>
 
 <script>
+// ─── GROUP CODE ───────────────────────────────────────────────────────────────
+const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
+
+(function initLanding() {
+  const landing = document.getElementById('landing');
+  if (GROUP_CODE) { landing.classList.add('hidden'); return; }
+
+  // No group code — show landing, hide app chrome
+  document.querySelector('.tab-bar').style.display = 'none';
+  document.querySelector('main').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+
+  document.getElementById('lg-create').addEventListener('click', async () => {
+    const name  = document.getElementById('lg-name').value.trim();
+    const price = document.getElementById('lg-price').value.trim();
+    const pin   = document.getElementById('lg-pin').value;
+    const err   = document.getElementById('lg-err');
+    err.classList.remove('show');
+
+    if (!name) { err.textContent = 'Enter a group name.'; err.classList.add('show'); return; }
+    if (pin.length < 4) { err.textContent = 'PIN must be at least 4 characters.'; err.classList.add('show'); return; }
+
+    const btn = document.getElementById('lg-create');
+    btn.disabled = true; btn.textContent = 'Creating…';
+
+    try {
+      const r = await fetch('/api/group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin })
+      });
+      const data = await r.json();
+      if (!r.ok) { err.textContent = data.error || 'Failed — try again.'; err.classList.add('show'); btn.disabled=false; btn.textContent='Create sweepstake'; return; }
+
+      const url = window.location.origin + window.location.pathname + '?g=' + data.code;
+      document.getElementById('lg-url').textContent = url;
+      document.getElementById('landing-form').classList.add('hidden');
+      document.getElementById('landing-share').classList.remove('hidden');
+
+      document.getElementById('lg-copy').addEventListener('click', () => {
+        navigator.clipboard?.writeText(url).catch(() => {});
+        document.getElementById('lg-copy').textContent = 'Copied!';
+      });
+      document.getElementById('lg-go').addEventListener('click', () => { window.location.href = url; });
+    } catch (e) {
+      err.textContent = 'Network error — try again.'; err.classList.add('show');
+      btn.disabled=false; btn.textContent='Create sweepstake';
+    }
+  });
+})();
+
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const TIERS = {
   A: ['Spain','Argentina','France','England','Brazil','Portugal','Netherlands','Belgium','Germany','Croatia','Morocco','Colombia','Mexico','Uruguay'],
@@ -436,13 +545,27 @@ let revealing   = false;
 
 // ─── API FETCHING ─────────────────────────────────────────────────────────────
 async function loadDraw() {
+  if (!GROUP_CODE) return;
   try {
-    const r = await fetch('/api/draw');
+    const r = await fetch('/api/draw?g=' + GROUP_CODE);
+    if (r.status === 404) { showInvalidGroup(); return; }
     if (!r.ok) return;
     drawData = await r.json();
+    // Update header with group metadata
+    if (drawData.group_name) {
+      document.title = drawData.group_name + ' · Sweepstake';
+    }
+    if (drawData.group_name || drawData.entry_price) {
+      const strap = document.getElementById('headerStrap');
+      if (strap) strap.innerHTML = `${esc(drawData.group_name || 'Sweepstake')} · 48 teams · <b>${esc(drawData.entry_price || '£5')} each</b> · No swaps, no trades, no moral objections.`;
+    }
     applyDrawState();
     renderLeaderboard();
   } catch (e) { console.warn('Draw fetch failed', e); }
+}
+
+function showInvalidGroup() {
+  document.querySelector('main').innerHTML = '<div class="empty" style="padding:4rem 1rem"><p style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">Group not found</p><p>Check the link and try again, or <a href="/">create a new sweepstake</a>.</p></div>';
 }
 
 async function loadMatches() {
@@ -756,7 +879,7 @@ document.getElementById('redoBtn').addEventListener('click', () => {
 document.getElementById('saveDrawBtn').addEventListener('click', async () => {
   const pin = prompt('Enter admin PIN to save the draw:');
   if (!pin) return;
-  const r = await fetch('/api/draw', {
+  const r = await fetch('/api/draw?g=' + GROUP_CODE, {
     method:'POST',
     headers:{'Content-Type':'application/json','X-Admin-Pin':pin},
     body:JSON.stringify({...localDraw,completed:true})
@@ -781,7 +904,7 @@ document.getElementById('resetDrawBtn').addEventListener('click', async () => {
   const pin = prompt('Enter admin PIN:');
   if (!pin) return;
   if (!confirm('Delete the saved draw? This cannot be undone.')) return;
-  const r = await fetch('/api/draw', { method:'DELETE', headers:{'X-Admin-Pin':pin} });
+  const r = await fetch('/api/draw?g=' + GROUP_CODE, { method:'DELETE', headers:{'X-Admin-Pin':pin} });
   if (r.ok) {
     drawData = null;
     document.getElementById('draw-locked').classList.add('hidden');
@@ -796,9 +919,11 @@ document.getElementById('resetDrawBtn').addEventListener('click', async () => {
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-loadDraw();
-loadMatches();
-setInterval(loadMatches, 60_000);
+if (GROUP_CODE) {
+  loadDraw();
+  loadMatches();
+  setInterval(loadMatches, 60_000);
+}
 </script>
 </body>
 </html>
