@@ -402,6 +402,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
           <div class="names-list" id="namesGrid"></div>
           <div class="btn-row">
             <button class="btn-ghost" id="addPlayerBtn">+ Add player</button>
+            <button class="btn-ghost" id="removePlayerBtn">− Remove player</button>
             <button class="btn-gold" id="startBtn">Start the draw</button>
           </div>
         </div>
@@ -1047,16 +1048,15 @@ function addNameRow(value='') {
   const idx = ng.children.length + 1;
   const inp = document.createElement('input');
   inp.type='text'; inp.value=value; inp.placeholder='Player '+idx;
-  const rm = document.createElement('button'); rm.className='rm'; rm.textContent='×'; rm.type='button';
-  rm.addEventListener('click', () => { row.remove(); updateCountDisplay(); });
   // pressing Enter adds next row
   inp.addEventListener('keydown', e => { if (e.key==='Enter') { addNameRow(); ng.lastChild?.querySelector('input')?.focus(); } });
-  row.appendChild(inp); row.appendChild(rm);
+  row.appendChild(inp);
   ng.appendChild(row);
   updateCountDisplay();
 }
 
 document.getElementById('addPlayerBtn').addEventListener('click', () => { addNameRow(); ng.lastChild?.querySelector('input')?.focus(); });
+document.getElementById('removePlayerBtn').addEventListener('click', () => { if (ng.lastChild) { ng.lastChild.remove(); updateCountDisplay(); } });
 
 function getNames() {
   return Array.from(ng.querySelectorAll('input')).map((inp,i) => inp.value.trim()||'Player '+(i+1));
