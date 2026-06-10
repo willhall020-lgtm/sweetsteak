@@ -1017,7 +1017,7 @@ function updateCountDisplay() {
 }
 
 function addNameRow(value='') {
-  if (ng.children.length >= 24) return;
+  if (ng.children.length >= 48) return;
   const row = document.createElement('div'); row.className='name-row';
   const idx = ng.children.length + 1;
   const inp = document.createElement('input');
@@ -1041,7 +1041,7 @@ function startDraw() {
   const names = getNames();
   const n = names.length;
   if (n < 2) { alert('Add at least 2 players.'); return; }
-  if (n > 24) { alert('Fair value draw supports up to 24 players. Above that, the balancing breaks down.'); return; }
+  if (n > 48) { alert('Max 48 players — one team each.'); return; }
 
   // Opening round: top N teams shuffled, one per player (blind draw)
   const topN   = shuffle(RANKED_TEAMS.slice(0, n));

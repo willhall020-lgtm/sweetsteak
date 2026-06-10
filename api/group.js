@@ -34,8 +34,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'PIN must be at least 4 characters' });
   }
   const pc = parseInt(player_count);
-  if (!pc || pc < 2 || pc > 24) {
-    return res.status(400).json({ error: 'player_count must be between 2 and 24' });
+  if (!pc || pc < 2 || pc > 48) {
+    return res.status(400).json({ error: 'player_count must be between 2 and 48' });
   }
 
   const sql = await getDb();
