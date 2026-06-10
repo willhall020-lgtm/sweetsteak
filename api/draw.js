@@ -16,6 +16,7 @@ async function getDb() {
       updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE sweepstake_groups ADD COLUMN IF NOT EXISTS player_count INT NOT NULL DEFAULT 14`;
   return sql;
 }
 
