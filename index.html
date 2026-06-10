@@ -390,12 +390,12 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         </ol>
       </div>
       <div class="panel">
-        <h3>Prizes — £70 pot</h3>
+        <h3 id="prizes-heading">Prizes — £70 pot</h3>
         <table class="prizes">
-          <tr><td>Most points<br><span class="sub"></span></td><td class="amt big">£40</td></tr>
-          <tr><td>Second place<br><span class="sub"></span></td><td class="amt">£15</td></tr>
-          <tr><td>Third place<br><span class="sub"></span></td><td class="amt">£10</td></tr>
-          <tr><td>Wooden Spoon<br><span class="sub"></span></td><td class="amt">£5</td></tr>
+          <tr><td>Most points<br><span class="sub"></span></td><td class="amt big" id="prize-1st">£40</td></tr>
+          <tr><td>Second place<br><span class="sub"></span></td><td class="amt" id="prize-2nd">£15</td></tr>
+          <tr><td>Third place<br><span class="sub"></span></td><td class="amt" id="prize-3rd">£10</td></tr>
+          <tr><td>Wooden Spoon<br><span class="sub"></span></td><td class="amt" id="prize-spoon">£5</td></tr>
         </table>
       </div>
     </div>
@@ -803,6 +803,7 @@ async function loadDraw() {
       for (let i = 0; i < drawData.player_count; i++) addNameRow();
     }
     applyDrawState();
+    updatePrizesDisplay();
     renderLeaderboard();
   } catch (e) { console.warn('Draw fetch failed', e); }
 }
@@ -956,6 +957,44 @@ function computeScores(assignments, matches) {
 
 function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
+function parseFee(str) {
+  if (!str) return null;
+  const n = parseFloat(str.replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function computePrizes() {
+  const fee = parseFee(drawData?.entry_price);
+  const players = drawData?.player_count;
+  if (!fee || !players) return null;
+  const pot = fee * players;
+  // proportions: 1st 4/7, 2nd 3/14, 3rd 1/7, spoon 1/14
+  const fmt = (v) => {
+    const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
+    const r = Math.round(v * 100) / 100;
+    return prefix + (Number.isInteger(r) ? r : r.toFixed(2));
+  };
+  return {
+    pot: fmt(pot),
+    first: fmt(pot * 4/7),
+    second: fmt(pot * 3/14),
+    third: fmt(pot * 1/7),
+    spoon: fmt(pot * 1/14),
+  };
+}
+
+function updatePrizesDisplay() {
+  const p = computePrizes();
+  if (!p) return;
+  const h = document.getElementById('prizes-heading');
+  if (h) h.textContent = `Prizes — ${p.pot} pot`;
+  const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  el('prize-1st', p.first);
+  el('prize-2nd', p.second);
+  el('prize-3rd', p.third);
+  el('prize-spoon', p.spoon);
+}
+
 function renderLeaderboard() {
   const assignments = buildAssignments(drawData);
   const loading = document.getElementById('lb-loading');
@@ -990,9 +1029,10 @@ function renderLeaderboard() {
       return `<span class="badge b${tier}" title="${esc(team)}">${esc(team)}</span>`;
     }).join('');
 
-    const prizeMap = ['','1st — £40','2nd — £15','3rd — £10'];
+    const prizes = computePrizes();
+    const prizeMap = ['', `1st — ${prizes ? prizes.first : '£40'}`, `2nd — ${prizes ? prizes.second : '£15'}`, `3rd — ${prizes ? prizes.third : '£10'}`];
     let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
-    if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — £5</div>`;
+    if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — ${prizes ? prizes.spoon : '£5'}</div>`;
 
     row.innerHTML = `
       <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span></td>
