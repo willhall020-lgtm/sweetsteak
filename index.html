@@ -352,7 +352,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   <button class="active" data-view="leaderboard">Leaderboard</button>
   <button data-view="rules">Rules</button>
   <button data-view="draw">Draw</button>
-  <button data-view="admin" id="tab-admin">Other</button>
+  <button data-view="admin" id="tab-admin">More</button>
 </nav>
 
 <main>
@@ -513,8 +513,14 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   <!-- SETTINGS VIEW (members) -->
   <section id="settings-view">
     <p class="kicker">Your game</p>
-    <h2 class="display">Other</h2>
+    <h2 class="display">More</h2>
     <div class="panel" style="margin-top:1.5rem;">
+      <h3>Game code</h3>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="member-share-url">—</p>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;">Share this code with friends to invite them.</p>
+      <button class="btn-ink" id="memberCopyCodeBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
+    </div>
+    <div class="panel" style="margin-top:1.25rem;">
       <h3>Game</h3>
       <p style="font-size:.92rem;margin-bottom:1rem;" id="settings-group-name">—</p>
       <button class="btn-danger" id="leaveGameBtn">Leave game</button>
@@ -1353,7 +1359,15 @@ if (GROUP_CODE) {
       setTimeout(() => { document.getElementById('adminCopyLinkBtn').textContent = 'Copy code'; }, 2000);
     });
   }
-  // Populate settings group name once draw loads (done in loadDraw)
+  // Populate member code panel
+  if (!IS_ADMIN) {
+    document.getElementById('member-share-url').textContent = GROUP_CODE;
+    document.getElementById('memberCopyCodeBtn').addEventListener('click', () => {
+      navigator.clipboard?.writeText(GROUP_CODE).catch(() => {});
+      document.getElementById('memberCopyCodeBtn').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('memberCopyCodeBtn').textContent = 'Copy code'; }, 2000);
+    });
+  }
 
   loadDraw();
   loadMatches();
