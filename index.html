@@ -967,20 +967,19 @@ function computePrizes() {
   const fee = parseFee(drawData?.entry_price);
   const players = drawData?.player_count;
   if (!fee || !players) return null;
-  const pot = fee * players;
+  const pot = Math.round(fee * players);
+  const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
+  const fmt = (v) => prefix + v;
+
   // proportions: 1st 4/7, 2nd 3/14, 3rd 1/7, spoon 1/14
-  const fmt = (v) => {
-    const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
-    const r = Math.round(v * 100) / 100;
-    return prefix + (Number.isInteger(r) ? r : r.toFixed(2));
-  };
-  return {
-    pot: fmt(pot),
-    first: fmt(pot * 4/7),
-    second: fmt(pot * 3/14),
-    third: fmt(pot * 1/7),
-    spoon: fmt(pot * 1/14),
-  };
+  const props = [4/7, 3/14, 1/7, 1/14];
+  const exact = props.map(p => pot * p);
+  const floors = exact.map(Math.floor);
+  let remainder = pot - floors.reduce((a, b) => a + b, 0);
+  const fracs = exact.map((v, i) => ({ i, f: v - floors[i] })).sort((a, b) => b.f - a.f);
+  fracs.forEach(({ i }) => { if (remainder-- > 0) floors[i]++; });
+
+  return { pot: fmt(pot), first: fmt(floors[0]), second: fmt(floors[1]), third: fmt(floors[2]), spoon: fmt(floors[3]) };
 }
 
 function updatePrizesDisplay() {
