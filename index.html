@@ -968,7 +968,7 @@ function computeScores(assignments, matches) {
       if (wp) {
         scores[wp].matchPts += 3;
         scores[wp].detail.push({team:winner, event:`Beat ${loser} (${sl})`, pts:3});
-        const tierDiff = TIER_RANK[TIER_MAP[loser]] - TIER_RANK[TIER_MAP[winner]];
+        const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
         let gkBonus = 0;
         if (tierDiff >= 3) gkBonus = 12;
         else if (tierDiff >= 2) gkBonus = 6;
