@@ -91,11 +91,14 @@ table.prizes .amt.big{color:var(--pitch);font-size:1.25rem;}
 .sub{font-size:.78rem;color:var(--muted);}
 details.tiers{background:var(--card);border:1px solid var(--rule);border-radius:10px;margin-top:1.25rem;}
 details.tiers summary{cursor:pointer;padding:1rem 1.4rem;font-weight:600;font-size:.92rem;}
-details.tiers .tier-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;padding:0 1.4rem 1.25rem;}
-.tier-cols h4{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.4rem;}
-.tier-cols ul{list-style:none;font-size:.83rem;}
-.tier-cols li{padding:2px 0;border-bottom:1px dotted var(--rule);}
-.ta{color:var(--pitch);}.tb{color:#1A6E8A;}.tc{color:#A05A18;}.tw{color:var(--muted);}
+.ranked-list{list-style:none;padding:.25rem 1.4rem 1.25rem;columns:2;column-gap:1.5rem;}
+@media(max-width:480px){.ranked-list{columns:1;}}
+.ranked-list li{font-size:.82rem;padding:3px 0;border-bottom:1px dotted var(--rule);display:flex;align-items:center;gap:.4rem;break-inside:avoid;}
+.rank-num{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);min-width:1.6rem;}
+.rank-val{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);margin-left:auto;}
+.player-total{font-family:'IBM Plex Mono',monospace;font-size:.72rem;background:var(--paper);border-radius:4px;padding:.15rem .5rem;margin-bottom:.4rem;color:var(--pitch);font-weight:500;}
+.slot-meta{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);}
+.pot-avg{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);text-align:right;margin-bottom:.75rem;}
 .score-tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:.5rem;}
 .score-tbl td{padding:.38rem .5rem;border-bottom:1px dashed var(--rule);}
 .score-tbl td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;}
@@ -326,9 +329,10 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       <div class="panel">
         <h3>Entry &amp; the draw</h3>
         <ol>
-          <li><b>£5 each</b>, paid before the draw. No pay, no play.</li>
-          <li>All 48 teams are drawn, no matter the number of players. Teams are split into four tiers of 12 by FIFA ranking: <b>Tier 1</b> (contenders) through <b>Tier 4</b> (wildcards).</li>
-          <li>Each player draws one team from each tier. If the number of players doesn't divide evenly into 48, the extra (Tier 4) teams are assigned first to the players who drew the lowest-ranked Tier 1 team.</li>
+          <li><b>Entry fee paid before the draw.</b> No pay, no play.</li>
+          <li><b>Opening round:</b> the top N teams (by FIFA ranking) are shuffled and assigned blind — one per player. This is the fun bit.</li>
+          <li><b>Balancing rounds:</b> remaining teams are assigned automatically in rank order, each going to whichever player has the lowest total value so far. Ties broken at random.</li>
+          <li>All 48 teams are assigned exactly once. Players with worse opening picks end up with more teams — that's the point.</li>
         </ol>
       </div>
       <div class="panel">
@@ -358,13 +362,8 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+30 pts in total). Giant-killing applies on wins only, not draws.</p>
     </div>
     <details class="tiers">
-      <summary>View the full tier breakdown</summary>
-      <div class="tier-cols">
-        <div><h4 class="ta">Tier 1 · contenders</h4><ul id="listA"></ul></div>
-        <div><h4 class="tb">Tier 2 · challengers</h4><ul id="listB"></ul></div>
-        <div><h4 class="tc">Tier 3 · outsiders</h4><ul id="listC"></ul></div>
-        <div><h4 class="tw">Tier 4 · wildcards</h4><ul id="listD"></ul></div>
-      </div>
+      <summary>View all 48 teams — ranked &amp; tiered</summary>
+      <ul id="ranked-list" class="ranked-list"></ul>
     </details>
   </section>
 </div>
@@ -623,17 +622,27 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
 })();
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const TIERS = {
-  A: ['Spain','Argentina','France','England','Brazil','Portugal','Netherlands','Belgium','Germany','Croatia','Morocco','Colombia'],
-  B: ['Mexico','Uruguay','United States','Switzerland','Senegal','Japan','Iran','South Korea','Ecuador','Austria','Türkiye','Australia'],
-  C: ['Canada','Norway','Sweden','Panama','Egypt','Algeria','Paraguay','Tunisia','Scotland','Ivory Coast','Czechia','Qatar'],
-  D: ['Uzbekistan','Saudi Arabia','Iraq','DR Congo','South Africa','Bosnia & Herzegovina','Jordan','Cape Verde','Ghana','Haiti','Curaçao','New Zealand']
-};
-const ALL_TEAMS   = [...TIERS.A,...TIERS.B,...TIERS.C,...TIERS.D];
-const TIER_MAP    = {};
-for (const [t,ts] of Object.entries(TIERS)) ts.forEach(x => TIER_MAP[x]=t);
-const TIER_RANK   = {A:1,B:2,C:3,D:4};
-const TIER_LABELS = {A:'Tier 1 · contenders',B:'Tier 2 · challengers',C:'Tier 3 · outsiders',D:'Tier 4 · wildcards'};
+// Teams ranked 1–48 by FIFA ranking. Rank derived from array index.
+const RANKED_TEAMS = [
+  'Spain','Argentina','France','England','Brazil','Portugal',
+  'Netherlands','Belgium','Germany','Croatia','Morocco','Colombia',
+  'Mexico','Uruguay','United States','Switzerland','Senegal','Japan',
+  'Iran','South Korea','Ecuador','Austria','Türkiye','Australia',
+  'Canada','Norway','Sweden','Panama','Egypt','Algeria','Paraguay',
+  'Tunisia','Scotland','Ivory Coast','Czechia','Qatar','Uzbekistan',
+  'Saudi Arabia','Iraq','DR Congo','South Africa','Bosnia & Herzegovina',
+  'Jordan','Cape Verde','Ghana','Haiti','Curaçao','New Zealand'
+];
+const VALUE_EXPONENT = 1;
+const ALL_TEAMS  = RANKED_TEAMS;
+const teamRank   = t => RANKED_TEAMS.indexOf(t) + 1;
+const teamValue  = t => Math.pow(49 - teamRank(t), VALUE_EXPONENT);
+const TOTAL_VALUE = RANKED_TEAMS.reduce((s,t) => s + teamValue(t), 0); // 1176
+
+// Derive tiers from rank (for leaderboard giant-kill scoring)
+const TIER_MAP  = {};
+const TIER_RANK = {A:1,B:2,C:3,D:4};
+RANKED_TEAMS.forEach((t,i) => { TIER_MAP[t] = i<12?'A':i<24?'B':i<36?'C':'D'; });
 
 // football-data.org → internal stage codes
 const API_STAGE = {
@@ -670,10 +679,13 @@ function norm(name, tla) {
 const tickerBase = ALL_TEAMS.join('  ·  ') + '  ·  ';
 document.getElementById('ticker').textContent = tickerBase + tickerBase;
 
-// Tier lists (rules page)
-['A','B','C','D'].forEach(t => {
-  const ul = document.getElementById('list'+t);
-  TIERS[t].forEach(team => { const li=document.createElement('li'); li.textContent=team; ul.appendChild(li); });
+// Ranked team list (rules page)
+const rankedUl = document.getElementById('ranked-list');
+if (rankedUl) RANKED_TEAMS.forEach((team, i) => {
+  const tier = TIER_MAP[team];
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="rank-num">${i+1}</span>${esc(team)}<span class="badge b${tier}" style="margin-left:auto;margin-right:.25rem">${tier}</span><span class="rank-val">${teamValue(team)}</span>`;
+  rankedUl.appendChild(li);
 });
 
 // ─── TAB NAV ──────────────────────────────────────────────────────────────────
@@ -793,8 +805,8 @@ function updateAdminStats() {
 function buildAssignments(draw) {
   if (!draw?.completed || !draw.plan?.length) return null;
   const a = {};
-  draw.names.forEach(n => a[n] = {});
-  draw.plan.forEach(p => { a[p.p][p.tier] = p.team; });
+  draw.names.forEach(n => a[n] = []);
+  draw.plan.forEach(p => a[p.p].push(p.team));
   return a;
 }
 
@@ -831,7 +843,7 @@ function computeScores(assignments, matches) {
 
   const t2p = {};
   for (const [player,teams] of Object.entries(assignments))
-    for (const team of Object.values(teams)) if (team) t2p[team] = player;
+    for (const team of teams) if (team) t2p[team] = player;
 
   for (const m of matches) {
     const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
@@ -902,10 +914,11 @@ function renderLeaderboard() {
     if (rank===1) row.className='row-1';
     if (isLast && sorted.length>=4) row.className='row-last';
 
-    const tms = assignments[player];
-    const badges = ['A','B','C','D'].map(tier =>
-      tms[tier] ? `<span class="badge b${tier}" title="${esc(tms[tier])}">${esc(tms[tier])}</span>` : ''
-    ).join('');
+    const tms = assignments[player] || [];
+    const badges = tms.map(team => {
+      const tier = TIER_MAP[team];
+      return `<span class="badge b${tier}" title="${esc(team)}">${esc(team)}</span>`;
+    }).join('');
 
     const prizeMap = ['','1st — £40','2nd — £15','3rd — £10'];
     let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
@@ -947,18 +960,31 @@ function renderWallchart(src) {
   (src.plan||[]).slice(0, src.idx!=null ? src.idx : src.plan.length)
     .forEach(p => results[p.p].push(p));
 
+  const n = src.names.length;
+  const potAvg = (TOTAL_VALUE / n).toFixed(1);
   const wc = document.getElementById('wallchart');
   wc.innerHTML = '';
-  src.names.forEach(n => {
+
+  const avgEl = document.createElement('p');
+  avgEl.className = 'pot-avg';
+  avgEl.textContent = `Pot average: ${potAvg} pts (${TOTAL_VALUE} ÷ ${n} players)`;
+  wc.appendChild(avgEl);
+
+  src.names.forEach(nm => {
     const card = document.createElement('div'); card.className='player-card';
-    let html = '<h4>'+esc(n)+'</h4>';
-    const picks = results[n]||[];
+    const picks = results[nm]||[];
+    const total = picks.reduce((s,p) => s + teamValue(p.team), 0);
+    let html = `<h4>${esc(nm)}</h4>`;
     if (picks.length === 0) {
       html += `<div class="slot empty" style="justify-content:center;">No teams yet</div>`;
     } else {
       picks.forEach(pick => {
-        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="badge b${pick.tier}">${pick.tier}</span></div>`;
+        const tier = TIER_MAP[pick.team];
+        const rank = teamRank(pick.team);
+        const val  = teamValue(pick.team);
+        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="slot-meta">#${rank} · ${val}pts</span><span class="badge b${tier}">${tier}</span></div>`;
       });
+      html += `<div class="player-total">Total: ${total} pts</div>`;
     }
     card.innerHTML = html;
     wc.appendChild(card);
@@ -970,7 +996,12 @@ function copyDrawText(draw) {
   draw.names.forEach(n => results[n]=[]);
   draw.plan.forEach(p => results[p.p].push(p));
   const lines = ['World Cup 2026 sweepstake draw:'];
-  draw.names.forEach(n => lines.push(n+': '+(results[n]||[]).map(p => p.team+(p.tier==='W'?' (wildcard)':'')).join(', ')));
+  draw.names.forEach(n => {
+    const picks = results[n]||[];
+    const total = picks.reduce((s,p) => s + teamValue(p.team), 0);
+    const teamStr = picks.map(p => `${p.team} (${teamValue(p.team)})`).join(', ');
+    lines.push(`${n}: ${teamStr} — ${total} pts`);
+  });
   const text = lines.join('\n');
   if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
   else fallbackCopy(text);
@@ -986,7 +1017,7 @@ function updateCountDisplay() {
 }
 
 function addNameRow(value='') {
-  if (ng.children.length >= 48) return;
+  if (ng.children.length >= 24) return;
   const row = document.createElement('div'); row.className='name-row';
   const idx = ng.children.length + 1;
   const inp = document.createElement('input');
@@ -1008,66 +1039,31 @@ function getNames() {
 
 function startDraw() {
   const names = getNames();
-  if (names.length < 2) { alert('Add at least 2 players.'); return; }
   const n = names.length;
-  if (n > 48) { alert('Max 48 players.'); return; }
+  if (n < 2) { alert('Add at least 2 players.'); return; }
+  if (n > 24) { alert('Fair value draw supports up to 24 players. Above that, the balancing breaks down.'); return; }
 
-  const pools = {};
-  ['A','B','C','D'].forEach(t => pools[t] = shuffle(TIERS[t].slice()));
+  // Opening round: top N teams shuffled, one per player (blind draw)
+  const topN   = shuffle(RANKED_TEAMS.slice(0, n));
+  const order  = shuffle(names.slice());
+  const plan   = order.map((p, i) => ({p, team: topN[i], rank: teamRank(topN[i]), value: teamValue(topN[i])}));
 
-  const playerTeams = {};
-  names.forEach(p => playerTeams[p] = []);
+  // Balancing rounds: remaining teams in rank order → always assign to lowest-value player
+  const totals = {};
+  names.forEach(p => totals[p] = 0);
+  plan.forEach(({p, value}) => totals[p] += value);
 
-  // Phase 1: give every player floor(12/N) teams from T1, T2, T3
-  // e.g. N=6 → 2 each; N=12 → 1 each; N=14 → 0 (all go to bonus)
-  const tierSize = TIERS.A.length; // 12
-  const basePerTier = Math.floor(tierSize / n);
-  ['A','B','C'].forEach(tier => {
-    for (let round = 0; round < basePerTier; round++) {
-      const order = shuffle(names.slice());
-      order.forEach((p, i) => {
-        const teamIdx = round * n + i;
-        if (teamIdx < pools[tier].length) playerTeams[p].push({tier, team: pools[tier][teamIdx]});
-      });
-    }
-    // remaining teams (12 % N per tier) go to bonus pool
-    pools[tier] = pools[tier].slice(basePerTier * n);
-  });
+  for (const team of RANKED_TEAMS.slice(n)) {
+    const minVal  = Math.min(...names.map(p => totals[p]));
+    const eligible = names.filter(p => totals[p] === minVal);
+    const chosen  = eligible[Math.floor(Math.random() * eligible.length)];
+    plan.push({p: chosen, team, rank: teamRank(team), value: teamValue(team), balancing: true});
+    totals[chosen] += teamValue(team);
+  }
 
-  // Phase 2: rank players by T1 pick — worst Tier A = highest index in TIERS.A
-  // Players with no T1 team (if N > 12) treated as worst
-  const t1Rank = p => {
-    const t1 = playerTeams[p].find(a => a.tier === 'A');
-    return t1 ? TIERS.A.indexOf(t1.team) : Infinity;
-  };
-  const byWorstT1 = [...names].sort((a, b) => t1Rank(b) - t1Rank(a));
-
-  // Bonus pool: all T4 teams first, then leftover T1/T2/T3 (when N < 12)
-  const bonus = [
-    ...pools.D.map(team => ({tier:'D', team})),
-    ...pools.A.map(team => ({tier:'A', team})),
-    ...pools.B.map(team => ({tier:'B', team})),
-    ...pools.C.map(team => ({tier:'C', team})),
-  ];
-
-  // Distribute bonus round-robin starting from player with worst T1
-  bonus.forEach((item, i) => playerTeams[byWorstT1[i % n]].push({...item, bonus: true}));
-
-  // Build plan: reveal main teams tier by tier (T1 all picks → T2 all → T3 all)
-  // within each tier, shuffle reveal order
-  const plan = [];
-  ['A','B','C'].forEach(tier => {
-    const picks = [];
-    names.forEach(p => playerTeams[p].filter(a => a.tier === tier && !a.bonus).forEach(a => picks.push({p, tier, team: a.team})));
-    plan.push(...shuffle(picks));
-  });
-  // Bonus round: worst T1 player gets their bonus team(s) revealed first
-  byWorstT1.forEach(p => {
-    playerTeams[p].filter(a => a.bonus).forEach(a => plan.push({p, tier: a.tier, team: a.team}));
-  });
-
-  localDraw = {names, plan, idx:0};
-  renderDrawStep();
+  localDraw = {names, plan, idx: plan.length};
+  renderWallchart(localDraw);
+  showPane('done');
 }
 
 function renderDrawStep() {
