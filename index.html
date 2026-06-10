@@ -522,18 +522,23 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     <p class="kicker">Commissioner</p>
     <h2 class="display">Admin</h2>
     <div class="admin-tabs">
-      <button class="active" data-atab="status">Live Data</button>
+      <button class="active" data-atab="code">Game Code</button>
+      <button data-atab="status">Live Data</button>
       <button data-atab="danger">Reset Draw</button>
+      <button data-atab="leave">Leave Game</button>
     </div>
 
-    <div class="asec active" id="atab-status">
-      <div class="panel" style="margin-bottom:1.5rem;">
+    <div class="asec active" id="atab-code">
+      <div class="panel" style="margin-top:1.25rem;">
         <h3>Game code</h3>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="admin-share-url">—</p>
         <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;">Share this code with your players — they enter it on the home screen to join.</p>
         <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
       </div>
-      <div class="stat-grid" id="statGrid">
+    </div>
+
+    <div class="asec" id="atab-status">
+      <div class="stat-grid" id="statGrid" style="margin-top:1.25rem;">
         <div class="stat-card"><div class="label">Matches played</div><div class="value" id="statPlayed">—</div></div>
         <div class="stat-card"><div class="label">Matches live now</div><div class="value live" id="statLive">—</div></div>
         <div class="stat-card"><div class="label">Goals scored</div><div class="value" id="statGoals">—</div></div>
@@ -545,11 +550,14 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     </div>
 
     <div class="asec" id="atab-danger">
-      <div class="danger-zone">
+      <div class="danger-zone" style="margin-top:1.25rem;">
         <h3>Reset draw</h3>
         <p>Deletes the saved draw from the database. The draw can then be re-run. This cannot be undone — use with extreme caution.</p>
         <button class="btn-danger" id="resetDrawBtn">Reset draw…</button>
       </div>
+    </div>
+
+    <div class="asec" id="atab-leave">
       <div class="panel" style="margin-top:1.25rem;">
         <h3>Leave game</h3>
         <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
