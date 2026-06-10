@@ -91,14 +91,12 @@ table.prizes .amt.big{color:var(--pitch);font-size:1.25rem;}
 .sub{font-size:.78rem;color:var(--muted);}
 details.tiers{background:var(--card);border:1px solid var(--rule);border-radius:10px;margin-top:1.25rem;}
 details.tiers summary{cursor:pointer;padding:1rem 1.4rem;font-weight:600;font-size:.92rem;}
-.ranked-list{list-style:none;padding:.25rem 1.4rem 1.25rem;columns:2;column-gap:1.5rem;}
-@media(max-width:480px){.ranked-list{columns:1;}}
-.ranked-list li{font-size:.82rem;padding:3px 0;border-bottom:1px dotted var(--rule);display:flex;align-items:center;gap:.4rem;break-inside:avoid;}
-.rank-num{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);min-width:1.6rem;}
-.rank-val{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--muted);margin-left:auto;}
-.player-total{font-family:'IBM Plex Mono',monospace;font-size:.72rem;background:var(--paper);border-radius:4px;padding:.15rem .5rem;margin-bottom:.4rem;color:var(--pitch);font-weight:500;}
-.slot-meta{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);}
-.pot-avg{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);text-align:right;margin-bottom:.75rem;}
+.tier-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;padding:.5rem 1rem 1.25rem;}
+@media(max-width:600px){.tier-cols{grid-template-columns:repeat(2,1fr);}}
+.tier-col-head{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .4rem;padding:.15rem .5rem;border-radius:3px;color:#fff;}
+.tier-team-list{list-style:none;padding:0;margin:0;}
+.tier-team-list li{font-size:.78rem;padding:2px 0;border-bottom:1px dotted var(--rule);display:flex;align-items:center;gap:.35rem;}
+.rank-num{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted);min-width:1.5rem;}
 .score-tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:.5rem;}
 .score-tbl td{padding:.38rem .5rem;border-bottom:1px dashed var(--rule);}
 .score-tbl td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;}
@@ -363,7 +361,12 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     </div>
     <details class="tiers">
       <summary>View all 48 teams — ranked &amp; tiered</summary>
-      <ul id="ranked-list" class="ranked-list"></ul>
+      <div class="tier-cols">
+        <div><h5 class="tier-col-head bA">Tier A</h5><ul id="tier-list-A" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bB">Tier B</h5><ul id="tier-list-B" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bC">Tier C</h5><ul id="tier-list-C" class="tier-team-list"></ul></div>
+        <div><h5 class="tier-col-head bD">Tier D</h5><ul id="tier-list-D" class="tier-team-list"></ul></div>
+      </div>
     </details>
   </section>
 </div>
@@ -680,12 +683,15 @@ const tickerBase = ALL_TEAMS.join('  ·  ') + '  ·  ';
 document.getElementById('ticker').textContent = tickerBase + tickerBase;
 
 // Ranked team list (rules page)
-const rankedUl = document.getElementById('ranked-list');
-if (rankedUl) RANKED_TEAMS.forEach((team, i) => {
-  const tier = TIER_MAP[team];
-  const li = document.createElement('li');
-  li.innerHTML = `<span class="rank-num">${i+1}</span>${esc(team)}<span class="badge b${tier}" style="margin-left:auto;margin-right:.25rem">${tier}</span><span class="rank-val">${teamValue(team)}</span>`;
-  rankedUl.appendChild(li);
+['A','B','C','D'].forEach(tier => {
+  const ul = document.getElementById('tier-list-' + tier);
+  if (!ul) return;
+  RANKED_TEAMS.forEach((team, i) => {
+    if (TIER_MAP[team] !== tier) return;
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="rank-num">${i+1}</span>${esc(team)}`;
+    ul.appendChild(li);
+  });
 });
 
 // ─── TAB NAV ──────────────────────────────────────────────────────────────────
@@ -960,31 +966,20 @@ function renderWallchart(src) {
   (src.plan||[]).slice(0, src.idx!=null ? src.idx : src.plan.length)
     .forEach(p => results[p.p].push(p));
 
-  const n = src.names.length;
-  const potAvg = (TOTAL_VALUE / n).toFixed(1);
   const wc = document.getElementById('wallchart');
   wc.innerHTML = '';
-
-  const avgEl = document.createElement('p');
-  avgEl.className = 'pot-avg';
-  avgEl.textContent = `Pot average: ${potAvg} pts (${TOTAL_VALUE} ÷ ${n} players)`;
-  wc.appendChild(avgEl);
 
   src.names.forEach(nm => {
     const card = document.createElement('div'); card.className='player-card';
     const picks = results[nm]||[];
-    const total = picks.reduce((s,p) => s + teamValue(p.team), 0);
     let html = `<h4>${esc(nm)}</h4>`;
     if (picks.length === 0) {
       html += `<div class="slot empty" style="justify-content:center;">No teams yet</div>`;
     } else {
       picks.forEach(pick => {
         const tier = TIER_MAP[pick.team];
-        const rank = teamRank(pick.team);
-        const val  = teamValue(pick.team);
-        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="slot-meta">#${rank} · ${val}pts</span><span class="badge b${tier}">${tier}</span></div>`;
+        html += `<div class="slot filled"><span>${esc(pick.team)}</span><span class="badge b${tier}">${tier}</span></div>`;
       });
-      html += `<div class="player-total">Total: ${total} pts</div>`;
     }
     card.innerHTML = html;
     wc.appendChild(card);
