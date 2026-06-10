@@ -435,6 +435,11 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
     </div>
 
     <div class="asec active" id="atab-status">
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <h3>Shareable link</h3>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;margin-bottom:.75rem;" id="admin-share-url">—</p>
+        <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
+      </div>
       <div class="stat-grid" id="statGrid">
         <div class="stat-card"><div class="label">Matches played</div><div class="value" id="statPlayed">—</div></div>
         <div class="stat-card"><div class="label">Matches live now</div><div class="value live" id="statLive">—</div></div>
@@ -1068,6 +1073,14 @@ if (GROUP_CODE) {
     document.getElementById('tab-admin').textContent = 'Admin';
     document.getElementById('admin-view').classList.remove('hidden');
     document.getElementById('settings-view').classList.add('hidden');
+
+    const shareUrl = window.location.origin + window.location.pathname + '?g=' + GROUP_CODE;
+    document.getElementById('admin-share-url').textContent = shareUrl;
+    document.getElementById('adminCopyLinkBtn').addEventListener('click', () => {
+      navigator.clipboard?.writeText(shareUrl).catch(() => {});
+      document.getElementById('adminCopyLinkBtn').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('adminCopyLinkBtn').textContent = 'Copy link'; }, 2000);
+    });
   }
   // Populate settings group name once draw loads (done in loadDraw)
 
