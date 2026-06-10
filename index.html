@@ -316,14 +316,14 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       </div>
       <div id="create-share" class="hidden">
         <div class="share-box">
-          <p class="label">Your shareable link</p>
-          <p class="share-url" id="lg-url"></p>
+          <p class="label">Game code — share with players</p>
+          <p class="share-url" id="lg-url" style="font-size:1.6rem;letter-spacing:.12em;"></p>
           <div class="btn-row" style="justify-content:flex-start;">
-            <button class="btn-ghost" id="lg-copy" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
+            <button class="btn-ghost" id="lg-copy" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
             <button class="btn-gold" id="lg-go" style="padding:.5rem 1.2rem;font-size:.85rem;">Enter game &rarr;</button>
           </div>
         </div>
-        <p style="font-size:.78rem;color:rgba(255,255,255,.45);margin-top:.75rem;">Share this link with your group. Everyone on the link sees the same leaderboard.</p>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.45);margin-top:.75rem;">Players enter this code on the home screen to join your game.</p>
       </div>
     </div>
 
@@ -344,7 +344,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 
 <header>
   <h1 class="display">World Cup <span class="yr">2026</span><br>Sweepstake</h1>
-  <p class="strap" id="headerStrap">48 teams · No swaps, no trades, no moral objections.</p>
+  <p class="strap" id="headerStrap">48 teams</p>
   <div class="ticker-wrap"><div class="ticker" id="ticker" aria-hidden="true"></div></div>
 </header>
 
@@ -528,9 +528,10 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 
     <div class="asec active" id="atab-status">
       <div class="panel" style="margin-bottom:1.5rem;">
-        <h3>Shareable link</h3>
-        <p style="font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;margin-bottom:.75rem;" id="admin-share-url">—</p>
-        <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy link</button>
+        <h3>Game code</h3>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="admin-share-url">—</p>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;">Share this code with your players — they enter it on the home screen to join.</p>
+        <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
       </div>
       <div class="stat-grid" id="statGrid">
         <div class="stat-card"><div class="label">Matches played</div><div class="value" id="statPlayed">—</div></div>
@@ -563,7 +564,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 
 <footer>
   Tournament runs 11 June – 19 July 2026 · Tiers based on FIFA world rankings at the time of the draw.<br>
-  Scores via <a href="https://www.football-data.org" style="color:inherit">football-data.org</a> · Disputes settled by the Commissioner, whose judgement is impeccable.
+  Scores via <a href="https://www.football-data.org" style="color:inherit">football-data.org</a>
 </footer>
 
 <script>
@@ -641,12 +642,12 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
 
       setRole(data.code, 'admin');
       const url = window.location.origin + window.location.pathname + '?g=' + data.code;
-      document.getElementById('lg-url').textContent = url;
+      document.getElementById('lg-url').textContent = data.code;
       document.getElementById('create-form').classList.add('hidden');
       document.getElementById('create-share').classList.remove('hidden');
 
       document.getElementById('lg-copy').addEventListener('click', () => {
-        navigator.clipboard?.writeText(url).catch(() => {});
+        navigator.clipboard?.writeText(data.code).catch(() => {});
         document.getElementById('lg-copy').textContent = 'Copied!';
       });
       document.getElementById('lg-go').addEventListener('click', () => { window.location.href = url; });
@@ -810,7 +811,7 @@ async function loadDraw() {
     }
     if (drawData.group_name || drawData.entry_price) {
       const strap = document.getElementById('headerStrap');
-      if (strap) strap.innerHTML = `${esc(drawData.group_name || 'Sweepstake')} · 48 teams · <b>${esc(drawData.entry_price || '£5')} each</b> · No swaps, no trades, no moral objections.`;
+      if (strap) strap.innerHTML = `${esc(drawData.group_name || 'Sweepstake')} · 48 teams · <b>${esc(drawData.entry_price || '£5')} each</b>`;
     }
     // Pre-fill name slots from stored player_count
     if (!drawData.completed && drawData.player_count && ng.children.length === 0) {
@@ -1329,12 +1330,11 @@ if (GROUP_CODE) {
     document.getElementById('admin-view').classList.remove('hidden');
     document.getElementById('settings-view').classList.add('hidden');
 
-    const shareUrl = window.location.origin + window.location.pathname + '?g=' + GROUP_CODE;
-    document.getElementById('admin-share-url').textContent = shareUrl;
+    document.getElementById('admin-share-url').textContent = GROUP_CODE;
     document.getElementById('adminCopyLinkBtn').addEventListener('click', () => {
-      navigator.clipboard?.writeText(shareUrl).catch(() => {});
+      navigator.clipboard?.writeText(GROUP_CODE).catch(() => {});
       document.getElementById('adminCopyLinkBtn').textContent = 'Copied!';
-      setTimeout(() => { document.getElementById('adminCopyLinkBtn').textContent = 'Copy link'; }, 2000);
+      setTimeout(() => { document.getElementById('adminCopyLinkBtn').textContent = 'Copy code'; }, 2000);
     });
   }
   // Populate settings group name once draw loads (done in loadDraw)
