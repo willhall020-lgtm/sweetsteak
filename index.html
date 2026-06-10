@@ -1012,48 +1012,53 @@ function startDraw() {
   const n = names.length;
   if (n > 48) { alert('Max 48 players.'); return; }
 
-  // Shuffle each tier pool
   const pools = {};
   ['A','B','C','D'].forEach(t => pools[t] = shuffle(TIERS[t].slice()));
 
   const playerTeams = {};
   names.forEach(p => playerTeams[p] = []);
 
-  // Phase 1: assign T1, T2, T3 — one team per player each (up to 12 players per tier)
+  // Phase 1: give every player 1 team from T1, T2, T3 (in turn)
+  // Each tier has 12 teams — if N > 12, only first 12 players in the shuffle get one
   ['A','B','C'].forEach(tier => {
     const order = shuffle(names.slice());
     order.forEach((p, i) => {
-      if (pools[tier][i] !== undefined) playerTeams[p].push({tier, team: pools[tier][i]});
+      if (i < pools[tier].length) playerTeams[p].push({tier, team: pools[tier][i]});
     });
-    pools[tier] = pools[tier].slice(n); // anything beyond n is leftover
+    // mark remaining teams as leftover for phase 2
+    pools[tier] = n < pools[tier].length ? pools[tier].slice(n) : [];
   });
 
-  // Phase 2: rank players by T1 pick quality (worst T1 = gets T4 first)
-  // No T1 team → treated as worst (Infinity rank)
+  // Phase 2: rank players by T1 pick — worst Tier A = highest index in TIERS.A
+  // Players with no T1 team (if N > 12) treated as worst
   const t1Rank = p => {
     const t1 = playerTeams[p].find(a => a.tier === 'A');
     return t1 ? TIERS.A.indexOf(t1.team) : Infinity;
   };
   const byWorstT1 = [...names].sort((a, b) => t1Rank(b) - t1Rank(a));
 
-  // Build remaining pool: T4 first (priority), then any T1/T2/T3 leftovers
-  const remaining = [
+  // Bonus pool: all T4 teams first, then leftover T1/T2/T3 (when N < 12)
+  const bonus = [
     ...pools.D.map(team => ({tier:'D', team})),
     ...pools.A.map(team => ({tier:'A', team})),
     ...pools.B.map(team => ({tier:'B', team})),
     ...pools.C.map(team => ({tier:'C', team})),
   ];
 
-  // Distribute round-robin to players sorted by worst T1
-  remaining.forEach((item, i) => playerTeams[byWorstT1[i % n]].push(item));
+  // Distribute bonus round-robin starting from player with worst T1
+  bonus.forEach((item, i) => playerTeams[byWorstT1[i % n]].push({...item, bonus: true}));
 
-  // Build plan: reveal tier by tier (T1, T2, T3, T4)
+  // Build plan: T1 → T2 → T3 rounds (random order within round),
+  // then bonus round in worst-T1-first order
   const plan = [];
-  ['A','B','C','D'].forEach(tier => {
+  ['A','B','C'].forEach(tier => {
     const picks = [];
-    names.forEach(p => playerTeams[p].filter(a => a.tier === tier).forEach(a => picks.push({p, tier, team: a.team})));
-    shuffle(picks);
-    plan.push(...picks);
+    names.forEach(p => playerTeams[p].filter(a => a.tier === tier && !a.bonus).forEach(a => picks.push({p, tier, team: a.team})));
+    plan.push(...shuffle(picks));
+  });
+  // Bonus round: worst T1 player gets their bonus team(s) revealed first
+  byWorstT1.forEach(p => {
+    playerTeams[p].filter(a => a.bonus).forEach(a => plan.push({p, tier: a.tier, team: a.team}));
   });
 
   localDraw = {names, plan, idx:0};
