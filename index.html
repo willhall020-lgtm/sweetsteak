@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 Sweepstake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pitch:#0E5A33;--pitch-dark:#0A4226;--paper:#FAF8F2;--ink:#16211A;--muted:#5C6A60;
+  --gold:#C9A227;--gold-dark:#9A7B1A;--card:#FFFFFF;--rule:#D8D4C8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;font-size:16px;}
+.display{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.02em;text-transform:uppercase;}
+
+header{background:var(--pitch);color:#fff;padding:2.5rem 1.25rem 0;text-align:center;border-bottom:6px solid var(--gold);}
+header h1{font-size:clamp(2.4rem,8vw,4.5rem);line-height:1;}
+header h1 .yr{color:var(--gold);}
+header .strap{margin:.75rem auto 1.75rem;font-size:.95rem;opacity:.92;max-width:34rem;}
+header .strap b{color:var(--gold);font-weight:600;}
+.ticker-wrap{overflow:hidden;border-top:1px solid rgba(255,255,255,.25);padding:.5rem 0;}
+.ticker{display:inline-block;white-space:nowrap;animation:tick 80s linear infinite;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;opacity:.8;}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.ticker,.reveal-team{animation:none!important}}
+
+.tab-bar{background:var(--pitch-dark);display:flex;justify-content:center;border-bottom:3px solid var(--gold);}
+.tab-bar button{background:none;border:none;color:rgba(255,255,255,.7);font-family:'Inter',sans-serif;font-weight:600;font-size:.88rem;letter-spacing:.08em;text-transform:uppercase;padding:.8rem 1.4rem;cursor:pointer;transition:color .15s,background .15s;}
+.tab-bar button:hover{color:#fff;background:rgba(255,255,255,.08);}
+.tab-bar button.active{color:var(--gold);border-bottom:3px solid var(--gold);margin-bottom:-3px;}
+
+main{max-width:900px;margin:0 auto;padding:0 1.25rem 4rem;}
+.view{display:none;}
+.view.active{display:block;}
+section{margin-top:2.5rem;}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:.35rem;}
+h2.display{font-size:clamp(1.6rem,4.5vw,2.2rem);margin-bottom:1rem;}
+
+/* STATUS */
+.status-bar{background:var(--pitch);color:#fff;border-radius:10px;padding:.65rem 1rem;font-size:.82rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot.live{background:#4CAF50;box-shadow:0 0 6px #4CAF50;}
+.dot.off{background:#888;}
+.live-badge{background:rgba(255,60,60,.85);color:#fff;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.06em;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* LEADERBOARD */
+.lb-wrap{overflow-x:auto;}
+table.lb{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px;}
+table.lb thead tr{border-bottom:2px solid var(--pitch);}
+table.lb th{text-align:left;padding:.45rem .7rem;font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500;}
+table.lb th.r{text-align:right;}
+table.lb td{padding:.6rem .7rem;border-bottom:1px solid var(--rule);vertical-align:middle;}
+table.lb td.r{text-align:right;font-family:'IBM Plex Mono',monospace;}
+table.lb tr:hover td{background:#F5F2EB;}
+table.lb tr.row-1 td{background:#FEFBF0;}
+table.lb tr.row-last td{background:#FFF8F8;}
+.lb-rank{font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--muted);line-height:1;}
+.lb-rank.r1{color:var(--gold);}
+.lb-rank.r2{color:#7A8080;}
+.lb-rank.r3{color:#A05A18;}
+.lb-name{font-weight:600;font-size:.93rem;text-transform:capitalize;}
+.lb-pts{font-family:'Anton',sans-serif;font-size:1.4rem;color:var(--pitch);}
+.lb-pts.top{color:var(--gold-dark);font-size:1.6rem;}
+.lb-pts.bot{color:#C0392B;}
+.teams-cell{display:flex;gap:3px;flex-wrap:wrap;}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:.6rem;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap;}
+.bA{background:#E3EFE7;color:var(--pitch);}
+.bB{background:#E1EEF3;color:#1A6E8A;}
+.bC{background:#F6EADB;color:#A05A18;}
+.bW{background:#ECEAE2;color:var(--muted);}
+.prize-tag{font-size:.7rem;font-weight:600;color:var(--pitch);}
+.prize-tag.gold{color:var(--gold-dark);}
+.prize-tag.spoon{color:#C0392B;}
+
+/* RULES */
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+@media(max-width:620px){.rules-grid{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1.25rem 1.4rem;}
+.panel h3{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;font-weight:600;}
+.panel ol,.panel ul{padding-left:1.2rem;}
+.panel li{margin-bottom:.55rem;font-size:.92rem;}
+.panel p{font-size:.92rem;}
+table.prizes{width:100%;border-collapse:collapse;font-size:.93rem;}
+table.prizes td{padding:.55rem .25rem;border-bottom:1px dashed var(--rule);}
+table.prizes tr:last-child td{border-bottom:none;}
+table.prizes .amt{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+table.prizes .amt.big{color:var(--pitch);font-size:1.25rem;}
+.sub{font-size:.78rem;color:var(--muted);}
+details.tiers{background:var(--card);border:1px solid var(--rule);border-radius:10px;margin-top:1.25rem;}
+details.tiers summary{cursor:pointer;padding:1rem 1.4rem;font-weight:600;font-size:.92rem;}
+details.tiers .tier-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;padding:0 1.4rem 1.25rem;}
+.tier-cols h4{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.4rem;}
+.tier-cols ul{list-style:none;font-size:.83rem;}
+.tier-cols li{padding:2px 0;border-bottom:1px dotted var(--rule);}
+.ta{color:var(--pitch);}.tb{color:#1A6E8A;}.tc{color:#A05A18;}.tw{color:var(--muted);}
+.score-tbl{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:.5rem;}
+.score-tbl td{padding:.38rem .5rem;border-bottom:1px dashed var(--rule);}
+.score-tbl td:last-child{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.score-tbl tr:last-child td{border-bottom:none;}
+
+/* DRAW */
+.draw-stage{background:var(--pitch);color:#fff;border-radius:14px;padding:2rem 1.5rem;text-align:center;position:relative;overflow:hidden;}
+.draw-stage::before{content:"";position:absolute;left:50%;top:-60px;width:240px;height:240px;border:2px solid rgba(255,255,255,.15);border-radius:50%;transform:translateX(-50%);pointer-events:none;}
+.names-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:1.25rem 0;}
+.names-grid input{width:100%;padding:.55rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-family:'Inter',sans-serif;font-size:.9rem;}
+.names-grid input::placeholder{color:rgba(255,255,255,.5);}
+.names-grid input:focus{outline:2px solid var(--gold);outline-offset:1px;background:rgba(255,255,255,.16);}
+button{font-family:'Inter',sans-serif;font-weight:600;font-size:.95rem;border:none;border-radius:999px;padding:.75rem 1.8rem;cursor:pointer;transition:transform .08s;}
+button:active{transform:scale(.97);}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.btn-gold{background:var(--gold);color:var(--pitch-dark);}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.4);}
+.btn-ink{background:var(--ink);color:#fff;}
+.btn-row{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1rem;}
+.pick-label{font-family:'IBM Plex Mono',monospace;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+.up-next{font-size:1.4rem;font-weight:600;margin:.4rem 0 1rem;}
+.reveal-zone{min-height:84px;display:flex;align-items:center;justify-content:center;}
+.reveal-team{font-family:'Anton',sans-serif;font-size:clamp(2rem,7vw,3.2rem);text-transform:uppercase;letter-spacing:.03em;animation:pop .45s cubic-bezier(.2,1.4,.4,1);}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.dots-anim{font-size:2.2rem;letter-spacing:.4rem;color:rgba(255,255,255,.65);}
+.draw-prog{font-size:.78rem;color:rgba(255,255,255,.65);margin-top:.75rem;}
+.done-banner .display{font-size:clamp(1.8rem,6vw,2.6rem);color:var(--gold);}
+.toast{font-size:.8rem;color:var(--gold);margin-top:.5rem;}
+.toast.green{color:#8FE08F;}
+.wallchart{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.8rem;margin-top:1.5rem;}
+.player-card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:.8rem .9rem;}
+.player-card h4{font-size:.92rem;margin-bottom:.5rem;text-transform:capitalize;}
+.slot{display:flex;align-items:center;justify-content:space-between;font-size:.82rem;padding:.3rem .5rem;border-radius:6px;margin-bottom:.3rem;}
+.slot.empty{border:1.5px dashed var(--rule);color:#B9B4A6;justify-content:center;}
+.slot.filled{background:var(--paper);border:1px solid var(--rule);}
+
+/* DRAW LOCKED */
+.draw-locked{background:var(--pitch);color:#fff;border-radius:14px;padding:2rem;text-align:center;}
+.draw-locked .display{font-size:clamp(1.6rem,5vw,2.2rem);color:var(--gold);}
+
+/* ADMIN */
+.admin-tabs{display:flex;border-bottom:2px solid var(--rule);margin-bottom:1.5rem;}
+.admin-tabs button{background:none;border:none;font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;padding:.6rem 1.1rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;}
+.admin-tabs button.active{color:var(--pitch);border-bottom-color:var(--pitch);}
+.asec{display:none;}
+.asec.active{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1rem 1.2rem;}
+.stat-card .label{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.25rem;}
+.stat-card .value{font-family:'Anton',sans-serif;font-size:1.8rem;color:var(--pitch);line-height:1;}
+.stat-card .value.live{color:#C0392B;}
+.danger-zone{background:var(--card);border:1px solid #EECCCC;border-radius:10px;padding:1.25rem 1.4rem;margin-top:1.5rem;}
+.danger-zone h3{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:#C0392B;margin-bottom:.75rem;font-weight:600;}
+.danger-zone p{font-size:.88rem;color:var(--muted);margin-bottom:.75rem;}
+.btn-danger{background:none;border:1px solid #C0392B;color:#C0392B;padding:.5rem 1.2rem;font-size:.85rem;border-radius:999px;cursor:pointer;}
+.btn-danger:hover{background:#C0392B;color:#fff;}
+
+.empty{text-align:center;padding:2rem;color:var(--muted);font-size:.88rem;}
+.loading{text-align:center;padding:3rem;color:var(--muted);}
+.hidden{display:none!important;}
+
+footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3rem;border-top:1px solid var(--rule);margin-top:3rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 class="display">World Cup <span class="yr">2026</span><br>Sweepstake</h1>
+  <p class="strap">14 players · 48 teams · <b>£70 pot</b> · No swaps, no trades, no moral objections.</p>
+  <div class="ticker-wrap"><div class="ticker" id="ticker" aria-hidden="true"></div></div>
+</header>
+
+<nav class="tab-bar">
+  <button class="active" data-view="leaderboard">Leaderboard</button>
+  <button data-view="rules">Rules</button>
+  <button data-view="draw">Draw</button>
+  <button data-view="admin">Admin</button>
+</nav>
+
+<main>
+
+<!-- LEADERBOARD -->
+<div id="view-leaderboard" class="view active">
+  <section>
+    <p class="kicker">Live standings</p>
+    <h2 class="display">Leaderboard</h2>
+    <div class="status-bar" id="statusBar">
+      <span class="dot off" id="statusDot"></span>
+      <span id="statusText">Loading…</span>
+    </div>
+    <div id="lb-loading" class="loading">Loading…</div>
+    <div id="lb-nodraw" class="empty hidden">Draw hasn't happened yet — check back soon.</div>
+    <div class="lb-wrap">
+      <table class="lb hidden" id="lb-table">
+        <thead>
+          <tr>
+            <th style="width:34px">#</th>
+            <th>Player</th>
+            <th>Teams</th>
+            <th class="r" title="Goals">⚽</th>
+            <th class="r" title="Win points">Win</th>
+            <th class="r" title="Progression">Prog</th>
+            <th class="r" title="Giant-kill bonus">GK</th>
+            <th class="r">Pts</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- RULES -->
+<div id="view-rules" class="view">
+  <section>
+    <p class="kicker">Official rules</p>
+    <h2 class="display">The small print</h2>
+    <div class="rules-grid">
+      <div class="panel">
+        <h3>Entry &amp; the draw</h3>
+        <ol>
+          <li><b>£5 each</b>, paid before the draw. No pay, no play.</li>
+          <li>48 teams split into <b>Tier A</b> (1–14), <b>Tier B</b> (15–28), <b>Tier C</b> (29–42) by FIFA ranking. Bottom six form the <b>Wildcard Pot</b>.</li>
+          <li>Each player draws one team blind from Tier A, B, and C.</li>
+          <li>Six wildcards go to six lucky names from a hat — a free fourth team. Manage expectations.</li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>Prizes — £70 pot</h3>
+        <table class="prizes">
+          <tr><td>Most points<br><span class="sub">Bragging rights included.</span></td><td class="amt big">£40</td></tr>
+          <tr><td>Second place<br><span class="sub">So close.</span></td><td class="amt">£15</td></tr>
+          <tr><td>Third place<br><span class="sub">At least you're not last.</span></td><td class="amt">£10</td></tr>
+          <tr><td>Wooden Spoon<br><span class="sub">Fewest points. Your £5 stake back.</span></td><td class="amt">£5</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:1.25rem;">
+      <h3>Scoring</h3>
+      <table class="score-tbl">
+        <tr><td>Group stage win</td><td>+3 pts</td></tr>
+        <tr><td>Group stage draw</td><td>+1 pt (per team)</td></tr>
+        <tr><td>Knockout win (any round, incl. 3rd place)</td><td>+4 pts</td></tr>
+        <tr><td>Every goal scored (excl. penalties)</td><td>+1 pt per goal</td></tr>
+        <tr><td>Giant-killing — beat a team from a higher tier</td><td>+3 pts bonus</td></tr>
+        <tr><td>Reach Round of 16</td><td>+2 pts</td></tr>
+        <tr><td>Reach Quarter-finals</td><td>+4 pts</td></tr>
+        <tr><td>Reach Semi-finals</td><td>+6 pts</td></tr>
+        <tr><td>Reach Final</td><td>+8 pts</td></tr>
+        <tr><td>Win the tournament</td><td>+10 pts</td></tr>
+      </table>
+      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+30 pts in total). Giant-killing applies on wins only, not draws.</p>
+    </div>
+    <details class="tiers">
+      <summary>View the full tier breakdown</summary>
+      <div class="tier-cols">
+        <div><h4 class="ta">Tier A · contenders</h4><ul id="listA"></ul></div>
+        <div><h4 class="tb">Tier B · dark horses</h4><ul id="listB"></ul></div>
+        <div><h4 class="tc">Tier C · long shots</h4><ul id="listC"></ul></div>
+        <div><h4 class="tw">Wildcard pot</h4><ul id="listW"></ul></div>
+      </div>
+    </details>
+  </section>
+</div>
+
+<!-- DRAW -->
+<div id="view-draw" class="view">
+  <section>
+    <p class="kicker">The main event</p>
+    <h2 class="display">The draw</h2>
+
+    <div id="draw-locked" class="draw-locked hidden">
+      <p class="display">Draw Complete</p>
+      <p style="opacity:.85;margin:.4rem 0 1.25rem;font-size:.9rem;">All picks are locked. May the best mate win.</p>
+      <div class="btn-row">
+        <button class="btn-ghost" id="copyLockedBtn">Copy results</button>
+      </div>
+    </div>
+
+    <div id="draw-live">
+      <div class="draw-stage">
+        <div id="setup">
+          <p class="pick-label">Enter the fourteen</p>
+          <div class="names-grid" id="namesGrid"></div>
+          <div class="btn-row">
+            <button class="btn-gold" id="startBtn">Start the draw</button>
+          </div>
+        </div>
+        <div id="drawing" class="hidden">
+          <p class="pick-label" id="tierLabel"></p>
+          <p class="up-next" id="upNext"></p>
+          <div class="reveal-zone" id="revealZone"></div>
+          <div class="btn-row">
+            <button class="btn-gold" id="drawBtn">Draw team</button>
+            <button class="btn-ghost" id="allBtn">Reveal all remaining</button>
+          </div>
+          <p class="draw-prog" id="drawProg"></p>
+        </div>
+        <div id="done" class="hidden">
+          <div class="done-banner" style="margin-top:.5rem;">
+            <p class="display">Draw complete</p>
+            <p style="opacity:.85;font-size:.9rem;margin-top:.4rem;">All 48 teams assigned. May the best mate win.</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn-gold" id="copyBtn">Copy results</button>
+            <button class="btn-ghost" id="saveDrawBtn">Save &amp; go live</button>
+            <button class="btn-ghost" id="redoBtn">Redraw</button>
+          </div>
+          <p class="toast hidden" id="copyToast">Copied to clipboard.</p>
+          <p class="toast green hidden" id="saveToast">Saved — leaderboard is live!</p>
+          <p class="toast hidden" id="saveErrToast" style="color:#F8A;"></p>
+        </div>
+      </div>
+      <div class="wallchart" id="wallchart"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="view">
+  <section>
+    <p class="kicker">Commissioner</p>
+    <h2 class="display">Admin</h2>
+    <div class="admin-tabs">
+      <button class="active" data-atab="status">Live Data</button>
+      <button data-atab="danger">Reset Draw</button>
+    </div>
+
+    <div class="asec active" id="atab-status">
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="label">Matches played</div><div class="value" id="statPlayed">—</div></div>
+        <div class="stat-card"><div class="label">Matches live now</div><div class="value live" id="statLive">—</div></div>
+        <div class="stat-card"><div class="label">Goals scored</div><div class="value" id="statGoals">—</div></div>
+        <div class="stat-card"><div class="label">Last updated</div><div class="value" id="statUpdated" style="font-size:1rem;padding-top:.2rem;">—</div></div>
+      </div>
+      <div class="btn-row" style="justify-content:flex-start;">
+        <button class="btn-ink" id="refreshBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Force refresh</button>
+      </div>
+    </div>
+
+    <div class="asec" id="atab-danger">
+      <div class="danger-zone">
+        <h3>Reset draw</h3>
+        <p>Deletes the saved draw from the database. The draw can then be re-run. This cannot be undone — use with extreme caution.</p>
+        <button class="btn-danger" id="resetDrawBtn">Reset draw…</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<footer>
+  Tournament runs 11 June – 19 July 2026 · Tiers based on FIFA world rankings at the time of the draw.<br>
+  Scores via <a href="https://www.football-data.org" style="color:inherit">football-data.org</a> · Disputes settled by the Commissioner, whose judgement is impeccable.
+</footer>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const TIERS = {
+  A: ['Spain','Argentina','France','England','Brazil','Portugal','Netherlands','Belgium','Germany','Croatia','Morocco','Colombia','Mexico','Uruguay'],
+  B: ['United States','Switzerland','Senegal','Japan','Iran','South Korea','Ecuador','Austria','Türkiye','Australia','Canada','Norway','Sweden','Panama'],
+  C: ['Egypt','Algeria','Paraguay','Tunisia','Scotland','Ivory Coast','Czechia','Qatar','Uzbekistan','Saudi Arabia','Iraq','DR Congo','South Africa','Bosnia & Herzegovina'],
+  W: ['Jordan','Cape Verde','Ghana','Haiti','Curaçao','New Zealand']
+};
+const ALL_TEAMS   = [...TIERS.A,...TIERS.B,...TIERS.C,...TIERS.W];
+const TIER_MAP    = {};
+for (const [t,ts] of Object.entries(TIERS)) ts.forEach(x => TIER_MAP[x]=t);
+const TIER_RANK   = {A:1,B:2,C:3,W:4};
+const TIER_LABELS = {A:'Tier A · contenders',B:'Tier B · dark horses',C:'Tier C · long shots',W:'Wildcard pot'};
+const DEFAULT_PLAYERS = ['jimbo','ella','zo','younger','meg','crip','bill','george stephens','marf','haz','issey','sweeting','charlie','grace whut'];
+
+// football-data.org → internal stage codes
+const API_STAGE = {
+  GROUP_STAGE:'group', ROUND_OF_32:'r32', LAST_32:'r32',
+  ROUND_OF_16:'r16',  LAST_16:'r16',
+  QUARTER_FINALS:'qf', SEMI_FINALS:'sf',
+  THIRD_PLACE:'3rd', THIRD_PLACE_MATCH:'3rd', FINAL:'final'
+};
+
+// Team name normalisations (API name → our name)
+const TEAM_ALIAS = {
+  'Turkey':'Türkiye', 'Türkiye':'Türkiye',
+  "Côte d'Ivoire":'Ivory Coast', "Cote d'Ivoire":'Ivory Coast',
+  'Congo DR':'DR Congo', 'Democratic Republic of Congo':'DR Congo',
+  'Bosnia-Herzegovina':'Bosnia & Herzegovina',
+  'Bosnia And Herzegovina':'Bosnia & Herzegovina',
+  'Korea Republic':'South Korea',
+  'Czech Republic':'Czechia',
+  'USA':'United States',
+  'IR Iran':'Iran',
+  'Curaçao':'Curaçao',
+};
+const TLA_ALIAS = {
+  KOR:'South Korea', CIV:'Ivory Coast', CZE:'Czechia',
+  COD:'DR Congo',    BIH:'Bosnia & Herzegovina',
+  TUR:'Türkiye',     USA:'United States', IRN:'Iran',
+};
+
+function norm(name, tla) {
+  return TEAM_ALIAS[name] || TLA_ALIAS[tla] || name;
+}
+
+// ─── TICKER ───────────────────────────────────────────────────────────────────
+const tickerBase = ALL_TEAMS.join('  ·  ') + '  ·  ';
+document.getElementById('ticker').textContent = tickerBase + tickerBase;
+
+// Tier lists (rules page)
+['A','B','C','W'].forEach(t => {
+  const ul = document.getElementById('list'+t);
+  TIERS[t].forEach(team => { const li=document.createElement('li'); li.textContent=team; ul.appendChild(li); });
+});
+
+// ─── TAB NAV ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-bar button').forEach(btn =>
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  })
+);
+document.querySelectorAll('.admin-tabs button').forEach(btn =>
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.asec').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('atab-'+btn.dataset.atab).classList.add('active');
+  })
+);
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let drawData    = null;   // from /api/draw
+let apiMatches  = [];     // transformed from /api/matches
+let lastUpdated = null;
+let localDraw   = { names:[], plan:[], idx:0 };
+let revealing   = false;
+
+// ─── API FETCHING ─────────────────────────────────────────────────────────────
+async function loadDraw() {
+  try {
+    const r = await fetch('/api/draw');
+    if (!r.ok) return;
+    drawData = await r.json();
+    applyDrawState();
+    renderLeaderboard();
+  } catch (e) { console.warn('Draw fetch failed', e); }
+}
+
+async function loadMatches() {
+  try {
+    const r = await fetch('/api/matches');
+    if (!r.ok) return;
+    const { matches, lastUpdated: ts } = await r.json();
+    apiMatches  = matches.map(transformMatch).filter(Boolean);
+    lastUpdated = ts;
+    renderLeaderboard();
+    updateAdminStats();
+    updateStatusBar();
+  } catch (e) {
+    setStatus(false);
+    console.warn('Matches fetch failed', e);
+  }
+}
+
+function transformMatch(m) {
+  const active = ['FINISHED','IN_PLAY','PAUSED'];
+  if (!active.includes(m.status)) return null;
+
+  const homeTeam = norm(m.homeTeam?.name, m.homeTeam?.tla);
+  const awayTeam = norm(m.awayTeam?.name, m.awayTeam?.tla);
+  const stage    = API_STAGE[m.stage] || 'group';
+
+  const homeGoals = m.score?.fullTime?.home ?? 0;
+  const awayGoals = m.score?.fullTime?.away ?? 0;
+
+  let penaltyWinner = null;
+  const ph = m.score?.penalties?.home, pa = m.score?.penalties?.away;
+  if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
+
+  return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
+           isLive: m.status !== 'FINISHED', status: m.status };
+}
+
+function setStatus(live) {
+  document.getElementById('statusDot').className = 'dot ' + (live ? 'live' : 'off');
+}
+
+function updateStatusBar() {
+  setStatus(true);
+  const liveCount = apiMatches.filter(m => m.isLive).length;
+  const ts = lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
+  const liveBadge = liveCount > 0 ? ` <span class="live-badge">LIVE ${liveCount}</span>` : '';
+  document.getElementById('statusText').innerHTML = `Updated ${ts}${liveBadge}`;
+}
+
+function updateAdminStats() {
+  const all = apiMatches;
+  document.getElementById('statPlayed').textContent  = all.filter(m => m.status==='FINISHED').length;
+  document.getElementById('statLive').textContent    = all.filter(m => m.isLive).length;
+  document.getElementById('statGoals').textContent   = all.reduce((s,m) => s + m.homeGoals + m.awayGoals, 0);
+  document.getElementById('statUpdated').textContent = lastUpdated
+    ? new Date(lastUpdated).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+    : '—';
+}
+
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+function buildAssignments(draw) {
+  if (!draw?.completed || !draw.plan?.length) return null;
+  const a = {};
+  draw.names.forEach(n => a[n] = {});
+  draw.plan.forEach(p => { a[p.p][p.tier] = p.team; });
+  return a;
+}
+
+function computeProgress(matches) {
+  const prog = {};
+  const set_ = (team, stage) => {
+    if (!prog[team] || PROG_ORDER.indexOf(stage) > PROG_ORDER.indexOf(prog[team])) prog[team] = stage;
+  };
+  const PROG_ORDER = ['r32','r16','qf','sf','final','champion'];
+  for (const m of matches) {
+    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
+    if (stage==='group'||stage==='3rd') continue;
+    set_(homeTeam, stage); set_(awayTeam, stage);
+    let winner = null;
+    if (homeGoals > awayGoals)      winner = homeTeam;
+    else if (awayGoals > homeGoals) winner = awayTeam;
+    else if (penaltyWinner)         winner = penaltyWinner;
+    if (winner) {
+      if (stage==='r32')    set_(winner,'r16');
+      else if (stage==='r16') set_(winner,'qf');
+      else if (stage==='qf')  set_(winner,'sf');
+      else if (stage==='sf')  set_(winner,'final');
+      else if (stage==='final') set_(winner,'champion');
+    }
+  }
+  return { prog, PROG_ORDER };
+}
+
+const PROG_PTS = {r16:2,qf:4,sf:6,final:8,champion:10};
+
+function computeScores(assignments, matches) {
+  const scores = {};
+  Object.keys(assignments).forEach(p => scores[p]={goals:0,matchPts:0,progressPts:0,bonusPts:0,total:0});
+
+  const t2p = {};
+  for (const [player,teams] of Object.entries(assignments))
+    for (const team of Object.values(teams)) if (team) t2p[team] = player;
+
+  for (const m of matches) {
+    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
+    const hp = t2p[homeTeam], ap = t2p[awayTeam];
+    const isKO = stage !== 'group';
+
+    if (hp) scores[hp].goals += homeGoals;
+    if (ap) scores[ap].goals += awayGoals;
+
+    let winner=null, loser=null;
+    if (homeGoals > awayGoals)       {winner=homeTeam;loser=awayTeam;}
+    else if (awayGoals > homeGoals)  {winner=awayTeam;loser=homeTeam;}
+    else if (penaltyWinner)          {winner=penaltyWinner;loser=(penaltyWinner===homeTeam?awayTeam:homeTeam);}
+
+    if (winner) {
+      const wp = t2p[winner];
+      if (wp) {
+        scores[wp].matchPts += isKO ? 4 : 3;
+        if (TIER_RANK[TIER_MAP[winner]] > TIER_RANK[TIER_MAP[loser]]) scores[wp].bonusPts += 3;
+      }
+    } else if (!isKO) {
+      if (hp) scores[hp].matchPts += 1;
+      if (ap) scores[ap].matchPts += 1;
+    }
+  }
+
+  const { prog, PROG_ORDER } = computeProgress(matches);
+  for (const [team, stage] of Object.entries(prog)) {
+    const player = t2p[team];
+    if (!player) continue;
+    for (const ms of PROG_ORDER) {
+      if (PROG_PTS[ms]) scores[player].progressPts += PROG_PTS[ms];
+      if (ms === stage) break;
+    }
+  }
+
+  for (const s of Object.values(scores)) s.total = s.goals + s.matchPts + s.progressPts + s.bonusPts;
+  return scores;
+}
+
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function renderLeaderboard() {
+  const assignments = buildAssignments(drawData);
+  const loading = document.getElementById('lb-loading');
+  const nodraw  = document.getElementById('lb-nodraw');
+  const table   = document.getElementById('lb-table');
+
+  if (!assignments) {
+    loading.classList.add('hidden');
+    nodraw.classList.remove('hidden');
+    table.classList.add('hidden');
+    return;
+  }
+
+  const scores = computeScores(assignments, apiMatches);
+  const sorted = Object.entries(scores).sort((a,b) => b[1].total - a[1].total);
+
+  loading.classList.add('hidden');
+  nodraw.classList.add('hidden');
+  table.classList.remove('hidden');
+
+  const tbody = document.getElementById('lb-body');
+  tbody.innerHTML = '';
+  sorted.forEach(([player, s], i) => {
+    const rank = i+1, isLast = rank===sorted.length;
+    const row = document.createElement('tr');
+    if (rank===1) row.className='row-1';
+    if (isLast && sorted.length>=4) row.className='row-last';
+
+    const tms = assignments[player];
+    const badges = ['A','B','C','W'].map(tier =>
+      tms[tier] ? `<span class="badge b${tier}" title="${esc(tms[tier])}">${esc(tms[tier])}</span>` : ''
+    ).join('');
+
+    const prizeMap = ['','1st — £40','2nd — £15','3rd — £10'];
+    let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
+    if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — £5</div>`;
+
+    row.innerHTML = `
+      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span></td>
+      <td><div class="lb-name">${esc(player)}</div>${prize}</td>
+      <td><div class="teams-cell">${badges}</div></td>
+      <td class="r">${s.goals}</td>
+      <td class="r">${s.matchPts}</td>
+      <td class="r">${s.progressPts}</td>
+      <td class="r">${s.bonusPts}</td>
+      <td class="r"><span class="lb-pts ${rank===1?'top':''} ${isLast&&sorted.length>=4?'bot':''}">${s.total}</span></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ─── DRAW ─────────────────────────────────────────────────────────────────────
+function applyDrawState() {
+  if (drawData?.completed) {
+    document.getElementById('draw-locked').classList.remove('hidden');
+    document.getElementById('draw-live').classList.add('hidden');
+    renderWallchart(drawData);
+  }
+}
+
+function showPane(id) {
+  ['setup','drawing','done'].forEach(s => document.getElementById(s).classList.toggle('hidden', s!==id));
+}
+
+function shuffle(a) { for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function renderWallchart(src) {
+  if (!src?.names?.length) return;
+  const results = {};
+  src.names.forEach(n => results[n]=[]);
+  (src.plan||[]).slice(0, src.idx!=null ? src.idx : src.plan.length)
+    .forEach(p => results[p.p].push(p));
+
+  const wc = document.getElementById('wallchart');
+  wc.innerHTML = '';
+  src.names.forEach(n => {
+    const card = document.createElement('div'); card.className='player-card';
+    let html = '<h4>'+esc(n)+'</h4>';
+    const picks = results[n]||[];
+    ['A','B','C'].forEach(t => {
+      const g = picks.find(p => p.tier===t);
+      html += g ? `<div class="slot filled"><span>${esc(g.team)}</span><span class="badge b${t}">${t}</span></div>`
+                : `<div class="slot empty">Tier ${t}</div>`;
+    });
+    const w = picks.find(p => p.tier==='W');
+    if (w) html += `<div class="slot filled"><span>${esc(w.team)}</span><span class="badge bW">WC</span></div>`;
+    card.innerHTML = html;
+    wc.appendChild(card);
+  });
+}
+
+function copyDrawText(draw) {
+  const results = {};
+  draw.names.forEach(n => results[n]=[]);
+  draw.plan.forEach(p => results[p.p].push(p));
+  const lines = ['World Cup 2026 sweepstake draw:'];
+  draw.names.forEach(n => lines.push(n+': '+(results[n]||[]).map(p => p.team+(p.tier==='W'?' (wildcard)':'')).join(', ')));
+  const text = lines.join('\n');
+  if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  else fallbackCopy(text);
+}
+function fallbackCopy(text) { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); }
+
+// Build name inputs
+const ng = document.getElementById('namesGrid');
+for (let i=0;i<14;i++) {
+  const inp = document.createElement('input');
+  inp.type='text'; inp.value=DEFAULT_PLAYERS[i]; inp.placeholder='Player '+(i+1); inp.id='n'+i;
+  ng.appendChild(inp);
+}
+
+function startDraw() {
+  const names = Array.from({length:14},(_,i) => document.getElementById('n'+i).value.trim()||'Player '+(i+1));
+  const plan  = [];
+  ['A','B','C'].forEach(tier => {
+    const ps=shuffle(names.slice()), ts=shuffle(TIERS[tier].slice());
+    ps.forEach((p,i) => plan.push({p,team:ts[i],tier}));
+  });
+  const wps=shuffle(names.slice()).slice(0,6), wts=shuffle(TIERS.W.slice());
+  wps.forEach((p,i) => plan.push({p,team:wts[i],tier:'W'}));
+  localDraw = {names,plan,idx:0};
+  renderDrawStep();
+}
+
+function renderDrawStep() {
+  renderWallchart(localDraw);
+  if (localDraw.idx >= localDraw.plan.length) { showPane('done'); return; }
+  showPane('drawing');
+  const pick = localDraw.plan[localDraw.idx];
+  const tierPicks = localDraw.plan.filter(x => x.tier===pick.tier);
+  document.getElementById('tierLabel').textContent = TIER_LABELS[pick.tier]+' — pick '+(tierPicks.indexOf(pick)+1)+' of '+tierPicks.length;
+  document.getElementById('upNext').textContent    = 'Up next: '+pick.p;
+  document.getElementById('revealZone').innerHTML  = '';
+  document.getElementById('drawProg').textContent  = (localDraw.idx+1)+' of '+localDraw.plan.length+' picks';
+  document.getElementById('drawBtn').disabled = false;
+}
+
+function drawNext() {
+  if (revealing||localDraw.idx>=localDraw.plan.length) return;
+  revealing = true;
+  const pick = localDraw.plan[localDraw.idx];
+  const zone = document.getElementById('revealZone');
+  document.getElementById('drawBtn').disabled = true;
+  let d=0;
+  zone.innerHTML='<span class="dots-anim">·</span>';
+  const iv = setInterval(() => {d=(d%3)+1;zone.innerHTML=`<span class="dots-anim">${'·'.repeat(d)}</span>`;},280);
+  setTimeout(() => {
+    clearInterval(iv);
+    zone.innerHTML=`<span class="reveal-team">${esc(pick.team)}</span>`;
+    localDraw.idx++;
+    renderWallchart(localDraw);
+    revealing=false;
+    setTimeout(renderDrawStep,1600);
+  },1200);
+}
+
+document.getElementById('startBtn').addEventListener('click', startDraw);
+document.getElementById('drawBtn').addEventListener('click', drawNext);
+document.getElementById('allBtn').addEventListener('click', () => { localDraw.idx=localDraw.plan.length; renderDrawStep(); });
+document.getElementById('copyBtn').addEventListener('click', () => {
+  copyDrawText(localDraw);
+  const t=document.getElementById('copyToast'); t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2500);
+});
+document.getElementById('redoBtn').addEventListener('click', () => {
+  if (confirm('Redraw everything?')) { localDraw={names:[],plan:[],idx:0}; document.getElementById('wallchart').innerHTML=''; showPane('setup'); }
+});
+document.getElementById('saveDrawBtn').addEventListener('click', async () => {
+  const pin = prompt('Enter admin PIN to save the draw:');
+  if (!pin) return;
+  const r = await fetch('/api/draw', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Admin-Pin':pin},
+    body:JSON.stringify({...localDraw,completed:true})
+  });
+  if (r.ok) {
+    document.getElementById('saveToast').classList.remove('hidden');
+    await loadDraw();
+  } else {
+    const errToast = document.getElementById('saveErrToast');
+    errToast.textContent = r.status===401 ? 'Wrong PIN.' : 'Save failed — try again.';
+    errToast.classList.remove('hidden');
+    setTimeout(()=>errToast.classList.add('hidden'),3000);
+  }
+});
+document.getElementById('copyLockedBtn').addEventListener('click', () => {
+  if (drawData) copyDrawText({...drawData, idx:drawData.plan?.length||0});
+});
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+document.getElementById('refreshBtn').addEventListener('click', () => { loadMatches(); });
+document.getElementById('resetDrawBtn').addEventListener('click', async () => {
+  const pin = prompt('Enter admin PIN:');
+  if (!pin) return;
+  if (!confirm('Delete the saved draw? This cannot be undone.')) return;
+  const r = await fetch('/api/draw', { method:'DELETE', headers:{'X-Admin-Pin':pin} });
+  if (r.ok) {
+    drawData = null;
+    document.getElementById('draw-locked').classList.add('hidden');
+    document.getElementById('draw-live').classList.remove('hidden');
+    document.getElementById('wallchart').innerHTML='';
+    showPane('setup');
+    renderLeaderboard();
+    alert('Draw reset. Head to the Draw tab to start again.');
+  } else {
+    alert(r.status===401 ? 'Wrong PIN.' : 'Reset failed.');
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadDraw();
+loadMatches();
+setInterval(loadMatches, 60_000);
+</script>
+</body>
+</html>

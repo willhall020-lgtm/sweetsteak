@@ -1,0 +1,8 @@
+{
+  "name": "wc2026-sweepstake",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
