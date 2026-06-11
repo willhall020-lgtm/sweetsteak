@@ -286,6 +286,22 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   .tab-bar button{padding:.65rem .4rem;font-size:.68rem;letter-spacing:.01em;}
   .wallchart{grid-template-columns:1fr;}
 }
+
+/* TIPS MODAL */
+#tips-modal{position:fixed;inset:0;background:rgba(10,66,38,.97);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.25rem;overflow-y:auto;}
+#tips-modal.hidden{display:none!important;}
+.tips-card{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.2);border-radius:16px;padding:1.75rem 1.75rem 1.5rem;max-width:440px;width:100%;color:#fff;}
+.tips-heading{font-family:'Anton',sans-serif;font-size:1.8rem;text-transform:uppercase;letter-spacing:.03em;color:var(--gold);margin-bottom:.25rem;}
+.tips-sub{font-size:.88rem;color:rgba(255,255,255,.6);margin-bottom:1.25rem;}
+.tips-steps{padding-left:1.25rem;margin-bottom:1.5rem;}
+.tips-steps li{font-size:.92rem;margin-bottom:.8rem;color:rgba(255,255,255,.85);line-height:1.5;}
+.tips-steps li:last-child{margin-bottom:0;}
+.tips-steps strong{color:#fff;}
+.tips-steps em{color:var(--gold);font-style:normal;font-weight:600;}
+.draw-hint{font-size:.82rem;color:rgba(255,255,255,.6);margin:.4rem 0 .25rem;text-align:center;}
+.draw-hint strong{color:rgba(255,255,255,.9);}
+.tips-help-btn{font-size:.72rem;font-family:'IBM Plex Mono',monospace;font-weight:500;background:rgba(0,0,0,.07);border:1px solid var(--rule);border-radius:50%;width:22px;height:22px;padding:0;color:var(--muted);vertical-align:middle;margin-left:.5rem;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+.tips-help-btn:hover{background:var(--rule);color:var(--ink);}
 </style>
 </head>
 <body>
@@ -361,6 +377,21 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- QUICK START TIPS MODAL -->
+<div id="tips-modal" class="hidden">
+  <div class="tips-card">
+    <p class="tips-heading">You're all set!</p>
+    <p class="tips-sub">Here's how to run your sweepstake:</p>
+    <ol class="tips-steps">
+      <li><strong>Share your code</strong> — send the 6-character code below to your players so they can join.</li>
+      <li><strong>Set up the draw</strong> — once you're in, go to the <em>Draw</em> tab, enter player names, then tap <em>Start the draw</em>. Teams are revealed one by one.</li>
+      <li><strong>Save &amp; go live</strong> — after the draw completes, tap <em>Save &amp; go live</em> and enter your PIN. All players instantly see the results.</li>
+      <li><strong>Reclaim admin anywhere</strong> — if you join on a different device, tap <em>Settings</em> → enter your PIN under <em>Admin access</em> to restore full control.</li>
+    </ol>
+    <button class="btn-gold" id="tipsDismissBtn">Got it</button>
   </div>
 </div>
 
@@ -481,6 +512,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
             <span class="player-count" id="playerCountDisplay">0 players</span>
           </div>
           <div class="names-list" id="namesGrid"></div>
+          <p class="draw-hint" id="setup-hint">Enter player names above, then tap <strong>Start the draw</strong> to assign teams.</p>
           <div class="btn-row">
             <button class="btn-ghost" id="addPlayerBtn">+ Add player</button>
             <button class="btn-ghost" id="removePlayerBtn">− Remove player</button>
@@ -502,6 +534,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
             <p class="display">Draw complete</p>
             <p style="opacity:.85;font-size:.9rem;margin-top:.4rem;">All 48 teams assigned.</p>
           </div>
+          <p class="draw-hint" id="save-hint">Tap <strong>Save &amp; go live</strong> to publish — all players see results instantly.</p>
           <div class="btn-row">
             <button class="btn-gold" id="copyBtn">Copy results</button>
             <button class="btn-ghost" id="saveDrawBtn">Save &amp; go live</button>
@@ -562,7 +595,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   <!-- ADMIN VIEW -->
   <section id="admin-view" class="hidden">
     <p class="kicker">Commissioner</p>
-    <h2 class="display">Admin</h2>
+    <h2 class="display">Admin <button class="tips-help-btn" id="tipsHelpBtn" aria-label="Getting started guide">?</button></h2>
     <div class="admin-tabs">
       <button class="active" data-atab="code">Game Code</button>
       <button data-atab="status">Live Data</button>
@@ -627,6 +660,17 @@ function setRole(code, role) { localStorage.setItem('sg_role_' + code, role); }
 function clearRole(code) { localStorage.removeItem('sg_role_' + code); }
 
 const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
+
+// ─── TIPS MODAL ───────────────────────────────────────────────────────────────
+let _tipsCode = null;
+function showTipsModal(code) {
+  _tipsCode = code || null;
+  document.getElementById('tips-modal').classList.remove('hidden');
+}
+document.getElementById('tipsDismissBtn').addEventListener('click', () => {
+  document.getElementById('tips-modal').classList.add('hidden');
+  if (_tipsCode) localStorage.setItem('sg_tips_seen_' + _tipsCode, '1');
+});
 
 // ─── LANDING ──────────────────────────────────────────────────────────────────
 (function initLanding() {
@@ -716,6 +760,11 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
       document.getElementById('lg-url').textContent = data.code;
       document.getElementById('create-form').classList.add('hidden');
       document.getElementById('create-share').classList.remove('hidden');
+
+      // Show quick-start tips once per new group
+      if (!localStorage.getItem('sg_tips_seen_' + data.code)) {
+        showTipsModal(data.code);
+      }
 
       document.getElementById('lg-copy').addEventListener('click', () => {
         navigator.clipboard?.writeText(data.code).catch(() => {});
@@ -1571,6 +1620,8 @@ if (GROUP_CODE) {
       document.getElementById('adminCopyLinkBtn').textContent = 'Copied!';
       setTimeout(() => { document.getElementById('adminCopyLinkBtn').textContent = 'Copy code'; }, 2000);
     });
+
+    document.getElementById('tipsHelpBtn').addEventListener('click', () => showTipsModal(GROUP_CODE));
   }
   // Populate member code panel
   if (!IS_ADMIN) {
