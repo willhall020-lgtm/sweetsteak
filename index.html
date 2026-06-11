@@ -1630,7 +1630,7 @@ if (GROUP_CODE) {
 
   // Show quick-start tips once for new admins on first entry to the game
   if (IS_ADMIN && !localStorage.getItem('sg_tips_seen_' + GROUP_CODE)) {
-    showTipsModal(GROUP_CODE);
+    setTimeout(() => showTipsModal(GROUP_CODE), 1000);
   }
 
   loadDraw();
