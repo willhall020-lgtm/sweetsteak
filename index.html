@@ -635,6 +635,18 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
     landing.classList.add('hidden'); return;
   }
 
+  // No group code in URL — check if this device has a previously joined game
+  if (!GROUP_CODE) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sg_role_')) {
+        const savedCode = key.slice(8);
+        window.location.replace(window.location.pathname + '?g=' + savedCode);
+        return;
+      }
+    }
+  }
+
   // No group code (or unrecognised code on new device) — show landing only
   document.querySelector('.tab-bar').style.display = 'none';
   document.querySelector('main').style.display = 'none';
