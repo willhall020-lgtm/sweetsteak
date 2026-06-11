@@ -1642,8 +1642,12 @@ if (GROUP_CODE) {
   }
 
   loadDraw();
-  loadMatches();
-  setInterval(loadMatches, 60_000);
+  async function pollMatches() {
+    await loadMatches();
+    const hasLive = apiMatches.some(m => m.isLive);
+    setTimeout(pollMatches, hasLive ? 30_000 : 60_000);
+  }
+  pollMatches();
 }
 </script>
 </body>
