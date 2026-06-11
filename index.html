@@ -871,7 +871,13 @@ async function loadDraw() {
 }
 
 function showInvalidGroup() {
-  document.querySelector('main').innerHTML = '<div class="empty" style="padding:4rem 1rem"><p style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">Group not found</p><p>Check the link and try again, or <a href="/" onclick="event.preventDefault();clearRole(GROUP_CODE);location.href=location.pathname">create a new sweepstake</a>.</p></div>';
+  const main = document.querySelector('main');
+  main.innerHTML = '<div class="empty" style="padding:4rem 1rem"><p style="font-size:1.1rem;font-weight:600;margin-bottom:.5rem">Group not found</p><p>Check the link and try again, or <a id="invalidGroupBack" href="/">create a new sweepstake</a>.</p></div>';
+  document.getElementById('invalidGroupBack').addEventListener('click', e => {
+    e.preventDefault();
+    clearRole(GROUP_CODE);
+    location.href = location.pathname;
+  });
 }
 
 async function loadMatches() {
