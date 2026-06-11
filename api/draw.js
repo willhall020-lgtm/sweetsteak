@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'DELETE') {
     if (!await authOk(req, sql, code)) return res.status(401).json({ error: 'Invalid PIN' });
-    await sql`DELETE FROM sweepstake_groups WHERE group_code = ${code}`;
+    await sql`UPDATE sweepstake_groups SET completed = FALSE, names = '[]'::jsonb, plan = '[]'::jsonb, idx = 0, updated_at = NOW() WHERE group_code = ${code}`;
     return res.json({ ok: true });
   }
 
