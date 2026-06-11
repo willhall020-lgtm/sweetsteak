@@ -12,7 +12,7 @@ async function hashPin(pin) {
 
 export async function verifyPin(pin, stored) {
   const [salt, hash] = stored.split(':');
-  if (!salt || !hash) return false;
+  if (!salt || !hash) return stored === String(pin); // legacy plain-text PIN
   const hashBuf = Buffer.from(hash, 'hex');
   const inputHash = await scryptAsync(String(pin), salt, 64);
   return timingSafeEqual(hashBuf, inputHash);
