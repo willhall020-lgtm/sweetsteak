@@ -874,8 +874,8 @@ function transformMatch(m) {
   const awayTeam = norm(m.awayTeam?.name, m.awayTeam?.tla);
   const stage    = API_STAGE[m.stage] || 'group';
 
-  const homeGoals = m.score?.fullTime?.home ?? 0;
-  const awayGoals = m.score?.fullTime?.away ?? 0;
+  const homeGoals = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? 0;
+  const awayGoals = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? 0;
 
   let penaltyWinner = null;
   const ph = m.score?.penalties?.home, pa = m.score?.penalties?.away;
