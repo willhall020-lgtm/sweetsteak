@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       return res.status(r.status).json({ error: `API ${r.status}`, detail: text });
     }
     const data = await r.json();
-    const matches = (data.matches || []);
+    const matches = (data.matches || []).filter(m => m.status === 'FINISHED' || m.status === 'IN_PLAY' || m.status === 'PAUSED');
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
     res.json({ matches, lastUpdated: new Date().toISOString() });
   } catch (err) {

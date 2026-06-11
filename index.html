@@ -219,23 +219,6 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .share-box .label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.4rem;}
 .share-url{font-family:'IBM Plex Mono',monospace;font-size:.82rem;word-break:break-all;color:rgba(255,255,255,.85);margin-bottom:.7rem;}
 
-/* ─── FIXTURES ───────────────────────────────────────────────────────────── */
-.fix-section-head{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 .6rem;display:flex;align-items:center;gap:.5rem;}
-.fix-section-head:first-child{margin-top:.25rem;}
-.fix-card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:.75rem .9rem;margin-bottom:.5rem;display:grid;grid-template-columns:1fr auto 1fr;gap:.4rem;align-items:center;}
-.fix-card.is-live{border-color:#4CAF50;box-shadow:0 0 0 1px #4CAF5033;}
-.fix-team{display:flex;flex-direction:column;gap:2px;}
-.fix-team.away{align-items:flex-end;text-align:right;}
-.fix-team-name{font-weight:600;font-size:.9rem;line-height:1.2;}
-.fix-player{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
-.fix-mid{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.fix-score{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--pitch);line-height:1;}
-.fix-score.is-live{color:#2a7a45;}
-.fix-time{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
-.fix-stage{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px;}
-.fix-ht{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;background:#f0ede5;border-radius:3px;padding:1px 5px;}
-.fix-empty{padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.9rem;}
-
 /* ─── MOBILE ─────────────────────────────────────────────────────────────── */
 #landing{overflow-y:auto;}
 
@@ -374,7 +357,6 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
   <button class="active" data-view="leaderboard">Leaderboard</button>
   <button data-view="rules">Rules</button>
   <button data-view="draw">Draw</button>
-  <button data-view="fixtures">Fixtures</button>
   <button data-view="admin" id="tab-admin">More</button>
 </nav>
 
@@ -516,15 +498,6 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       </div>
       <div class="wallchart" id="wallchart"></div>
     </div>
-  </section>
-</div>
-
-<!-- FIXTURES -->
-<div id="view-fixtures" class="view">
-  <section style="margin-top:2.5rem;">
-    <p class="kicker">Schedule</p>
-    <h2 class="display">Fixtures</h2>
-    <div id="fixtures-list" style="margin-top:1.25rem;"></div>
   </section>
 </div>
 
@@ -860,10 +833,9 @@ document.querySelectorAll('.admin-tabs button').forEach(btn =>
 );
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let drawData      = null;   // from /api/draw
-let apiMatches    = [];     // finished + live matches (for leaderboard)
-let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
-let lastUpdated   = null;
+let drawData    = null;   // from /api/draw
+let apiMatches  = [];     // transformed from /api/matches
+let lastUpdated = null;
 let localDraw   = { names:[], plan:[], idx:0 };
 let revealing   = false;
 
@@ -892,7 +864,6 @@ async function loadDraw() {
     applyDrawState();
     updatePrizesDisplay();
     renderLeaderboard();
-    renderFixtures();
   } catch (e) { console.warn('Draw fetch failed', e); }
 }
 
@@ -906,10 +877,8 @@ async function loadMatches() {
     if (!r.ok) return;
     const { matches, lastUpdated: ts } = await r.json();
     apiMatches  = matches.map(transformMatch).filter(Boolean);
-    apiFixtures = matches.map(transformFixture).filter(Boolean);
     lastUpdated = ts;
     renderLeaderboard();
-    renderFixtures();
     updateAdminStats();
     updateStatusBar();
   } catch (e) {
@@ -957,124 +926,6 @@ function updateAdminStats() {
   document.getElementById('statUpdated').textContent = lastUpdated
     ? new Date(lastUpdated).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
     : '—';
-}
-
-// ─── FIXTURES ─────────────────────────────────────────────────────────────────
-function transformFixture(m) {
-  const liveStatuses     = ['IN_PLAY','PAUSED'];
-  const upcomingStatuses = ['SCHEDULED','TIMED'];
-  const doneStatuses     = ['FINISHED'];
-  const all = [...liveStatuses, ...upcomingStatuses, ...doneStatuses];
-  if (!all.includes(m.status)) return null;
-
-  const homeTeam = norm(m.homeTeam?.name, m.homeTeam?.tla);
-  const awayTeam = norm(m.awayTeam?.name, m.awayTeam?.tla);
-  const stage    = API_STAGE[m.stage] || 'group';
-  const utcDate  = m.utcDate || null;
-
-  const homeGoals = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? null;
-  const awayGoals = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? null;
-
-  return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate,
-           status: m.status, isLive: liveStatuses.includes(m.status),
-           isHalfTime: m.status === 'PAUSED' };
-}
-
-function buildTeamPlayerMap(draw) {
-  if (!draw?.completed || !draw.plan?.length) return {};
-  const map = {};
-  draw.plan.forEach(p => { map[p.team] = p.p; });
-  return map;
-}
-
-function renderFixtures() {
-  const el = document.getElementById('fixtures-list');
-  if (!el) return;
-
-  const teamPlayer = buildTeamPlayerMap(drawData);
-
-  function teamCard(name, side) {
-    const player = teamPlayer[name];
-    return `<div class="fix-team${side === 'away' ? ' away' : ''}">
-      <span class="fix-team-name">${esc(name)}</span>
-      ${player ? `<span class="fix-player">${esc(player)}</span>` : ''}
-    </div>`;
-  }
-
-  function stageLabel(stage) {
-    return MATCH_STAGE_LABEL[stage] || '';
-  }
-
-  function formatKickoff(utcDate) {
-    if (!utcDate) return '';
-    const d = new Date(utcDate);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function dateKey(utcDate) {
-    if (!utcDate) return 'unknown';
-    return new Date(utcDate).toDateString();
-  }
-
-  function dateHeading(utcDate) {
-    if (!utcDate) return 'Upcoming';
-    const d   = new Date(utcDate);
-    const now = new Date();
-    const today    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-    const matchDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    if (+matchDay === +today)    return 'Today';
-    if (+matchDay === +tomorrow) return 'Tomorrow';
-    return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
-  }
-
-  const live     = apiFixtures.filter(m => m.isLive);
-  const upcoming = apiFixtures.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED')
-                              .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
-
-  let html = '';
-
-  if (live.length) {
-    html += `<div class="fix-section-head"><span class="live-badge" style="font-size:.65rem;">LIVE</span> In progress</div>`;
-    live.forEach(m => {
-      const scoreStr = m.homeGoals !== null && m.awayGoals !== null
-        ? `${m.homeGoals} – ${m.awayGoals}` : '– –';
-      html += `<div class="fix-card is-live">
-        ${teamCard(m.homeTeam, 'home')}
-        <div class="fix-mid">
-          <span class="fix-score is-live">${scoreStr}</span>
-          ${m.isHalfTime ? '<span class="fix-ht">HT</span>' : ''}
-          <span class="fix-stage">${stageLabel(m.stage)}</span>
-        </div>
-        ${teamCard(m.awayTeam, 'away')}
-      </div>`;
-    });
-  }
-
-  if (upcoming.length) {
-    let lastKey = null;
-    upcoming.forEach(m => {
-      const key = dateKey(m.utcDate);
-      if (key !== lastKey) {
-        html += `<div class="fix-section-head">${dateHeading(m.utcDate)}</div>`;
-        lastKey = key;
-      }
-      html += `<div class="fix-card">
-        ${teamCard(m.homeTeam, 'home')}
-        <div class="fix-mid">
-          <span class="fix-time">${formatKickoff(m.utcDate)}</span>
-          <span class="fix-stage">${stageLabel(m.stage)}</span>
-        </div>
-        ${teamCard(m.awayTeam, 'away')}
-      </div>`;
-    });
-  }
-
-  if (!live.length && !upcoming.length) {
-    html = '<p class="fix-empty">No upcoming fixtures yet.</p>';
-  }
-
-  el.innerHTML = html;
 }
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────────
