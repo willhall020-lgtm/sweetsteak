@@ -1258,15 +1258,14 @@ function computePrizes() {
   const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
   const fmt = (v) => prefix + v;
 
-  // proportions: 1st 4/7, 2nd 3/14, 3rd 1/7, spoon 1/14
-  const props = [4/7, 3/14, 1/7, 1/14];
-  const exact = props.map(p => pot * p);
-  const floors = exact.map(Math.floor);
-  let remainder = pot - floors.reduce((a, b) => a + b, 0);
-  const fracs = exact.map((v, i) => ({ i, f: v - floors[i] })).sort((a, b) => b.f - a.f);
-  fracs.forEach(({ i }) => { if (remainder-- > 0) floors[i]++; });
+  // Spoon = entry fee always; remainder split 3:2 between 2nd and 3rd
+  const spoon  = fee;
+  const first  = Math.floor(pot * 4 / 7);
+  const rem    = pot - spoon - first;
+  const second = Math.floor(rem * 3 / 5);
+  const third  = rem - second;
 
-  return { pot: fmt(pot), first: fmt(floors[0]), second: fmt(floors[1]), third: fmt(floors[2]), spoon: fmt(floors[3]) };
+  return { pot: fmt(pot), first: fmt(first), second: fmt(second), third: fmt(third), spoon: fmt(spoon) };
 }
 
 function updatePrizesDisplay() {
