@@ -474,7 +474,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <tr><td>Win (any stage)</td><td>+3 pts</td></tr>
         <tr><td>Group stage draw</td><td>+1 pt (per team)</td></tr>
         <tr><td>Every goal scored (excl. penalties)</td><td>+1 pt per goal</td></tr>
-        <tr><td>Giant-killing (beat a team from 1 / 2 / 3 tiers above)</td><td>+3 / +6 / +12 pts bonus</td></tr>
+        <tr><td>Giant-killing (beat a team from 1 / 2 / 3 tiers above)</td><td>+3 / +6 / +10 pts bonus</td></tr>
         <tr><td>Reach Round of 16</td><td>+2 pts</td></tr>
         <tr><td>Reach Quarter-finals</td><td>+3 pts</td></tr>
         <tr><td>Reach Semi-finals</td><td>+4 pts</td></tr>
@@ -1205,7 +1205,7 @@ function computeScores(assignments, matches) {
         scores[wp].detail.push({team:winner, event:`Beat ${loser} (${sl})`, pts:3});
         const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
         let gkBonus = 0;
-        if (tierDiff >= 3) gkBonus = 12;
+        if (tierDiff >= 3) gkBonus = 10;
         else if (tierDiff >= 2) gkBonus = 6;
         else if (tierDiff >= 1) gkBonus = 3;
         if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus}); }
