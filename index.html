@@ -479,9 +479,9 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
         <tr><td>Reach Quarter-finals</td><td>+3 pts</td></tr>
         <tr><td>Reach Semi-finals</td><td>+4 pts</td></tr>
         <tr><td>Reach Final</td><td>+5 pts</td></tr>
-        <tr><td>Win the tournament</td><td>+6 pts</td></tr>
+        <tr><td>Win the tournament</td><td>+5 pts</td></tr>
       </table>
-      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+20 pts in total). Giant-killing applies on wins only, not draws. Tiers: 1 (Contenders) = ranks 1–12, 2 (Challengers) = 13–24, 3 (Outsiders) = 25–36, 4 (Wildcards) = 37–48.</p>
+      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+19 pts in total). Giant-killing applies on wins only, not draws. Tiers: 1 (Contenders) = ranks 1–12, 2 (Challengers) = 13–24, 3 (Outsiders) = 25–36, 4 (Wildcards) = 37–48.</p>
     </div>
     <details class="tiers">
       <summary>View all 48 teams — ranked &amp; tiered</summary>
@@ -1172,7 +1172,7 @@ function computeProgress(matches) {
   return { prog, PROG_ORDER };
 }
 
-const PROG_PTS = {r16:2,qf:3,sf:4,final:5,champion:6};
+const PROG_PTS = {r16:2,qf:3,sf:4,final:5,champion:5};
 const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
 const PROG_EVENT_LABEL  = {r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
 
