@@ -604,9 +604,11 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
 // ─── LANDING ──────────────────────────────────────────────────────────────────
 (function initLanding() {
   const landing = document.getElementById('landing');
-  if (GROUP_CODE) { landing.classList.add('hidden'); return; }
+  if (GROUP_CODE && localStorage.getItem('sg_role_' + GROUP_CODE)) {
+    landing.classList.add('hidden'); return;
+  }
 
-  // No group code — show landing only
+  // No group code (or unrecognised code on new device) — show landing only
   document.querySelector('.tab-bar').style.display = 'none';
   document.querySelector('main').style.display = 'none';
   document.querySelector('footer').style.display = 'none';
@@ -628,6 +630,13 @@ const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
   optJoin.addEventListener('click', () => showPanel('join'));
   optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
   optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
+
+  // Shared link on new device — pre-fill and open join panel
+  if (GROUP_CODE) {
+    document.getElementById('lg-code').value = GROUP_CODE;
+    showPanel('join');
+    history.replaceState(null, '', window.location.pathname);
+  }
 
   // Populate player count dropdown on landing form
   const lgPlayers = document.getElementById('lg-players');
