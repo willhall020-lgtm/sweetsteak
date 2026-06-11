@@ -526,6 +526,16 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
       <button class="btn-danger" id="leaveGameBtn">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;">Removes this game from your device. You can rejoin with the code.</p>
     </div>
+    <div class="panel" style="margin-top:1.25rem;">
+      <h3>Admin access</h3>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">If you created this game on another device, enter your admin PIN to restore access.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <input type="password" id="claimPinInput" placeholder="Admin PIN" maxlength="20"
+          style="flex:1;min-width:0;padding:.55rem .75rem;border:1.5px solid var(--rule);border-radius:8px;font-size:.95rem;font-family:inherit;background:var(--surface);color:var(--ink);">
+        <button class="btn-ink" id="claimAdminBtn" style="padding:.55rem 1.2rem;font-size:.85rem;white-space:nowrap;">Claim admin</button>
+      </div>
+      <p class="landing-err" id="claimAdminErr" style="margin-top:.5rem;"></p>
+    </div>
   </section>
 
   <!-- ADMIN VIEW -->
@@ -1343,6 +1353,37 @@ function leaveGame() {
 }
 document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
 document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
+
+// ─── CLAIM ADMIN ──────────────────────────────────────────────────────────────
+if (!IS_ADMIN) {
+  document.getElementById('claimAdminBtn').addEventListener('click', async () => {
+    const pin = document.getElementById('claimPinInput').value.trim();
+    const err = document.getElementById('claimAdminErr');
+    const btn = document.getElementById('claimAdminBtn');
+    err.classList.remove('show');
+    if (!pin) { err.textContent = 'Enter your admin PIN.'; err.classList.add('show'); return; }
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const r = await fetch(`/api/group?g=${GROUP_CODE}&pin=${encodeURIComponent(pin)}`);
+      if (r.ok) {
+        setRole(GROUP_CODE, 'admin');
+        window.location.reload();
+      } else {
+        const data = await r.json().catch(() => ({}));
+        err.textContent = data.error || 'Incorrect PIN.';
+        err.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Claim admin';
+      }
+    } catch {
+      err.textContent = 'Network error — try again.';
+      err.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Claim admin';
+    }
+  });
+  document.getElementById('claimPinInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('claimAdminBtn').click();
+  });
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 if (GROUP_CODE) {

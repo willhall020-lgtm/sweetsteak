@@ -27,6 +27,16 @@ async function getDb() {
 }
 
 export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    const { g: code, pin } = req.query;
+    if (!code || !pin) return res.status(400).json({ error: 'Missing code or pin' });
+    const sql = await getDb();
+    const rows = await sql`SELECT admin_pin FROM sweepstake_groups WHERE group_code = ${code}`;
+    if (!rows.length) return res.status(404).json({ error: 'Game not found' });
+    if (rows[0].admin_pin !== String(pin)) return res.status(403).json({ error: 'Incorrect PIN' });
+    return res.json({ ok: true });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { group_name, entry_price, admin_pin, player_count } = req.body || {};
