@@ -75,6 +75,12 @@ table.lb tr.row-last td{background:#FFF8F8;}
 .prize-tag.gold{color:var(--gold-dark);}
 .prize-tag.spoon{color:#C0392B;}
 
+/* COLUMN TOOLTIPS */
+table.lb th[data-tip]{cursor:help;position:relative;}
+table.lb th[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:.72rem;padding:.3rem .6rem;border-radius:6px;white-space:nowrap;z-index:100;font-family:'Inter',sans-serif;letter-spacing:0;text-transform:none;font-weight:500;pointer-events:none;opacity:0;transition:opacity .12s;}
+table.lb th[data-tip]::before{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:var(--ink);z-index:100;pointer-events:none;opacity:0;transition:opacity .12s;}
+table.lb th[data-tip]:hover::after,table.lb th[data-tip]:hover::before{opacity:1;}
+
 /* EXPAND ROW */
 .lb-player-row{cursor:pointer;user-select:none;}
 .lb-chevron{font-size:.65rem;color:var(--muted);display:inline-block;transition:transform .15s;margin-left:.2rem;vertical-align:middle;opacity:.7;}
@@ -375,10 +381,10 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
             <th style="width:34px">#</th>
             <th>Player</th>
             <th>Teams</th>
-            <th class="r" title="Goals">⚽</th>
-            <th class="r" title="Win points">Win</th>
-            <th class="r" title="Progression">Prog</th>
-            <th class="r" title="Giant-kill bonus">GK</th>
+            <th class="r" title="Goals scored (excl. penalties)" data-tip="Goals scored (excl. penalties)">⚽</th>
+            <th class="r" title="Points from wins & draws" data-tip="Points from wins & draws">Win</th>
+            <th class="r" title="Progression bonus — reaching R16, QF, SF, Final, Winner" data-tip="Progression bonus — R16/QF/SF/Final/Winner">Prog</th>
+            <th class="r" title="Giant-killing bonus — beating a higher-tier team" data-tip="Giant-killing bonus — beating a higher-tier team">GK</th>
             <th class="r">Pts</th>
           </tr>
         </thead>
