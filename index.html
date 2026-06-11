@@ -761,11 +761,6 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       document.getElementById('create-form').classList.add('hidden');
       document.getElementById('create-share').classList.remove('hidden');
 
-      // Show quick-start tips once per new group
-      if (!localStorage.getItem('sg_tips_seen_' + data.code)) {
-        showTipsModal(data.code);
-      }
-
       document.getElementById('lg-copy').addEventListener('click', () => {
         navigator.clipboard?.writeText(data.code).catch(() => {});
         document.getElementById('lg-copy').textContent = 'Copied!';
@@ -1631,6 +1626,11 @@ if (GROUP_CODE) {
       document.getElementById('memberCopyCodeBtn').textContent = 'Copied!';
       setTimeout(() => { document.getElementById('memberCopyCodeBtn').textContent = 'Copy code'; }, 2000);
     });
+  }
+
+  // Show quick-start tips once for new admins on first entry to the game
+  if (IS_ADMIN && !localStorage.getItem('sg_tips_seen_' + GROUP_CODE)) {
+    showTipsModal(GROUP_CODE);
   }
 
   loadDraw();
