@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import { verifyPin } from './group.js';
 
 async function getDb() {
   const sql = neon(process.env.DATABASE_URL);
@@ -25,7 +26,7 @@ async function authOk(req, sql, code) {
   if (!pin) return false;
   const rows = await sql`SELECT admin_pin FROM sweepstake_groups WHERE group_code = ${code}`;
   if (!rows.length) return false;
-  return rows[0].admin_pin === pin;
+  return verifyPin(pin, rows[0].admin_pin);
 }
 
 export default async function handler(req, res) {

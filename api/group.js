@@ -1,4 +1,22 @@
 import { neon } from '@neondatabase/serverless';
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPin(pin) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = await scryptAsync(String(pin), salt, 64);
+  return `${salt}:${hash.toString('hex')}`;
+}
+
+export async function verifyPin(pin, stored) {
+  const [salt, hash] = stored.split(':');
+  if (!salt || !hash) return false;
+  const hashBuf = Buffer.from(hash, 'hex');
+  const inputHash = await scryptAsync(String(pin), salt, 64);
+  return timingSafeEqual(hashBuf, inputHash);
+}
 
 function generateCode() {
   // omit confusable chars: 0/O, 1/l/I
@@ -33,7 +51,8 @@ export default async function handler(req, res) {
     const sql = await getDb();
     const rows = await sql`SELECT admin_pin FROM sweepstake_groups WHERE group_code = ${code}`;
     if (!rows.length) return res.status(404).json({ error: 'Game not found' });
-    if (rows[0].admin_pin !== String(pin)) return res.status(403).json({ error: 'Incorrect PIN' });
+    const ok = await verifyPin(pin, rows[0].admin_pin);
+    if (!ok) return res.status(403).json({ error: 'Incorrect PIN' });
     return res.json({ ok: true });
   }
 
@@ -58,9 +77,11 @@ export default async function handler(req, res) {
   }
   if (!code) return res.status(500).json({ error: 'Could not generate unique code, try again' });
 
+  const hashedPin = await hashPin(admin_pin);
+
   await sql`
     INSERT INTO sweepstake_groups (group_code, group_name, entry_price, player_count, admin_pin)
-    VALUES (${code}, ${group_name || 'Sweepstake'}, ${entry_price || '£5'}, ${pc}, ${String(admin_pin)})
+    VALUES (${code}, ${group_name || 'Sweepstake'}, ${entry_price || '£5'}, ${pc}, ${hashedPin})
   `;
 
   return res.json({ code });
