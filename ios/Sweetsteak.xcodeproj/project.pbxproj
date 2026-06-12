@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		91AE915D850E4396BA93C135 /* MegaSweepstake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MegaSweepstake.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		91AE915D850E4396BA93C135 /* Sweetsteak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sweetsteak.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		71ECE5CF2997498883D5638F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3D13C180C19B4B0F870511ED /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		59866D06F26A4818911D7D2A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -38,7 +38,7 @@
 		BFC5D4065CD743A2B5FB786E /* Root */ = {
 			isa = PBXGroup;
 			children = (
-				D667719AACB54E9BBDB271CA /* MegaSweepstake */,
+				D667719AACB54E9BBDB271CA /* Sweetsteak */,
 				F1FDA012BC4741EE9664C2F3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,12 +46,12 @@
 		F1FDA012BC4741EE9664C2F3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				91AE915D850E4396BA93C135 /* MegaSweepstake.app */,
+				91AE915D850E4396BA93C135 /* Sweetsteak.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D667719AACB54E9BBDB271CA /* MegaSweepstake */ = {
+		D667719AACB54E9BBDB271CA /* Sweetsteak */ = {
 			isa = PBXGroup;
 			children = (
 				71ECE5CF2997498883D5638F /* AppDelegate.swift */,
@@ -61,15 +61,15 @@
 				58B09C321A8241B09246A91A /* LaunchScreen.storyboard */,
 				1254123688BF40418A4933CE /* Info.plist */,
 			);
-			path = MegaSweepstake;
+			path = Sweetsteak;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F21DB2B3CCEB4B2F898A67FC /* MegaSweepstake */ = {
+		F21DB2B3CCEB4B2F898A67FC /* Sweetsteak */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0665CE35671F41AA8C0D1454 /* Build configuration list for PBXNativeTarget "MegaSweepstake" */;
+			buildConfigurationList = 0665CE35671F41AA8C0D1454 /* Build configuration list for PBXNativeTarget "Sweetsteak" */;
 			buildPhases = (
 				DA45CC3AA11D41A4A6D62870 /* Sources */,
 				B4929E7757444D98AECDD4DC /* Frameworks */,
@@ -79,9 +79,9 @@
 			);
 			dependencies = (
 			);
-			name = MegaSweepstake;
-			productName = MegaSweepstake;
-			productReference = 91AE915D850E4396BA93C135 /* MegaSweepstake.app */;
+			name = Sweetsteak;
+			productName = Sweetsteak;
+			productReference = 91AE915D850E4396BA93C135 /* Sweetsteak.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +99,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "MegaSweepstake" */;
+			buildConfigurationList = 5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "Sweetsteak" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F21DB2B3CCEB4B2F898A67FC /* MegaSweepstake */,
+				F21DB2B3CCEB4B2F898A67FC /* Sweetsteak */,
 			);
 		};
 /* End PBXProject section */
@@ -269,7 +269,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MegaSweepstake/Info.plist;
+				INFOPLIST_FILE = Sweetsteak/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -294,7 +294,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = MegaSweepstake/Info.plist;
+				INFOPLIST_FILE = Sweetsteak/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -312,7 +312,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "MegaSweepstake" */ = {
+		5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "Sweetsteak" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A38854589F3479181CAFE2D /* Debug */,
@@ -321,7 +321,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0665CE35671F41AA8C0D1454 /* Build configuration list for PBXNativeTarget "MegaSweepstake" */ = {
+		0665CE35671F41AA8C0D1454 /* Build configuration list for PBXNativeTarget "Sweetsteak" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A9DC043208D44BDDADE66ECA /* Debug */,

@@ -1,0 +1,27 @@
+show the draw on the draw tab after it has been completed
+change to the rules: if no. of players is not divisible by 48 - then the players who have th elowest ranked tier 1 team get the bonus team
+hovering over the column titles for 'football emoji', 'win', gk', 'prog' shows what it means\
+giant killing: if a team wins 2 tiers above then you get a 2x giant killing, 3 tiers above you get 4x points
+we need some kind of way to show how people got the scores
+the enter name screen shouldn't just be for 14 names, you just add a new name each time with max 48 - this is so i can use it for other groups if i want to. so remove the placeholder names for now and let me enter them. there should be a drop down feature, where you can select how many players you have
+we need a live scores where you can see the scores come in as they happen. this will show in the carousel we already have at the top in first version
+i want this to be available to other groups - how could i do this. for example it should start clean in a new version, and the admin sets up the rules, e.g the entry price, etc. Or we have a log in system - but this seems unnecessary
+the tiers therefore also need to be changeable based on how many players are in each game - and the rules descriptions etc. will need to adjust
+make sure it looks good on a mobile - this is the primary channel it will be used on
+All 48 teams should be drawn, no matter the no. of players. But tier 4 teams are given first to the players with the lowest ranked tier 1 team
+on the draw page - instead of having an x at the end of each row, use a "remove player" button next to the "add player button" which removes the last player from the list
+Win in group stage and win in knockouts should be same no. of points - just 3 points for a win anywhere
+Add to "entry & the draw" that if there is not a no. of players divisible by 48 - then the wildcards are first assigned to the players with the lowest ranked tier 1 team
+sort out admin panel tabs
+maybe remove the select no.of plahyers from the landing page
+mention in rules page that the draw is based on FIFA ranking and is fair based on the algorithm
+the prize amounts need to adjust absed on the entry fee - proportions always are the same
+
+
+how can the admin re-enter as an admin if they leave the game? we should proabably create an admin code to renter as an admin to the game
+test using realistic scores for the world cup fixtires
+tier logic is going both ways. it only should be if you beat a team a tier, 2 tiers, or 3 tiers ABOVE you. that test showed brazil get giant killing points for beating canada - who are 2 tiers below them.
+hovering over the column titles for 'football emoji', 'win', gk', 'prog' shows what it means\
+can you run a test. simulate every test of the 2026 world cup, add in some giant killers results also. post the results on the 8w794t game. report on how you think the game works.
+
+live scores shown on the app
