@@ -230,6 +230,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .fix-team-name{font-weight:600;font-size:.9rem;line-height:1.2;}
 .fix-player{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
 .fix-tier{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.06em;padding:.1rem .35rem;border-radius:3px;white-space:nowrap;}
+.fix-name-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
 .fix-mid{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .fix-score{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--pitch);line-height:1;}
 .fix-score.is-live{color:#2a7a45;}
@@ -1072,8 +1073,7 @@ function renderFixtures() {
     const tierNum = {A:1,B:2,C:3,D:4}[tier];
     const tierBadge = tier ? `<span class="fix-tier b${tier}">T${tierNum}</span>` : '';
     return `<div class="fix-team${side === 'away' ? ' away' : ''}">
-      <span class="fix-team-name">${esc(name)}</span>
-      ${tierBadge}
+      <div class="fix-name-row"><span class="fix-team-name">${esc(name)}</span>${tierBadge}</div>
       ${player ? `<span class="fix-player">${esc(player)}</span>` : ''}
     </div>`;
   }
