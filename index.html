@@ -229,8 +229,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .fix-team.away{align-items:flex-end;text-align:right;}
 .fix-team-name{font-weight:600;font-size:.9rem;line-height:1.2;}
 .fix-player{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
-.fix-tier{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.06em;padding:.1rem .35rem;border-radius:3px;white-space:nowrap;}
-.fix-name-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.fix-tier-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
 .fix-mid{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .fix-score{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:.06em;color:var(--pitch);line-height:1;}
 .fix-score.is-live{color:#2a7a45;}
@@ -1071,7 +1070,8 @@ function renderFixtures() {
     const player = teamPlayer[name];
     const tier = TIER_MAP[name];
     const tierNum = {A:1,B:2,C:3,D:4}[tier];
-    const tierBadge = tier ? `<span class="fix-tier b${tier}">${tierNum}</span>` : '';
+    const tierColor = {A:'var(--pitch)',B:'#1A6E8A',C:'#A05A18',D:'#6B3FA0'}[tier] || '';
+    const tierBadge = tier ? `<span class="fix-tier-label" style="color:${tierColor}">Tier ${tierNum}</span>` : '';
     return `<div class="fix-team${side === 'away' ? ' away' : ''}">
       <span class="fix-team-name">${esc(name)}</span>
       ${player ? `<span class="fix-player">${esc(player)}</span>` : ''}
