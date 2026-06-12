@@ -1125,29 +1125,6 @@ function renderFixtures() {
     });
   }
 
-  if (upcoming.length) {
-    let lastKey = null;
-    upcoming.forEach(m => {
-      const key = dateKey(m.utcDate);
-      if (key !== lastKey) {
-        html += `<div class="fix-section-head">${dateHeading(m.utcDate)}</div>`;
-        lastKey = key;
-      }
-      html += `<div class="fix-card">
-        ${teamCard(m.homeTeam, 'home')}
-        <div class="fix-mid">
-          <span class="fix-time">${formatKickoff(m.utcDate)}</span>
-          <span class="fix-stage">${stageLabel(m.stage)}</span>
-        </div>
-        ${teamCard(m.awayTeam, 'away')}
-      </div>`;
-    });
-  }
-
-  if (!live.length && !upcoming.length) {
-    html = '<p class="fix-empty">No upcoming fixtures yet.</p>';
-  }
-
   if (results.length) {
     let resultsHtml = '';
     let lastKey = null;
@@ -1173,6 +1150,29 @@ function renderFixtures() {
       <summary>Results (${results.length})</summary>
       ${resultsHtml}
     </details>`;
+  }
+
+  if (upcoming.length) {
+    let lastKey = null;
+    upcoming.forEach(m => {
+      const key = dateKey(m.utcDate);
+      if (key !== lastKey) {
+        html += `<div class="fix-section-head">${dateHeading(m.utcDate)}</div>`;
+        lastKey = key;
+      }
+      html += `<div class="fix-card">
+        ${teamCard(m.homeTeam, 'home')}
+        <div class="fix-mid">
+          <span class="fix-time">${formatKickoff(m.utcDate)}</span>
+          <span class="fix-stage">${stageLabel(m.stage)}</span>
+        </div>
+        ${teamCard(m.awayTeam, 'away')}
+      </div>`;
+    });
+  }
+
+  if (!live.length && !upcoming.length && !results.length) {
+    html = '<p class="fix-empty">No upcoming fixtures yet.</p>';
   }
 
   el.innerHTML = html;
