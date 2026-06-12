@@ -236,6 +236,13 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .fix-stage{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px;}
 .fix-ht{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;background:#f0ede5;border-radius:3px;padding:1px 5px;}
 .fix-empty{padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.9rem;}
+.fix-results-toggle{width:100%;cursor:pointer;list-style:none;margin-top:1.5rem;}
+.fix-results-toggle::-webkit-details-marker{display:none;}
+details.fix-results summary{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:.5rem;padding:.25rem 0;cursor:pointer;user-select:none;}
+details.fix-results summary::after{content:'▸';margin-left:auto;transition:transform .15s;}
+details.fix-results[open] summary::after{transform:rotate(90deg);}
+.fix-score.is-done{color:var(--ink);}
+.fix-pens{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
 
 /* ─── MOBILE ─────────────────────────────────────────────────────────────── */
 #landing{overflow-y:auto;}
@@ -1036,7 +1043,11 @@ function transformFixture(m) {
   const homeGoals = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? null;
   const awayGoals = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? null;
 
-  return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate,
+  let penaltyWinner = null;
+  const ph = m.score?.penalties?.home, pa = m.score?.penalties?.away;
+  if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
+
+  return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate, penaltyWinner,
            status: m.status, isLive: liveStatuses.includes(m.status),
            isHalfTime: m.status === 'PAUSED' };
 }
@@ -1092,6 +1103,8 @@ function renderFixtures() {
   const live     = apiFixtures.filter(m => m.isLive);
   const upcoming = apiFixtures.filter(m => m.status === 'SCHEDULED' || m.status === 'TIMED')
                               .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
+  const results  = apiFixtures.filter(m => m.status === 'FINISHED')
+                              .sort((a, b) => (b.utcDate ? new Date(b.utcDate) : 0) - (a.utcDate ? new Date(a.utcDate) : 0));
 
   let html = '';
 
@@ -1133,6 +1146,33 @@ function renderFixtures() {
 
   if (!live.length && !upcoming.length) {
     html = '<p class="fix-empty">No upcoming fixtures yet.</p>';
+  }
+
+  if (results.length) {
+    let resultsHtml = '';
+    let lastKey = null;
+    results.forEach(m => {
+      const key = m.utcDate ? dateKey(m.utcDate) : '__nodate__';
+      if (key !== lastKey) {
+        resultsHtml += `<div class="fix-section-head" style="margin-top:1rem;">${m.utcDate ? dateHeading(m.utcDate) : 'Results'}</div>`;
+        lastKey = key;
+      }
+      const scoreStr = `${m.homeGoals} – ${m.awayGoals}`;
+      const pensTag  = m.penaltyWinner ? `<span class="fix-pens">pens</span>` : '';
+      resultsHtml += `<div class="fix-card">
+        ${teamCard(m.homeTeam, 'home')}
+        <div class="fix-mid">
+          <span class="fix-score is-done">${scoreStr}</span>
+          ${pensTag}
+          <span class="fix-stage">${stageLabel(m.stage)}</span>
+        </div>
+        ${teamCard(m.awayTeam, 'away')}
+      </div>`;
+    });
+    html += `<details class="fix-results">
+      <summary>Results (${results.length})</summary>
+      ${resultsHtml}
+    </details>`;
   }
 
   el.innerHTML = html;
