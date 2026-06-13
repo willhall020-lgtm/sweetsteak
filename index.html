@@ -961,7 +961,6 @@ let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
 let lastUpdated   = null;
 let localDraw   = { names:[], plan:[], idx:0 };
 let revealing   = false;
-let prevLbRanks = {};       // player → rank from previous render
 
 // ─── API FETCHING ─────────────────────────────────────────────────────────────
 async function loadDraw() {
@@ -1036,6 +1035,7 @@ function transformMatch(m) {
   if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
+           utcDate: m.utcDate || null,
            isLive: m.status !== 'FINISHED', status: m.status };
 }
 
@@ -1387,8 +1387,21 @@ function renderLeaderboard() {
 
   const scores = computeScores(assignments, apiMatches);
   const sorted = Object.entries(scores).sort((a,b) => b[1].total - a[1].total);
-  const newRanks = {};
-  sorted.forEach(([player], i) => newRanks[player] = i + 1);
+
+  // Baseline: scores before the current live match(es), or before the most recent match day
+  const liveMatches = apiMatches.filter(m => m.isLive);
+  let baselineMatches;
+  if (liveMatches.length) {
+    baselineMatches = apiMatches.filter(m => !m.isLive);
+  } else {
+    const days = [...new Set(apiMatches.map(m => m.utcDate ? new Date(m.utcDate).toDateString() : null).filter(Boolean))];
+    const mostRecentDay = days.sort((a,b) => new Date(b)-new Date(a))[0];
+    baselineMatches = mostRecentDay ? apiMatches.filter(m => new Date(m.utcDate).toDateString() !== mostRecentDay) : apiMatches;
+  }
+  const baselineScores = computeScores(assignments, baselineMatches);
+  const baselineSorted = Object.entries(baselineScores).sort((a,b) => b[1].total - a[1].total);
+  const baselineRanks = {};
+  baselineSorted.forEach(([player], i) => baselineRanks[player] = i + 1);
 
   loading.classList.add('hidden');
   nodraw.classList.add('hidden');
@@ -1415,7 +1428,7 @@ function renderLeaderboard() {
     let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
     if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — ${prizes ? prizes.spoon : '£5'}</div>`;
 
-    const prevRank = prevLbRanks[player];
+    const prevRank = baselineRanks[player];
     const moveDiff = prevRank ? prevRank - rank : 0;
     const moveTag = moveDiff > 0
       ? `<span class="lb-move up">▲${moveDiff}</span>`
@@ -1446,7 +1459,6 @@ function renderLeaderboard() {
     });
   });
 
-  prevLbRanks = newRanks;
 }
 
 // ─── DRAW ─────────────────────────────────────────────────────────────────────
