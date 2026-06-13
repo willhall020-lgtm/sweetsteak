@@ -900,11 +900,7 @@ html.ios-app > body > header { display: none !important; }
     <p class="kicker">Schedule</p>
     <h2 class="display">Fixtures</h2>
     <div id="ios-fix-seg" style="display:none"></div>
-    <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:1rem;gap:.5rem;">
-      <span id="fix-updated-text" style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);"></span>
-      <button id="fix-refresh-btn" onclick="fixRefresh()" style="background:none;border:1px solid var(--rule);border-radius:999px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:.3rem;">↻ Refresh</button>
-    </div>
-    <div id="fixtures-list" style="margin-top:.5rem;"></div>
+    <div id="fixtures-list" style="margin-top:1.25rem;"></div>
   </section>
 </div>
 
@@ -1377,22 +1373,6 @@ function updateStatusBar() {
   const ts = lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
   const liveBadge = liveCount > 0 ? ` <span class="live-badge">LIVE ${liveCount}</span>` : '';
   document.getElementById('statusText').innerHTML = `Updated ${ts}${liveBadge}`;
-  const fixTs = document.getElementById('fix-updated-text');
-  if (fixTs) fixTs.textContent = lastUpdated ? `Updated ${ts}` : '';
-}
-
-let _fixRefreshCooldown = false;
-function fixRefresh() {
-  if (_fixRefreshCooldown) return;
-  _fixRefreshCooldown = true;
-  const btn = document.getElementById('fix-refresh-btn');
-  if (btn) { btn.disabled = true; btn.style.opacity = '.45'; btn.textContent = '↻ Refreshing…'; }
-  loadMatches().finally(() => {
-    setTimeout(() => {
-      _fixRefreshCooldown = false;
-      if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.textContent = '↻ Refresh'; }
-    }, 15000);
-  });
 }
 
 function updateAdminStats() {
