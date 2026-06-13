@@ -1346,7 +1346,8 @@ function parseFee(str) {
 
 function computePrizes() {
   const fee = parseFee(drawData?.entry_price);
-  const players = drawData?.player_count;
+  // Use actual player count from names if draw has been done, otherwise fall back to player_count
+  const players = (drawData?.names?.length) || drawData?.player_count;
   if (!fee || !players) return null;
   const pot = Math.round(fee * players);
   const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
