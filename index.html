@@ -1352,6 +1352,10 @@ function computePrizes() {
   const prefix = (drawData.entry_price || '£').replace(/[0-9.,]/g, '').trim() || '£';
   const fmt = (v) => prefix + v;
 
+  if (players === 2) {
+    return { pot: fmt(pot), first: fmt(pot), second: fmt(0), third: fmt(0), spoon: fmt(0) };
+  }
+
   // Spoon = entry fee always; remainder split 3:2 between 2nd and 3rd
   const spoon  = fee;
   const first  = Math.floor(pot * 4 / 7);
@@ -1432,8 +1436,9 @@ function renderLeaderboard() {
     }).join('');
 
     const prizes = computePrizes();
+    const twoPlayer = sorted.length === 2;
     const prizeMap = ['', `1st — ${prizes ? prizes.first : '£40'}`, `2nd — ${prizes ? prizes.second : '£15'}`, `3rd — ${prizes ? prizes.third : '£10'}`];
-    let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
+    let prize = (!twoPlayer && rank<=3) || (twoPlayer && rank===1) ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
     if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — ${prizes ? prizes.spoon : '£5'}</div>`;
 
     const prevRank = baselineRanks[player];
