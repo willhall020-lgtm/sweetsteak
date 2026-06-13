@@ -75,6 +75,9 @@ table.lb tr.row-last td{background:#FFF8F8;}
 .prize-tag{font-size:.7rem;font-weight:600;color:var(--pitch);}
 .prize-tag.gold{color:var(--gold-dark);}
 .prize-tag.spoon{color:#C0392B;}
+.lb-move{font-size:.6rem;font-weight:700;margin-left:.3rem;vertical-align:middle;}
+.lb-move.up{color:#2E9E5B;}
+.lb-move.dn{color:#C0392B;}
 
 /* COLUMN TOOLTIPS */
 table.lb th[data-tip]{cursor:help;position:relative;}
@@ -958,6 +961,7 @@ let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
 let lastUpdated   = null;
 let localDraw   = { names:[], plan:[], idx:0 };
 let revealing   = false;
+let prevLbRanks = {};       // player → rank from previous render
 
 // ─── API FETCHING ─────────────────────────────────────────────────────────────
 async function loadDraw() {
@@ -1383,6 +1387,8 @@ function renderLeaderboard() {
 
   const scores = computeScores(assignments, apiMatches);
   const sorted = Object.entries(scores).sort((a,b) => b[1].total - a[1].total);
+  const newRanks = {};
+  sorted.forEach(([player], i) => newRanks[player] = i + 1);
 
   loading.classList.add('hidden');
   nodraw.classList.add('hidden');
@@ -1409,8 +1415,16 @@ function renderLeaderboard() {
     let prize = rank<=3 ? `<div class="prize-tag ${rank===1?'gold':''}">${prizeMap[rank]}</div>` : '';
     if (isLast && sorted.length>=4) prize = `<div class="prize-tag spoon">Wooden Spoon — ${prizes ? prizes.spoon : '£5'}</div>`;
 
+    const prevRank = prevLbRanks[player];
+    const moveDiff = prevRank ? prevRank - rank : 0;
+    const moveTag = moveDiff > 0
+      ? `<span class="lb-move up">▲${moveDiff}</span>`
+      : moveDiff < 0
+        ? `<span class="lb-move dn">▼${Math.abs(moveDiff)}</span>`
+        : '';
+
     row.innerHTML = `
-      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span><span class="lb-chevron">›</span></td>
+      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span>${moveTag}<span class="lb-chevron">›</span></td>
       <td><div class="lb-name">${esc(player)}</div>${prize}</td>
       <td><div class="teams-cell">${badges}</div></td>
       <td class="r">${s.goals}</td>
@@ -1431,6 +1445,8 @@ function renderLeaderboard() {
       row.classList.toggle('open', !nowHidden);
     });
   });
+
+  prevLbRanks = newRanks;
 }
 
 // ─── DRAW ─────────────────────────────────────────────────────────────────────
