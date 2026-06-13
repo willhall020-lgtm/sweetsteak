@@ -1398,15 +1398,15 @@ function renderLeaderboard() {
     return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
   });
 
-  // Baseline: scores before the current live match(es), or before the most recent match day
+  // Baseline: scores before the current live match(es), or before the most recent kick-off batch
   const liveMatches = apiMatches.filter(m => m.isLive);
   let baselineMatches;
   if (liveMatches.length) {
     baselineMatches = apiMatches.filter(m => !m.isLive);
   } else {
-    const days = [...new Set(apiMatches.map(m => m.utcDate ? new Date(m.utcDate).toDateString() : null).filter(Boolean))];
-    const mostRecentDay = days.sort((a,b) => new Date(b)-new Date(a))[0];
-    baselineMatches = mostRecentDay ? apiMatches.filter(m => new Date(m.utcDate).toDateString() !== mostRecentDay) : apiMatches;
+    const finished = apiMatches.filter(m => m.utcDate);
+    const mostRecentKO = finished.map(m => m.utcDate).sort((a,b) => new Date(b)-new Date(a))[0];
+    baselineMatches = mostRecentKO ? apiMatches.filter(m => m.utcDate !== mostRecentKO) : apiMatches;
   }
   const baselineScores = computeScores(assignments, baselineMatches);
   const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
