@@ -1270,7 +1270,7 @@ const PROG_EVENT_LABEL  = {r16:'Reached Round of 16',qf:'Reached Quarter-finals'
 
 function computeScores(assignments, matches) {
   const scores = {};
-  Object.keys(assignments).forEach(p => scores[p]={goals:0,matchPts:0,progressPts:0,bonusPts:0,total:0,detail:[]});
+  Object.keys(assignments).forEach(p => scores[p]={goals:0,wins:0,matchPts:0,progressPts:0,bonusPts:0,total:0,detail:[]});
 
   const t2p = {};
   for (const [player,teams] of Object.entries(assignments))
@@ -1293,6 +1293,7 @@ function computeScores(assignments, matches) {
     if (winner) {
       const wp = t2p[winner];
       if (wp) {
+        scores[wp].wins += 1;
         scores[wp].matchPts += 3;
         scores[wp].detail.push({team:winner, event:`Beat ${loser} (${sl})`, pts:3});
         const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
@@ -1386,7 +1387,10 @@ function renderLeaderboard() {
   }
 
   const scores = computeScores(assignments, apiMatches);
-  const sorted = Object.entries(scores).sort((a,b) => b[1].total - a[1].total);
+  const sorted = Object.entries(scores).sort((a,b) => {
+    const s = (f) => b[1][f] - a[1][f];
+    return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
+  });
 
   // Baseline: scores before the current live match(es), or before the most recent match day
   const liveMatches = apiMatches.filter(m => m.isLive);
@@ -1399,7 +1403,10 @@ function renderLeaderboard() {
     baselineMatches = mostRecentDay ? apiMatches.filter(m => new Date(m.utcDate).toDateString() !== mostRecentDay) : apiMatches;
   }
   const baselineScores = computeScores(assignments, baselineMatches);
-  const baselineSorted = Object.entries(baselineScores).sort((a,b) => b[1].total - a[1].total);
+  const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
+    const s = (f) => b[1][f] - a[1][f];
+    return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
+  });
   const baselineRanks = {};
   baselineSorted.forEach(([player], i) => baselineRanks[player] = i + 1);
 
