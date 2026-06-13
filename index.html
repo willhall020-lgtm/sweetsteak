@@ -1091,14 +1091,27 @@ function renderFixtures() {
 
   const teamPlayer = buildTeamPlayerMap(drawData);
 
+  const FLAG = {
+    'Spain':'🇪🇸','Argentina':'🇦🇷','France':'🇫🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Brazil':'🇧🇷','Portugal':'🇵🇹',
+    'Netherlands':'🇳🇱','Belgium':'🇧🇪','Germany':'🇩🇪','Croatia':'🇭🇷','Morocco':'🇲🇦','Colombia':'🇨🇴',
+    'Mexico':'🇲🇽','Uruguay':'🇺🇾','United States':'🇺🇸','Switzerland':'🇨🇭','Senegal':'🇸🇳','Japan':'🇯🇵',
+    'Iran':'🇮🇷','South Korea':'🇰🇷','Ecuador':'🇪🇨','Austria':'🇦🇹','Türkiye':'🇹🇷','Australia':'🇦🇺',
+    'Canada':'🇨🇦','Norway':'🇳🇴','Sweden':'🇸🇪','Panama':'🇵🇦','Egypt':'🇪🇬','Algeria':'🇩🇿',
+    'Paraguay':'🇵🇾','Tunisia':'🇹🇳','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Ivory Coast':'🇨🇮','Czechia':'🇨🇿','Qatar':'🇶🇦',
+    'Uzbekistan':'🇺🇿','Saudi Arabia':'🇸🇦','Iraq':'🇮🇶','DR Congo':'🇨🇩','South Africa':'🇿🇦',
+    'Bosnia & Herzegovina':'🇧🇦','Jordan':'🇯🇴','Cape Verde':'🇨🇻','Ghana':'🇬🇭','Haiti':'🇭🇹',
+    'Curaçao':'🇨🇼','New Zealand':'🇳🇿',
+  };
+
   function teamCard(name, side) {
     const player = teamPlayer[name];
     const tier = TIER_MAP[name];
     const tierNum = {A:1,B:2,C:3,D:4}[tier];
     const tierColor = {A:'var(--pitch)',B:'#1A6E8A',C:'#A05A18',D:'#6B3FA0'}[tier] || '';
     const tierBadge = tier ? `<span class="fix-tier-label" style="color:${tierColor}">T${tierNum}</span>` : '';
+    const flag = FLAG[name] ? `<span aria-hidden="true">${FLAG[name]}</span> ` : '';
     return `<div class="fix-team${side === 'away' ? ' away' : ''}">
-      <span class="fix-team-name">${esc(name)}</span>
+      <span class="fix-team-name">${flag}${esc(name)}</span>
       ${player ? `<span class="fix-player">${esc(player)}</span>` : ''}
       ${tierBadge}
     </div>`;
