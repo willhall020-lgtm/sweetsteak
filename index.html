@@ -1444,8 +1444,8 @@ function renderLeaderboard() {
         : '';
 
     row.innerHTML = `
-      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span>${moveTag}<span class="lb-chevron">›</span></td>
-      <td><div class="lb-name">${esc(player)}</div>${prize}</td>
+      <td><span class="lb-rank ${rank<=3?'r'+rank:''}">${rank}</span><span class="lb-chevron">›</span></td>
+      <td><div class="lb-name">${esc(player)}${moveTag}</div>${prize}</td>
       <td><div class="teams-cell">${badges}</div></td>
       <td class="r">${s.goals}</td>
       <td class="r">${s.matchPts}</td>
