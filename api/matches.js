@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     }
     const data = await r.json();
     const matches = (data.matches || []);
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+    res.setHeader('Cache-Control', 's-maxage=30');
     res.json({ matches, lastUpdated: new Date().toISOString() });
   } catch (err) {
     res.status(500).json({ error: err.message });
