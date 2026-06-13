@@ -915,7 +915,11 @@ const tickerBase = [
   'And sent him homeward',
   'Tae think again.',
 ].join('     ') + '     ';
-document.getElementById('ticker').textContent = tickerBase + tickerBase;
+const tickerEl = document.getElementById('ticker');
+tickerEl.textContent = tickerBase + tickerBase;
+tickerEl.style.animation = 'none';
+tickerEl.offsetHeight; // force reflow so the reset takes effect
+tickerEl.style.animation = '';
 
 // Ranked team list (rules page)
 ['A','B','C','D'].forEach(tier => {
