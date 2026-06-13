@@ -319,6 +319,327 @@ details.fix-results[open] summary::after{transform:rotate(90deg);}
 #app-bar{position:fixed;top:0;left:0;width:100%;height:44px;background:var(--pitch-dark);border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 1.25rem;z-index:500;}
 .app-bar-name{font-family:'Anton',sans-serif;font-size:1.15rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);line-height:1;}
 #landing{padding-top:44px;}
+
+/* ── iOS Pine design ────────────────────────────────────────────── */
+@keyframes ss-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.ios-app body {
+  padding-top: 0;
+  padding-bottom: 100px; /* space for floating tab bar */
+}
+.ios-app #app-bar { display: none !important; }
+.ios-app > header { display: none !important; }
+html.ios-app > body > header { display: none !important; }
+
+/* ── Tab bar: fixed floating glass pill at bottom ── */
+.ios-app .tab-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: transparent;
+  border: none;
+  padding: 8px 14px 28px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+}
+.ios-app .tab-bar-inner {
+  background: rgba(255,255,255,0.96);
+  border-radius: 26px;
+  box-shadow: 0 8px 26px rgba(14,90,51,0.18);
+  border: 1px solid #D8D4C8;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 9px 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.ios-app .tab-bar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+  padding: 0;
+  color: rgba(92,106,96,0.85);
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  cursor: pointer;
+}
+.ios-app .tab-bar button .ios-tab-icon {
+  width: 44px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.ios-app .tab-bar button.active {
+  color: #0E5A33;
+  border-bottom: none !important;
+}
+.ios-app .tab-bar button.active .ios-tab-icon {
+  background: rgba(201,162,39,0.18);
+}
+.ios-app .tab-bar button .ios-tab-label {
+  font-size: 9.5px;
+  font-weight: 500;
+}
+.ios-app .tab-bar button.active .ios-tab-label {
+  font-weight: 700;
+}
+
+/* ── Per-view iOS header ── */
+.ios-app .ios-view-header {
+  background: linear-gradient(135deg,#0B3D1F 0%,#15803D 60%,#3F9D54 120%);
+  padding: 54px 18px 16px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.ios-app .ios-view-header::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -40px;
+  width: 170px; height: 170px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.ios-app .ios-view-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  position: relative;
+}
+.ios-app .ios-view-header-top .ios-app-name {
+  font-family: 'Anton', sans-serif;
+  font-size: 18px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.ios-app .ios-view-header-top .ios-group-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.ios-app .ios-view-header .ios-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #DCFCE7;
+  position: relative;
+}
+.ios-app .ios-view-header .ios-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 32px;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-top: 4px;
+  color: #fff;
+  position: relative;
+}
+
+/* ── Status bar in header ── */
+.ios-app .ios-status-pill {
+  margin-top: 14px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #16211A;
+  position: relative;
+}
+.ios-app .ios-status-pill .live-badge {
+  margin-left: auto;
+  background: #4CAF50;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: .06em;
+}
+
+/* ── Country ticker in header ── */
+.ios-app .ios-ticker-wrap {
+  margin-top: 14px;
+  margin-left: -18px;
+  margin-right: -18px;
+  margin-bottom: -16px;
+  border-top: 1px solid rgba(255,255,255,0.22);
+  padding: 8px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.ios-app .ios-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ss-tick 60s linear infinite;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.82);
+}
+
+/* ── Hide existing section headers when iOS header shown ── */
+.ios-app .view > section > .kicker,
+.ios-app .view > section > h2.display {
+  display: none;
+}
+.ios-app .view > section {
+  margin-top: 0;
+  padding: 16px 16px 8px;
+}
+
+/* ── Leaderboard cards (iOS) ── */
+.ios-app .lb-wrap { overflow-x: visible; }
+.ios-app table.lb { display: none; }
+.ios-app #ios-lb-cards { display: block; }
+#ios-lb-cards { display: none; }
+.ios-lb-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 11px 13px;
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(14,90,51,0.08);
+  border: 1px solid #D8D4C8;
+}
+.ios-lb-card.is-first { border: 1.5px solid #C9A227; background: rgba(201,162,39,0.07); }
+.ios-lb-card.is-last  { border: 1px solid #f5c6c6; background: #FFF8F8; }
+.ios-lb-card.is-you   { border: 1.5px solid #C9A227; }
+.ios-lb-card-rank {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper);
+  color: var(--muted);
+  font-family: 'Anton', sans-serif;
+  font-size: 15px;
+}
+.ios-lb-card-rank.medal { background: transparent; font-size: 20px; }
+.ios-lb-card-body { flex: 1; min-width: 0; }
+.ios-lb-card-name {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 700; font-size: 15px;
+}
+.ios-lb-card-you-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; font-weight: 700;
+  color: #9A7B1A;
+  background: rgba(201,162,39,0.15);
+  padding: 1px 5px; border-radius: 4px;
+}
+.ios-lb-card-spoon-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; font-weight: 700;
+  color: #c0392b;
+  background: rgba(192,57,43,0.1);
+  padding: 1px 5px; border-radius: 4px;
+  letter-spacing: .04em;
+}
+.ios-lb-card-teams {
+  display: flex; gap: 3px; flex-wrap: wrap;
+  margin-top: 4px;
+}
+.ios-lb-card-right {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.ios-lb-card-move {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  min-width: 26px; text-align: right;
+}
+.ios-lb-card-move.up { color: #2a7a45; }
+.ios-lb-card-move.dn { color: #c0392b; }
+.ios-lb-card-move.flat { color: var(--muted); font-weight: 600; }
+.ios-lb-card-pts-wrap { text-align: right; min-width: 40px; }
+.ios-lb-card-pts {
+  font-family: 'Anton', sans-serif;
+  font-size: 24px; line-height: 1;
+  color: #0E5A33;
+}
+.ios-lb-card.is-first .ios-lb-card-pts { color: #9A7B1A; }
+.ios-lb-card.is-last .ios-lb-card-pts { color: #c0392b; }
+.ios-lb-card-prize {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  color: #9A7B1A;
+  margin-top: 2px;
+}
+.ios-lb-card.is-last .ios-lb-card-prize { color: #c0392b; }
+
+/* ── Fixtures segmented control (iOS) ── */
+.ios-app #ios-fix-seg {
+  display: flex;
+  gap: 6px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  padding: 4px;
+  margin-top: 16px;
+  position: relative;
+}
+#ios-fix-seg { display: none; }
+.ios-app #ios-fix-seg button {
+  flex: 1;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 0;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.ios-app #ios-fix-seg button.active {
+  background: #C9A227;
+  color: #0A4226;
+}
+
+/* ── Fixture card iOS upgrades ── */
+.ios-app .fix-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(14,90,51,0.07);
+  border: 1px solid #D8D4C8;
+}
+.ios-app .fix-card.is-live {
+  border: 1.5px solid #4CAF50;
+  box-shadow: 0 4px 16px rgba(14,90,51,0.10);
+  border-radius: 18px;
+}
+
+/* ── main container padding ── */
+.ios-app main { padding: 0 0 1rem; }
 </style>
 </head>
 <body>
@@ -443,6 +764,7 @@ details.fix-results[open] summary::after{transform:rotate(90deg);}
     </div>
     <div id="lb-loading" class="loading">Loading…</div>
     <div id="lb-nodraw" class="empty hidden">Draw hasn't happened yet — check back soon.</div>
+    <div id="ios-lb-cards"></div>
     <div class="lb-wrap">
       <table class="lb hidden" id="lb-table">
         <thead>
@@ -577,6 +899,7 @@ details.fix-results[open] summary::after{transform:rotate(90deg);}
   <section style="margin-top:2.5rem;">
     <p class="kicker">Schedule</p>
     <h2 class="display">Fixtures</h2>
+    <div id="ios-fix-seg" style="display:none"></div>
     <div id="fixtures-list" style="margin-top:1.25rem;"></div>
   </section>
 </div>
@@ -1778,6 +2101,263 @@ if (GROUP_CODE) {
     setTimeout(pollMatches, hasLive ? 30_000 : 60_000);
   }
   pollMatches();
+  initIOS();
+}
+
+// ─── iOS PINE DESIGN ──────────────────────────────────────────────────────────
+function initIOS() {
+  if (!document.documentElement.classList.contains('ios-app')) return;
+
+  // ── Tab bar: wrap buttons in glass pill ──
+  const tabBar = document.querySelector('.tab-bar');
+  if (tabBar) {
+    const inner = document.createElement('div');
+    inner.className = 'tab-bar-inner';
+    while (tabBar.firstChild) inner.appendChild(tabBar.firstChild);
+    tabBar.appendChild(inner);
+
+    const ICONS = {
+      fixtures: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.4l3.1 2.2-1.2 3.7h-3.8l-1.2-3.7L12 7.4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 7.4V4.2M14.9 9.6l2.9-1M13.9 13.3l1.9 2.6M10.1 13.3l-1.9 2.6M9.1 9.6l-2.9-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+      leaderboard: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3.4" y="12" width="4.3" height="7.2" rx="1.1" stroke="currentColor" stroke-width="1.7"/><rect x="9.85" y="6.6" width="4.3" height="12.6" rx="1.1" stroke="currentColor" stroke-width="1.7"/><rect x="16.3" y="9.4" width="4.3" height="9.8" rx="1.1" stroke="currentColor" stroke-width="1.7"/></svg>`,
+      rules: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="3.5" width="14" height="17" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.4 8h7.2M8.4 12h7.2M8.4 16h4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+      draw: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3.5 7.5h3.2c1.2 0 2 .6 2.8 1.7l5 6.6c.8 1.1 1.6 1.7 2.8 1.7h3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 16.5h3.2c1.2 0 2-.6 2.8-1.7l.7-1M14 9.2l.5-.7c.8-1.1 1.6-1.7 2.8-1.7h3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18.4 5.2L20.8 7.5 18.4 9.8M18.4 14.2l2.4 2.3-2.4 2.3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      admin: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="5.5" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="18.5" cy="12" r="1.9" fill="currentColor"/></svg>`,
+    };
+
+    inner.querySelectorAll('button[data-view]').forEach(btn => {
+      const view = btn.dataset.view;
+      const icon = ICONS[view] || ICONS.admin;
+      const label = btn.textContent.trim();
+      btn.innerHTML = `<span class="ios-tab-icon">${icon}</span><span class="ios-tab-label">${label}</span>`;
+    });
+  }
+
+  // ── Inject per-view headers ──
+  const VIEW_HEADERS = {
+    'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
+    'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    ticker: true },
+    'draw':        { kicker: 'The main event',  title: 'The Draw',    ticker: true },
+    'rules':       { kicker: 'How it works',    title: 'Rules',       ticker: false },
+    'admin':       { kicker: 'Your game',       title: 'More',        ticker: false },
+  };
+
+  Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
+    const view = document.getElementById('view-' + id);
+    if (!view) return;
+    if (view.querySelector('.ios-view-header')) return; // already injected
+    const code = GROUP_CODE || '—';
+    const tickerHtml = cfg.ticker ? `<div class="ios-ticker-wrap"><div class="ios-ticker" id="ios-ticker-${id}">loading…</div></div>` : '';
+    const extraHtml = id === 'leaderboard' ? `<div id="ios-status-pill-wrap"></div>` : '';
+    const segHtml = id === 'fixtures' ? `<div id="ios-fix-seg"></div>` : '';
+    const h = document.createElement('div');
+    h.className = 'ios-view-header';
+    h.innerHTML = `
+      <div class="ios-view-header-top">
+        <span class="ios-app-name">Sweetsteak</span>
+        <span class="ios-group-code">${code}</span>
+      </div>
+      <div class="ios-kicker">${cfg.kicker}</div>
+      <div class="ios-title">${cfg.title}${cfg.emoji ? ` <span style="font-size:26px">${cfg.emoji}</span>` : ''}</div>
+      ${extraHtml}${segHtml}${tickerHtml}
+    `;
+    view.insertBefore(h, view.firstChild);
+  });
+
+  // ── Fixtures segmented control ──
+  let fixtureTab = 'Live';
+  function renderFixSeg() {
+    const seg = document.getElementById('ios-fix-seg');
+    if (!seg) return;
+    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
+      `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
+    ).join('');
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        fixtureTab = btn.dataset.tab;
+        renderFixSeg();
+        applyFixtureFilter();
+      });
+    });
+  }
+
+  function applyFixtureFilter() {
+    const list = document.getElementById('fixtures-list');
+    if (!list) return;
+    list.querySelectorAll('.fix-section').forEach(s => {
+      const type = s.dataset.type;
+      s.style.display = (type === fixtureTab.toLowerCase() || !type) ? '' : 'none';
+    });
+    // If no live, auto-switch
+    const liveSec = list.querySelector('.fix-section[data-type="live"]');
+    if (fixtureTab === 'Live' && liveSec && liveSec.querySelectorAll('.fix-card').length === 0) {
+      // show upcoming instead
+      list.querySelectorAll('.fix-section').forEach(s => {
+        s.style.display = s.dataset.type === 'upcoming' ? '' : 'none';
+      });
+    }
+  }
+
+  // Patch renderFixtures to add data-type attrs and call filter
+  const _origRenderFixtures = renderFixtures;
+  window.renderFixtures = function() {
+    _origRenderFixtures();
+    // Add data-type to sections
+    const list = document.getElementById('fixtures-list');
+    if (!list) return;
+    list.querySelectorAll('.fix-section-head').forEach(head => {
+      const text = head.textContent.toLowerCase();
+      const section = document.createElement('div');
+      section.className = 'fix-section';
+      if (text.includes('live') || text.includes('progress')) section.dataset.type = 'live';
+      else if (text.includes('result') || text.includes('past')) section.dataset.type = 'results';
+      else section.dataset.type = 'upcoming';
+      // Move head + following cards into section
+      let next = head.nextSibling;
+      head.parentNode.insertBefore(section, head);
+      section.appendChild(head);
+      while (next && !next.classList?.contains('fix-section-head')) {
+        const tmp = next.nextSibling;
+        section.appendChild(next);
+        next = tmp;
+      }
+    });
+    renderFixSeg();
+    applyFixtureFilter();
+  };
+
+  renderFixSeg();
+
+  // ── Leaderboard cards ──
+  function renderLBCards() {
+    const container = document.getElementById('ios-lb-cards');
+    if (!container) return;
+    const assignments = buildAssignments(drawData);
+    if (!assignments) { container.innerHTML = ''; return; }
+
+    const scores = computeScores(assignments, apiMatches);
+    const sorted = Object.entries(scores).sort((a,b) => {
+      const s = (f) => b[1][f] - a[1][f];
+      return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
+    });
+
+    // baseline for move arrows (same logic as renderLeaderboard)
+    const liveMatches = apiMatches.filter(m => m.isLive);
+    let baselineMatches;
+    if (liveMatches.length) {
+      baselineMatches = apiMatches.filter(m => !m.isLive);
+    } else {
+      const finished = apiMatches.filter(m => m.utcDate);
+      const mostRecentKO = finished.map(m => m.utcDate).sort((a,b) => new Date(b)-new Date(a))[0];
+      baselineMatches = mostRecentKO ? apiMatches.filter(m => m.utcDate !== mostRecentKO) : apiMatches;
+    }
+    const baselineScores = computeScores(assignments, baselineMatches);
+    const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
+      const s=(f)=>b[1][f]-a[1][f];
+      return s('total')||s('wins')||s('goals')||s('progressPts')||s('bonusPts');
+    });
+    const baselineRanks = {};
+    baselineSorted.forEach(([p], i) => baselineRanks[p] = i+1);
+
+    const prizes = computePrizes();
+    const prizeMap = {'1': prizes?.first || '£40', '2': prizes?.second || '£15', '3': prizes?.third || '£10'};
+    const lastIdx = sorted.length - 1;
+
+    container.innerHTML = sorted.map(([player, s], i) => {
+      const rank = i + 1;
+      const isFirst = rank === 1;
+      const isLast = i === lastIdx && sorted.length >= 4;
+      const isTwo = sorted.length === 2;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
+      const rankHtml = medal
+        ? `<div class="ios-lb-card-rank medal">${medal}</div>`
+        : isLast ? `<div class="ios-lb-card-rank medal">🥄</div>`
+        : `<div class="ios-lb-card-rank">${rank}</div>`;
+
+      const prevRank = baselineRanks[player];
+      const diff = prevRank ? prevRank - rank : 0;
+      const moveHtml = diff > 0
+        ? `<span class="ios-lb-card-move up">▲${diff}</span>`
+        : diff < 0 ? `<span class="ios-lb-card-move dn">▼${Math.abs(diff)}</span>`
+        : `<span class="ios-lb-card-move flat">–</span>`;
+
+      const tms = assignments[player] || [];
+      const teamBadges = tms.map(team => {
+        const tier = TIER_MAP[team];
+        const tierColors = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}};
+        const c = tierColors[tier] || {bg:'#eee',fg:'#333'};
+        return `<span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;color:${c.fg};background:${c.bg};border-radius:5px;padding:2px 6px">${esc(team.substring(0,3).toUpperCase())}</span>`;
+      }).join('');
+
+      const prize = (!isTwo && rank <= 3) ? `<div class="ios-lb-card-prize">${prizeMap[rank]}</div>`
+                  : (isTwo && rank === 1) ? `<div class="ios-lb-card-prize">${prizeMap['1']}</div>`
+                  : isLast ? `<div class="ios-lb-card-prize">£5</div>` : '';
+
+      const classes = ['ios-lb-card'];
+      if (isFirst) classes.push('is-first');
+      if (isLast) classes.push('is-last');
+
+      return `<div class="${classes.join(' ')}">
+        ${rankHtml}
+        <div class="ios-lb-card-body">
+          <div class="ios-lb-card-name">
+            <span>${esc(player)}</span>
+            ${isLast ? '<span class="ios-lb-card-spoon-tag">WOODEN SPOON</span>' : ''}
+          </div>
+          <div class="ios-lb-card-teams">${teamBadges}</div>
+        </div>
+        <div class="ios-lb-card-right">
+          ${moveHtml}
+          <div class="ios-lb-card-pts-wrap">
+            <div class="ios-lb-card-pts">${s.total}</div>
+            ${prize}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Live status pill
+    updateIOSStatusPill();
+  }
+
+  function updateIOSStatusPill() {
+    const wrap = document.getElementById('ios-status-pill-wrap');
+    if (!wrap) return;
+    const live = apiMatches.filter(m => m.isLive);
+    if (!live.length) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = `<div class="ios-status-pill">
+      <span class="dot live"></span>
+      <span>${live.length} match${live.length > 1 ? 'es' : ''} in play · updated just now</span>
+      <span class="live-badge">LIVE</span>
+    </div>`;
+  }
+
+  // Patch renderLeaderboard to also render cards
+  const _origRenderLeaderboard = renderLeaderboard;
+  window.renderLeaderboard = function() {
+    _origRenderLeaderboard();
+    renderLBCards();
+  };
+  renderLBCards();
+
+  // ── Country ticker ──
+  function updateTickers() {
+    const allTeams = drawData ? Object.keys(buildTeamPlayerMap(drawData)) : [];
+    const tickerText = allTeams.length
+      ? (allTeams.join('   ·   ') + '   ·   ').repeat(2)
+      : 'WC 2026   ·   48 teams   ·   11 Jun – 19 Jul   ·   '.repeat(2);
+    document.querySelectorAll('[id^="ios-ticker-"]').forEach(el => {
+      el.textContent = tickerText;
+    });
+  }
+  updateTickers();
+  // Refresh tickers when draw data loads
+  const _origRenderDraw = typeof renderDraw === 'function' ? renderDraw : null;
+  if (_origRenderDraw) {
+    window.renderDraw = function() {
+      _origRenderDraw();
+      updateTickers();
+    };
+  }
 }
 </script>
 </body>

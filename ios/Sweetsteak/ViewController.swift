@@ -41,6 +41,7 @@ class ViewController: UIViewController {
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        injectIOSClass()
     }
 
     private func setupRefreshControl() {
@@ -48,6 +49,15 @@ class ViewController: UIViewController {
         refreshControl.tintColor = UIColor(red: 0.078, green: 0.353, blue: 0.200, alpha: 1)
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         webView.scrollView.addSubview(refreshControl)
+    }
+
+    private func injectIOSClass() {
+        let script = WKUserScript(
+            source: "document.documentElement.classList.add('ios-app');",
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        )
+        webView.configuration.userContentController.addUserScript(script)
     }
 
     private func injectUserSelectNone() {
