@@ -323,6 +323,9 @@ details.fix-results[open] summary::after{transform:rotate(90deg);}
 /* ── iOS Pine design ────────────────────────────────────────────── */
 @keyframes ss-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
+/* ── iOS global palette: brighter Pine gold ── */
+html.ios-app { --gold: #EAB308; --gold-dark: #A16207; }
+
 .ios-app body {
   padding-top: 0;
   padding-bottom: 100px; /* space for floating tab bar */
@@ -387,7 +390,7 @@ html.ios-app > body > header { display: none !important; }
   border-bottom: none !important;
 }
 .ios-app .tab-bar button.active .ios-tab-icon {
-  background: rgba(201,162,39,0.18);
+  background: rgba(234,179,8,0.25);
 }
 .ios-app .tab-bar button .ios-tab-label {
   font-size: 9.5px;
@@ -529,9 +532,7 @@ html.ios-app > body > header { display: none !important; }
   box-shadow: 0 2px 12px rgba(14,90,51,0.08);
   border: 1px solid #D8D4C8;
 }
-.ios-lb-card.is-first { border: 1.5px solid #C9A227; background: rgba(201,162,39,0.07); }
-.ios-lb-card.is-last  { border: 1px solid #f5c6c6; background: #FFF8F8; }
-.ios-lb-card.is-you   { border: 1.5px solid #C9A227; }
+.ios-lb-card.is-you   { border: 1.5px solid var(--gold); }
 .ios-lb-card-rank {
   width: 30px; height: 30px;
   border-radius: 50%;
@@ -551,8 +552,8 @@ html.ios-app > body > header { display: none !important; }
 .ios-lb-card-you-tag {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 8px; font-weight: 700;
-  color: #9A7B1A;
-  background: rgba(201,162,39,0.15);
+  color: var(--gold-dark);
+  background: rgba(234,179,8,0.15);
   padding: 1px 5px; border-radius: 4px;
 }
 .ios-lb-card-spoon-tag {
@@ -585,12 +586,12 @@ html.ios-app > body > header { display: none !important; }
   font-size: 24px; line-height: 1;
   color: #0E5A33;
 }
-.ios-lb-card.is-first .ios-lb-card-pts { color: #9A7B1A; }
+.ios-lb-card.is-first .ios-lb-card-pts { color: var(--gold-dark); }
 .ios-lb-card.is-last .ios-lb-card-pts { color: #c0392b; }
 .ios-lb-card-prize {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px; font-weight: 700;
-  color: #9A7B1A;
+  color: var(--gold-dark);
   margin-top: 2px;
 }
 .ios-lb-card.is-last .ios-lb-card-prize { color: #c0392b; }
@@ -622,7 +623,7 @@ html.ios-app > body > header { display: none !important; }
   text-transform: none;
 }
 .ios-app #ios-fix-seg button.active {
-  background: #C9A227;
+  background: var(--gold);
   color: #0A4226;
 }
 
@@ -640,6 +641,179 @@ html.ios-app > body > header { display: none !important; }
 
 /* ── main container padding ── */
 .ios-app main { padding: 0 0 1rem; }
+
+/* ── Hide statusBar in iOS (header pill takes its place) ── */
+.ios-app #statusBar { display: none !important; }
+
+/* ── Fix fixtures content spacing ── */
+.ios-app #view-fixtures section { margin-top: 0 !important; }
+.ios-app #fixtures-list { margin-top: 0 !important; }
+
+/* ── Leaderboard card expandable ── */
+.ios-lb-card { cursor: pointer; flex-wrap: wrap; }
+.ios-lb-card-detail {
+  display: none;
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+.ios-lb-card.expanded .ios-lb-card-detail { display: block; }
+.ios-lb-detail-row {
+  display: flex;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0ede5;
+  align-items: center;
+}
+.ios-lb-detail-row:last-child { border-bottom: none; }
+.ios-lb-detail-team {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; font-weight: 600;
+  border-radius: 4px; padding: 2px 5px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.ios-lb-detail-event { color: #5C6A60; flex: 1; font-size: 11.5px; }
+.ios-lb-detail-pts {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 700; color: #166534;
+  font-size: 12px; white-space: nowrap;
+}
+.ios-lb-detail-empty { font-size: 12px; color: #5C6A60; font-style: italic; padding: 4px 0; }
+.ios-lb-chevron-icon {
+  font-size: 14px; color: #5C6A60;
+  transition: transform 0.15s; flex-shrink: 0; align-self: center;
+}
+.ios-lb-card.expanded .ios-lb-chevron-icon { transform: rotate(90deg); }
+
+/* ── iOS Rules page ── */
+.ios-app #view-rules .rules-grid { display: none !important; }
+.ios-app #view-rules > section > .panel { display: none !important; }
+.ios-app #view-rules details.tiers { display: none !important; }
+#ios-rules-content { display: none; }
+.ios-app #ios-rules-content { display: block; }
+.ios-rules-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px; letter-spacing: .18em;
+  text-transform: uppercase; color: #5C6A60;
+  margin: 0 2px 10px;
+}
+.ios-rules-card {
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(22,101,52,0.08);
+  border: 1px solid #D8D4C8; overflow: hidden; margin-bottom: 18px;
+}
+.ios-rules-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-bottom: 1px solid #D8D4C8;
+}
+.ios-rules-row:last-child { border-bottom: none; }
+.ios-rules-row-body { flex: 1; min-width: 0; }
+.ios-rules-row-title { font-weight: 700; font-size: 14px; color: #16211A; }
+.ios-rules-row-sub { font-size: 11.5px; color: #5C6A60; margin-top: 2px; line-height: 1.35; }
+.ios-rules-pts {
+  flex-shrink: 0; font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; font-weight: 600;
+  padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+}
+.ios-rules-pts.normal {
+  background: rgba(234,179,8,0.15);
+  color: var(--gold-dark);
+  border: 1px solid rgba(234,179,8,0.4);
+}
+.ios-rules-pts.accent { background: #166534; color: #fff; }
+.ios-rules-stakes { display: flex; gap: 10px; margin-bottom: 18px; }
+.ios-rules-stake-card { flex: 1; border-radius: 16px; padding: 15px 14px; }
+.ios-rules-stake-gold { background: rgba(234,179,8,0.12); border: 1.5px solid #EAB308; }
+.ios-rules-stake-spoon { background: rgba(192,57,43,0.06); border: 1.5px solid rgba(192,57,43,0.35); }
+.ios-rules-stake-rank { font-family: 'Anton', sans-serif; font-size: 30px; line-height: 1; }
+.ios-rules-stake-rank.gold { color: var(--gold-dark); }
+.ios-rules-stake-rank.spoon { color: #C0392B; }
+.ios-rules-stake-title { font-weight: 700; font-size: 13px; color: #16211A; margin-top: 8px; }
+.ios-rules-stake-desc { font-size: 11.5px; color: #5C6A60; margin-top: 3px; line-height: 1.4; }
+.ios-rules-pot-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-bottom: 1px solid #D8D4C8;
+}
+.ios-rules-pot-row:last-child { border-bottom: none; }
+.ios-rules-pot-emoji { font-size: 17px; }
+.ios-rules-pot-label { font-weight: 700; font-size: 14px; color: #16211A; flex: 1; }
+.ios-rules-pot-amt { font-family: 'Anton', sans-serif; font-size: 22px; }
+.ios-rules-pot-amt.gold { color: var(--gold-dark); }
+.ios-rules-pot-amt.spoon { color: #C0392B; }
+.ios-rules-tier-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-top: 1px solid #D8D4C8;
+}
+.ios-rules-tier-row:first-child { border-top: none; }
+.ios-rules-tier-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  border-radius: 6px; padding: 3px 8px; flex-shrink: 0;
+}
+.ios-rules-tier-name { font-weight: 700; font-size: 13px; color: #16211A; }
+.ios-rules-tier-desc { margin-left: auto; font-size: 11px; color: #5C6A60; }
+
+/* ── iOS Onboarding / Landing ── */
+.ios-app #landing {
+  background: linear-gradient(180deg, #166534 0%, #0B3D1F 100%);
+}
+.ios-app #landing::before {
+  content: '';
+  position: absolute;
+  top: 90px; right: -60px;
+  width: 200px; height: 200px;
+  border: 2px solid rgba(255,255,255,0.07);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.ios-app #landing::after {
+  content: '';
+  position: absolute;
+  bottom: 140px; left: -50px;
+  width: 170px; height: 170px;
+  border: 2px solid rgba(234,179,8,0.2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.ios-app .landing-logo { margin-top: 64px; font-size: clamp(2rem,6vw,2.6rem); }
+.ios-app .landing-options {
+  grid-template-columns: 1fr !important;
+  gap: 12px;
+  max-width: 420px;
+  width: 100%;
+}
+.ios-app .landing-opt {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px !important;
+  border-radius: 14px !important;
+  text-align: center;
+}
+.ios-app .landing-opt .opt-desc { display: none; }
+.ios-app .landing-opt .opt-icon { font-size: 1.1rem; margin: 0; }
+.ios-app .landing-opt .opt-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; font-size: 1rem;
+  letter-spacing: 0; text-transform: none;
+}
+.ios-app #opt-create {
+  background: var(--gold) !important;
+  color: var(--pitch-dark) !important;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(234,179,8,0.35) !important;
+}
+.ios-app #opt-join {
+  background: rgba(255,255,255,0.08) !important;
+  color: #fff !important;
+  border: 1.5px solid rgba(255,255,255,0.25) !important;
+}
+.ios-app .landing-form-card {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
 </style>
 </head>
 <body>
@@ -651,6 +825,7 @@ html.ios-app > body > header { display: none !important; }
 <!-- LANDING (shown when no ?g= group code in URL) -->
 <div id="landing">
   <div class="landing-logo">World Cup <span>2026</span><br>Sweepstake</div>
+  <p class="landing-sub">Draw your teams. Climb the board.<br>Win the pot — or the wooden spoon.</p>
 
   <div class="landing-options">
     <div class="landing-opt" id="opt-create" tabindex="0">
@@ -896,7 +1071,7 @@ html.ios-app > body > header { display: none !important; }
 
 <!-- FIXTURES -->
 <div id="view-fixtures" class="view">
-  <section style="margin-top:2.5rem;">
+  <section>
     <p class="kicker">Schedule</p>
     <h2 class="display">Fixtures</h2>
     <div id="ios-fix-seg" style="display:none"></div>
@@ -1267,6 +1442,7 @@ document.querySelectorAll('.tab-bar button').forEach(btn =>
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    sessionStorage.setItem('sg_tab', btn.dataset.view);
   })
 );
 document.querySelectorAll('.admin-tabs button').forEach(btn =>
@@ -2102,6 +2278,13 @@ if (GROUP_CODE) {
   }
   pollMatches();
   initIOS();
+
+  // Restore active tab after page refresh
+  const _savedTab = sessionStorage.getItem('sg_tab');
+  if (_savedTab) {
+    const savedBtn = document.querySelector(`.tab-bar button[data-view="${_savedTab}"]`);
+    if (savedBtn) savedBtn.click();
+  }
 }
 
 // ─── iOS PINE DESIGN ──────────────────────────────────────────────────────────
@@ -2135,10 +2318,10 @@ function initIOS() {
   // ── Inject per-view headers ──
   const VIEW_HEADERS = {
     'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
-    'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    ticker: true },
-    'draw':        { kicker: 'The main event',  title: 'The Draw',    ticker: true },
-    'rules':       { kicker: 'How it works',    title: 'Rules',       ticker: false },
-    'admin':       { kicker: 'Your game',       title: 'More',        ticker: false },
+    'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
+    'draw':        { kicker: 'The main event',  title: 'The Draw',    emoji: '🎲', ticker: true },
+    'rules':       { kicker: 'How it works',    title: 'Rules',       emoji: '📋', ticker: true },
+    'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
@@ -2168,7 +2351,7 @@ function initIOS() {
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
+    seg.innerHTML = ['Live','Upcoming'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
@@ -2288,13 +2471,21 @@ function initIOS() {
         return `<span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;color:${c.fg};background:${c.bg};border-radius:5px;padding:2px 6px">${esc(team.substring(0,3).toUpperCase())}</span>`;
       }).join('');
 
+      const prizes2 = computePrizes();
       const prize = (!isTwo && rank <= 3) ? `<div class="ios-lb-card-prize">${prizeMap[rank]}</div>`
                   : (isTwo && rank === 1) ? `<div class="ios-lb-card-prize">${prizeMap['1']}</div>`
-                  : isLast ? `<div class="ios-lb-card-prize">£5</div>` : '';
+                  : isLast ? `<div class="ios-lb-card-prize">${prizes2?.spoon || '£5'}</div>` : '';
 
       const classes = ['ios-lb-card'];
       if (isFirst) classes.push('is-first');
       if (isLast) classes.push('is-last');
+
+      const detailRows = s.detail && s.detail.length
+        ? s.detail.map(d => {
+            const tc = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}}[TIER_MAP[d.team]] || {bg:'#eee',fg:'#333'};
+            return `<div class="ios-lb-detail-row"><span class="ios-lb-detail-team" style="background:${tc.bg};color:${tc.fg}">${esc(d.team)}</span><span class="ios-lb-detail-event">${esc(d.event)}</span><span class="ios-lb-detail-pts">+${d.pts}</span></div>`;
+          }).join('')
+        : `<div class="ios-lb-detail-empty">No points scored yet</div>`;
 
       return `<div class="${classes.join(' ')}">
         ${rankHtml}
@@ -2311,9 +2502,15 @@ function initIOS() {
             <div class="ios-lb-card-pts">${s.total}</div>
             ${prize}
           </div>
+          <span class="ios-lb-chevron-icon">›</span>
         </div>
+        <div class="ios-lb-card-detail">${detailRows}</div>
       </div>`;
     }).join('');
+
+    container.querySelectorAll('.ios-lb-card').forEach(card => {
+      card.addEventListener('click', () => card.classList.toggle('expanded'));
+    });
 
     // Live status pill
     updateIOSStatusPill();
@@ -2323,12 +2520,105 @@ function initIOS() {
     const wrap = document.getElementById('ios-status-pill-wrap');
     if (!wrap) return;
     const live = apiMatches.filter(m => m.isLive);
-    if (!live.length) { wrap.innerHTML = ''; return; }
+    const ts = lastUpdated ? new Date(lastUpdated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : null;
+    if (!live.length && !ts) { wrap.innerHTML = ''; return; }
+    const statusText = live.length
+      ? `${live.length} match${live.length > 1 ? 'es' : ''} in play`
+      : `Updated ${ts}`;
     wrap.innerHTML = `<div class="ios-status-pill">
-      <span class="dot live"></span>
-      <span>${live.length} match${live.length > 1 ? 'es' : ''} in play · updated just now</span>
-      <span class="live-badge">LIVE</span>
+      <span class="dot ${live.length ? 'live' : 'off'}"></span>
+      <span>${statusText}</span>
+      ${live.length ? '<span class="live-badge">LIVE</span>' : ''}
     </div>`;
+  }
+
+  // iOS Rules page rendering
+  function renderIOSRules() {
+    const rulesView = document.getElementById('view-rules');
+    if (!rulesView) return;
+    const existing = rulesView.querySelector('#ios-rules-content');
+    if (existing) existing.remove();
+
+    const prizes = computePrizes();
+    const ruleRows = [
+      { title: 'Goal scored', sub: 'Any goal by one of your teams', pts: '+1 pt' },
+      { title: 'Match won', sub: 'Group stage draw is worth +1 pt', pts: '+3 pts' },
+      { title: 'Giant-killing', sub: 'Beat a team 1 / 2 / 3 tiers above', pts: '+3/6/10' },
+      { title: 'Reach Round of 16', sub: '', pts: '+2 pts' },
+      { title: 'Reach Quarter-finals', sub: '', pts: '+3 pts' },
+      { title: 'Reach Semi-finals', sub: '', pts: '+4 pts' },
+      { title: 'Reach the Final', sub: '', pts: '+5 pts' },
+      { title: 'Win the tournament', sub: 'Progression bonuses stack — champion earns +19 total', pts: '+5 pts', accent: true },
+    ];
+    const tiers = [
+      { k:1, label:'Contenders', desc:'Top seeds (1–12)', bg:'#E3EFE7', fg:'#0E5A33' },
+      { k:2, label:'Challengers', desc:'Solid sides (13–24)', bg:'#E1EEF3', fg:'#1A6E8A' },
+      { k:3, label:'Outsiders', desc:'Underdogs (25–36)', bg:'#F6EADB', fg:'#A05A18' },
+      { k:4, label:'Wildcards', desc:'Long shots (37–48)', bg:'#EDE8F5', fg:'#6B3FA0' },
+    ];
+    const potRows = [
+      { emoji:'🏆', label:'Most points',  amt: prizes?.first  || '£40', cls:'gold' },
+      { emoji:'🥈', label:'Second place', amt: prizes?.second || '£15', cls:'' },
+      { emoji:'🥉', label:'Third place',  amt: prizes?.third  || '£10', cls:'' },
+      { emoji:'🥄', label:'Wooden spoon', amt: prizes?.spoon  || '£5',  cls:'spoon' },
+    ];
+
+    const div = document.createElement('div');
+    div.id = 'ios-rules-content';
+    div.innerHTML = `
+      <div class="ios-rules-label">Scoring</div>
+      <div class="ios-rules-card">
+        ${ruleRows.map(r => `
+          <div class="ios-rules-row">
+            <div class="ios-rules-row-body">
+              <div class="ios-rules-row-title">${esc(r.title)}</div>
+              ${r.sub ? `<div class="ios-rules-row-sub">${esc(r.sub)}</div>` : ''}
+            </div>
+            <div class="ios-rules-pts ${r.accent ? 'accent' : 'normal'}">${r.pts}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="ios-rules-label">The draw</div>
+      <div class="ios-rules-card">
+        <div style="padding:14px 14px 6px">
+          <div style="font-size:13px;line-height:1.5;color:#16211A;margin-bottom:13px">
+            48 teams split into four ranked tiers. Each player is drawn teams from multiple tiers — top seeds to long shots.
+          </div>
+          ${tiers.map((t,i) => `
+            <div class="ios-rules-tier-row">
+              <span class="ios-rules-tier-badge" style="background:${t.bg};color:${t.fg}">T${t.k}</span>
+              <span class="ios-rules-tier-name">${esc(t.label)}</span>
+              <span class="ios-rules-tier-desc">${esc(t.desc)}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="ios-rules-label">The stakes</div>
+      <div class="ios-rules-stakes">
+        <div class="ios-rules-stake-card ios-rules-stake-gold">
+          <div class="ios-rules-stake-rank gold">1st</div>
+          <div class="ios-rules-stake-title">Wins the pot</div>
+          <div class="ios-rules-stake-desc">Most points when the final whistle blows takes it all.</div>
+        </div>
+        <div class="ios-rules-stake-card ios-rules-stake-spoon">
+          <div class="ios-rules-stake-rank spoon">Last</div>
+          <div class="ios-rules-stake-title">Wooden spoon</div>
+          <div class="ios-rules-stake-desc">Bottom of the board buys the next round.</div>
+        </div>
+      </div>
+
+      ${prizes ? `<div class="ios-rules-label">The pot · ${prizes.pot}</div>` : '<div class="ios-rules-label">The pot</div>'}
+      <div class="ios-rules-card">
+        ${potRows.map(p => `
+          <div class="ios-rules-pot-row">
+            <span class="ios-rules-pot-emoji">${p.emoji}</span>
+            <span class="ios-rules-pot-label">${esc(p.label)}</span>
+            <span class="ios-rules-pot-amt ${p.cls}">${esc(p.amt)}</span>
+          </div>`).join('')}
+      </div>`;
+
+    const section = rulesView.querySelector('section');
+    if (section) section.appendChild(div);
   }
 
   // Patch renderLeaderboard to also render cards
@@ -2336,8 +2626,10 @@ function initIOS() {
   window.renderLeaderboard = function() {
     _origRenderLeaderboard();
     renderLBCards();
+    renderIOSRules();
   };
   renderLBCards();
+  renderIOSRules();
 
   // ── Country ticker ──
   function updateTickers() {
