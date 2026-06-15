@@ -2357,11 +2357,11 @@ function initIOS() {
   });
 
   // ── Fixtures segmented control ──
-  let fixtureTab = 'Live';
+  let fixtureTab = 'Fixtures';
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
+    seg.innerHTML = ['Fixtures','Results'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
@@ -2378,16 +2378,12 @@ function initIOS() {
     if (!list) return;
     list.querySelectorAll('.fix-section').forEach(s => {
       const type = s.dataset.type;
-      s.style.display = (type === fixtureTab.toLowerCase() || !type) ? '' : 'none';
+      if (fixtureTab === 'Fixtures') {
+        s.style.display = (type === 'live' || type === 'upcoming' || !type) ? '' : 'none';
+      } else {
+        s.style.display = type === 'results' ? '' : 'none';
+      }
     });
-    // If no live, auto-switch
-    const liveSec = list.querySelector('.fix-section[data-type="live"]');
-    if (fixtureTab === 'Live' && liveSec && liveSec.querySelectorAll('.fix-card').length === 0) {
-      // show upcoming instead
-      list.querySelectorAll('.fix-section').forEach(s => {
-        s.style.display = s.dataset.type === 'upcoming' ? '' : 'none';
-      });
-    }
   }
 
   // Patch renderFixtures to add data-type attrs and call filter
