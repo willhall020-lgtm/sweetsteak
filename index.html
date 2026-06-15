@@ -403,12 +403,15 @@ html.ios-app > body > header { display: none !important; }
 /* ── Per-view iOS header ── */
 .ios-app .ios-view-header {
   background: linear-gradient(135deg,#0B3D1F 0%,#15803D 60%,#3F9D54 120%);
-  padding: 54px 18px 22px;
+  padding: 54px 18px 0;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
   margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
 }
+.ios-app .ios-view-header .ios-header-spacer { flex: 1; min-height: 0; }
 .ios-app .ios-view-header::before {
   content: '';
   position: absolute;
@@ -500,12 +503,12 @@ html.ios-app > body > header { display: none !important; }
   margin-top: 14px;
   margin-left: -18px;
   margin-right: -18px;
-  margin-bottom: -22px;
   border-top: 1px solid rgba(255,255,255,0.22);
-  padding: 8px 0;
+  padding: 8px 0 22px;
   overflow: hidden;
   white-space: nowrap;
   position: relative;
+  flex-shrink: 0;
 }
 .ios-app .ios-ticker {
   display: inline-block;
@@ -1356,7 +1359,7 @@ html.ios-app > body > header { display: none !important; }
         </div>
         <div id="done" class="hidden">
           <div class="done-banner" style="margin-top:.5rem;">
-            <p class="display">Draw complete</p>
+            <p class="display">Advance Australia Fair 🇦🇺🇦🇺🇦🇺</p>
             <p style="opacity:.85;font-size:.9rem;margin-top:.4rem;">All 48 teams assigned.</p>
           </div>
           <div class="btn-row">
@@ -2823,7 +2826,9 @@ function initIOS() {
       <div class="ios-kicker">${cfg.kicker}</div>
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
       ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
-      ${extraHtml}${segHtml}${tickerHtml}
+      ${extraHtml}${segHtml}
+      <div class="ios-header-spacer"></div>
+      ${tickerHtml}
     `;
     view.insertBefore(h, view.firstChild);
   });
