@@ -457,6 +457,15 @@ html.ios-app > body > header { display: none !important; }
   margin-top: 4px;
   color: #fff;
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ios-app .ios-view-header .ios-header-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 7px;
+  line-height: 1.45;
 }
 
 /* ── Status bar in header ── */
@@ -2320,8 +2329,8 @@ function initIOS() {
     'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
     'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: 'The main event',  title: 'The Draw',    emoji: '🎲', ticker: true },
-    'rules':       { kicker: 'How it works',    title: 'Rules',       emoji: '📋', ticker: true },
-    'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true },
+    'rules':       { kicker: 'How it works',    title: 'Rules',       emoji: '📋', ticker: true, desc: 'Score points every time your teams score, win, and progress through the tournament.' },
+    'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true, desc: 'Group settings, admin tools, and your game code.' },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
@@ -2340,7 +2349,8 @@ function initIOS() {
         <span class="ios-group-code">${code}</span>
       </div>
       <div class="ios-kicker">${cfg.kicker}</div>
-      <div class="ios-title">${cfg.title}${cfg.emoji ? ` <span style="font-size:26px">${cfg.emoji}</span>` : ''}</div>
+      <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
+      ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
       ${extraHtml}${segHtml}${tickerHtml}
     `;
     view.insertBefore(h, view.firstChild);
@@ -2351,7 +2361,7 @@ function initIOS() {
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming'].map(t =>
+    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
@@ -2384,21 +2394,33 @@ function initIOS() {
   const _origRenderFixtures = renderFixtures;
   window.renderFixtures = function() {
     _origRenderFixtures();
-    // Add data-type to sections
     const list = document.getElementById('fixtures-list');
     if (!list) return;
+    // Convert <details class="fix-results"> to a typed fix-section before general processing
+    const detailsEl = list.querySelector('details.fix-results');
+    if (detailsEl) {
+      const sec = document.createElement('div');
+      sec.className = 'fix-section';
+      sec.dataset.type = 'results';
+      while (detailsEl.firstChild) {
+        const c = detailsEl.firstChild;
+        if (c.nodeName === 'SUMMARY') detailsEl.removeChild(c);
+        else sec.appendChild(c);
+      }
+      detailsEl.parentNode.replaceChild(sec, detailsEl);
+    }
+    // Wrap remaining (non-results) section heads into typed sections
     list.querySelectorAll('.fix-section-head').forEach(head => {
+      if (head.closest('.fix-section')) return; // already inside results section
       const text = head.textContent.toLowerCase();
       const section = document.createElement('div');
       section.className = 'fix-section';
       if (text.includes('live') || text.includes('progress')) section.dataset.type = 'live';
-      else if (text.includes('result') || text.includes('past')) section.dataset.type = 'results';
       else section.dataset.type = 'upcoming';
-      // Move head + following cards into section
       let next = head.nextSibling;
       head.parentNode.insertBefore(section, head);
       section.appendChild(head);
-      while (next && !next.classList?.contains('fix-section-head')) {
+      while (next && !next.classList?.contains('fix-section-head') && !next.classList?.contains('fix-section')) {
         const tmp = next.nextSibling;
         section.appendChild(next);
         next = tmp;
@@ -2590,20 +2612,6 @@ function initIOS() {
               <span class="ios-rules-tier-name">${esc(t.label)}</span>
               <span class="ios-rules-tier-desc">${esc(t.desc)}</span>
             </div>`).join('')}
-        </div>
-      </div>
-
-      <div class="ios-rules-label">The stakes</div>
-      <div class="ios-rules-stakes">
-        <div class="ios-rules-stake-card ios-rules-stake-gold">
-          <div class="ios-rules-stake-rank gold">1st</div>
-          <div class="ios-rules-stake-title">Wins the pot</div>
-          <div class="ios-rules-stake-desc">Most points when the final whistle blows takes it all.</div>
-        </div>
-        <div class="ios-rules-stake-card ios-rules-stake-spoon">
-          <div class="ios-rules-stake-rank spoon">Last</div>
-          <div class="ios-rules-stake-title">Wooden spoon</div>
-          <div class="ios-rules-stake-desc">Bottom of the board buys the next round.</div>
         </div>
       </div>
 
