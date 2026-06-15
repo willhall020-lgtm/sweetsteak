@@ -1033,7 +1033,7 @@ html.ios-app > body > header { display: none !important; }
 
     <div id="draw-live">
       <div class="draw-stage">
-        <div id="setup">
+        <div id="setup" class="hidden">
           <p class="pick-label">Who's playing?</p>
           <div class="setup-controls">
             <span class="player-count" id="playerCountDisplay">0 players</span>
@@ -1978,7 +1978,9 @@ function applyDrawState() {
     document.getElementById('saveDrawBtn').classList.add('hidden');
     document.getElementById('redoBtn').classList.toggle('hidden', !IS_ADMIN);
     document.getElementById('toggleMathsBtn').classList.remove('hidden');
-  } else if (!IS_ADMIN) {
+  } else if (IS_ADMIN) {
+    showPane('setup');
+  } else {
     document.getElementById('draw-live').classList.add('hidden');
     document.getElementById('draw-pending').classList.remove('hidden');
   }
