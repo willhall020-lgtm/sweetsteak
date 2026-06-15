@@ -2551,6 +2551,15 @@ function initIOS() {
       <span>${statusText}</span>
       ${live.length ? '<span class="live-badge">LIVE</span>' : ''}
     </div>`;
+    equalizeHeaderHeights();
+  }
+
+  function equalizeHeaderHeights() {
+    const headers = Array.from(document.querySelectorAll('.ios-view-header'));
+    if (!headers.length) return;
+    headers.forEach(h => { h.style.minHeight = ''; });
+    const maxH = Math.max(...headers.map(h => h.offsetHeight));
+    headers.forEach(h => { h.style.minHeight = maxH + 'px'; });
   }
 
   // iOS Rules page rendering
@@ -2649,6 +2658,7 @@ function initIOS() {
     });
   }
   updateTickers();
+  equalizeHeaderHeights();
   // Refresh tickers when draw data loads
   const _origRenderDraw = typeof renderDraw === 'function' ? renderDraw : null;
   if (_origRenderDraw) {
