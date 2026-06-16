@@ -3018,11 +3018,11 @@ function initIOS() {
   }
 
   function equalizeHeaderHeights() {
+    // Disabled: headers now size to their own content (matches Paper
+    // mockup), instead of all views being stretched to match the
+    // tallest header (e.g. Rules/Draw with extra desc text).
     const headers = Array.from(document.querySelectorAll('.ios-view-header'));
-    if (!headers.length) return;
     headers.forEach(h => { h.style.minHeight = ''; });
-    const maxH = Math.max(...headers.map(h => h.offsetHeight));
-    headers.forEach(h => { h.style.minHeight = maxH + 'px'; });
   }
 
   // iOS Rules page rendering
