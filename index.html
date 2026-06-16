@@ -844,96 +844,38 @@ html.ios-app > body > header { display: none !important; }
   overflow: hidden;
 }
 
-.lx2-glow {
-  position: absolute; left: 50%; top: 40%; width: 520px; height: 520px;
+/* Logo-forward cold-open: glow blooms, the steak crest pops in, the
+   SWEETSTEAK wordmark rises, the mono kicker fades. ~1.5s, no flags,
+   no reel, no confetti, no ticker. */
+.lx3-glow {
+  position: absolute; left: 50%; top: 44%; width: 360px; height: 360px;
   transform: translate(-50%,-50%);
-  background: radial-gradient(circle, rgba(234,179,8,0.30) 0%, rgba(234,179,8,0.07) 38%, transparent 64%);
-  opacity: 0; animation: lx2-fadeIn .8s ease-out .1s forwards, lx2-breathe 3.2s ease-in-out 1.4s infinite;
+  background: radial-gradient(circle, rgba(234,179,8,0.30) 0%, rgba(234,179,8,0.06) 42%, transparent 66%);
+  opacity: 0; animation: lx3-glowIn .8s ease-out .1s forwards, lx3-breathe 3.4s ease-in-out 1.2s infinite;
 }
-.lx2-deco { position: absolute; border-radius: 50%; opacity: 0; animation: lx2-decoIn .9s ease-out forwards; }
-.lx2-deco1 { top: -70px; right: -80px; width: 240px; height: 240px; border: 2px solid rgba(255,255,255,0.08); animation-delay: .2s; }
-.lx2-deco2 { bottom: 120px; left: -70px; width: 200px; height: 200px; border: 2px solid rgba(234,179,8,0.22); animation-delay: .4s; }
+.lx3-lock {
+  position: absolute; left: 0; right: 0; top: 44%; padding: 0 28px; box-sizing: border-box;
+  transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 18px;
+}
+.lx3-crest {
+  display: flex; line-height: 0; opacity: 0; transform: scale(.5) translateY(8px);
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.32));
+  animation: lx3-crestIn .56s cubic-bezier(.34,1.6,.45,1) .35s forwards;
+}
+.lx3-word {
+  font-family: 'Anton', sans-serif; font-size: 38px; letter-spacing: .04em; text-transform: uppercase; color: #fff;
+  opacity: 0; transform: translateY(12px); animation: lx3-up .5s cubic-bezier(.2,.7,.2,1) .7s forwards;
+}
+.lx3-kick {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: #DCFCE7;
+  opacity: 0; animation: lx3-fade .5s ease-out .98s forwards;
+}
 
-.lx2-stage-label {
-  position: absolute; left: 0; right: 0; top: 21%; text-align: center;
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .28em;
-  text-transform: uppercase; color: #DCFCE7; opacity: 0;
-  animation: lx2-fadeIn .5s ease-out .35s forwards, lx2-labelOut .4s ease-in 1.5s forwards;
-}
-
-.lx2-reel-area {
-  position: absolute; left: 0; right: 0; top: 40%; transform: translateY(-50%);
-  display: flex; align-items: center; justify-content: center;
-  animation: lx2-reelAreaOut .4s ease-in 1.78s forwards;
-}
-.lx2-reel-window { position: relative; width: 280px; height: 168px; overflow: hidden; }
-.lx2-reel { position: absolute; left: 0; right: 0; top: 56px; }
-.lx2-reel-row { height: 56px; display: flex; align-items: center; justify-content: center; }
-.lx2-flag { font-size: 46px; line-height: 1; }
-.lx2-reel-fade { position: absolute; left: 0; right: 0; height: 56px; pointer-events: none; z-index: 2; }
-.lx2-reel-fade-top { top: 0; background: linear-gradient(180deg, #135c30 0%, transparent 100%); }
-.lx2-reel-fade-bot { bottom: 0; background: linear-gradient(0deg, #0e4a26 0%, transparent 100%); }
-.lx2-reel-line {
-  position: absolute; left: 8px; right: 8px; top: 50%; height: 56px; transform: translateY(-50%);
-  border-top: 1.5px solid rgba(234,179,8,0.35); border-bottom: 1.5px solid rgba(234,179,8,0.35); z-index: 1;
-}
-.lx2-flash {
-  position: absolute; left: 50%; top: 50%; width: 230px; height: 64px;
-  transform: translate(-50%,-50%) scale(.7); border-radius: 14px;
-  background: rgba(255,255,255,0.92); opacity: 0;
-  animation: lx2-flash-anim .5s ease-out 1.66s forwards;
-}
-.lx2-lockup {
-  position: absolute; left: 0; right: 0; top: 40%; transform: translateY(-50%);
-  display: flex; flex-direction: column; align-items: center;
-}
-.lx2-mark {
-  font-family: 'Anton', sans-serif; font-size: 100px; line-height: .9; color: #EAB308;
-  text-shadow: 0 0 22px rgba(234,179,8,0.5);
-  opacity: 0; transform: scale(.3) rotate(-12deg);
-  animation: lx2-markPop .6s cubic-bezier(.32,1.7,.5,1) 1.74s forwards;
-}
-.lx2-word {
-  margin-top: 12px; display: flex; gap: 1px;
-  font-family: 'Anton', sans-serif; font-size: 38px; letter-spacing: .03em; text-transform: uppercase; color: #fff;
-}
-.lx2-word span {
-  display: inline-block; opacity: 0; transform: translateY(16px) rotate(8deg);
-  animation: lx2-letterPop .42s cubic-bezier(.3,1.5,.5,1) forwards;
-}
-.lx2-confetti { position: absolute; left: 50%; top: 6px; width: 1px; height: 1px; }
-.lx2-piece {
-  position: absolute; top: 0; display: block; opacity: 0;
-  animation-name: lx2-fall; animation-timing-function: cubic-bezier(.25,.6,.35,1); animation-fill-mode: forwards;
-}
-.lx2-bottom { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; }
-.lx2-track { position: relative; width: 168px; height: 22px; opacity: 0; animation: lx2-fadeIn .4s ease-out 2.0s forwards; }
-.lx2-bar { position: absolute; top: 10px; left: 0; width: 168px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.14); overflow: hidden; }
-.lx2-fill { width: 100%; height: 100%; border-radius: 3px; background: linear-gradient(90deg,#A16207,#EAB308); transform: scaleX(0); transform-origin: left; animation: lx2-barFill 1.2s cubic-bezier(.45,.05,.3,1) 2.05s forwards; }
-.lx2-ball { position: absolute; top: -3px; left: -8px; font-size: 17px; animation: lx2-roll 1.2s cubic-bezier(.45,.05,.3,1) 2.05s forwards; }
-.lx2-load-label { margin-top: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,0.5); opacity: 0; animation: lx2-fadeIn .5s ease-out 2.2s forwards; }
-.lx2-ticker {
-  margin-top: 18px; width: 100%; padding: 12px 0 28px; border-top: 1px solid rgba(255,255,255,0.12);
-  overflow: hidden; white-space: nowrap; opacity: 0;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  animation: lx2-fadeIn .6s ease-out .9s forwards;
-}
-.lx2-tick-track { display: inline-block; animation: lx2-ticker-scroll 26s linear infinite; }
-.lx2-tick-track span { display: inline-block; padding-right: .4em; font-family: 'IBM Plex Mono', monospace; font-size: 16px; letter-spacing: .12em; }
-
-@keyframes lx2-fadeIn { to { opacity: 1; } }
-@keyframes lx2-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.28); } }
-@keyframes lx2-decoIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
-@keyframes lx2-labelOut { to { opacity: 0; transform: translateY(-8px); } }
-@keyframes lx2-flash-anim { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.7); } 35% { opacity: .85; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.18); } }
-@keyframes lx2-reelAreaOut { to { opacity: 0; transform: translateY(-50%) scale(.92); } }
-@keyframes lx2-markPop { 0% { opacity: 0; transform: scale(.3) rotate(-12deg); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
-@keyframes lx2-letterPop { to { opacity: 1; transform: translateY(0) rotate(0deg); } }
-@keyframes lx2-fall { 0% { opacity: 1; transform: translate(0,0) rotate(0deg); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
-@keyframes lx2-barFill { to { transform: scaleX(1); } }
-@keyframes lx2-roll { from { left: -8px; transform: rotate(0deg); } to { left: 160px; transform: rotate(720deg); } }
-@keyframes lx2-ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes lx3-crestIn { 0% { opacity: 0; transform: scale(.5) translateY(8px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes lx3-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes lx3-fade { to { opacity: 1; } }
+@keyframes lx3-glowIn { from { opacity: 0; transform: translate(-50%,-50%) scale(.6); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+@keyframes lx3-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.28); } }
 
 @media (prefers-reduced-motion: reduce) {
   .ios-app #ios-launch { display: none !important; }
@@ -1065,31 +1007,38 @@ html.ios-app > body > header { display: none !important; }
 
 <!-- iOS LAUNCH ANIMATION (hidden on web) -->
 <div id="ios-launch" aria-hidden="true">
-  <div class="lx2-glow"></div>
-  <div class="lx2-deco lx2-deco1"></div>
-  <div class="lx2-deco lx2-deco2"></div>
-  <div class="lx2-stage-label">THE DRAW</div>
-  <div class="lx2-reel-area">
-    <div class="lx2-reel-window">
-      <div class="lx2-reel" id="ios-launch-reel"></div>
-      <div class="lx2-reel-fade lx2-reel-fade-top"></div>
-      <div class="lx2-reel-fade lx2-reel-fade-bot"></div>
-      <div class="lx2-reel-line"></div>
+  <div class="lx3-glow"></div>
+  <div class="lx3-lock">
+    <div class="lx3-crest">
+      <svg viewBox="0 0 72 72" width="84" height="84" style="overflow:visible">
+        <defs>
+          <clipPath id="stkTop">
+            <path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 39 62 44 60 45 C46 50 24 50 13 45 C11.5 46 11 46 11 46 Z" />
+          </clipPath>
+        </defs>
+        <g transform="rotate(-2 36 36)">
+          <path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 41 61 47 58 50 C50 56 22 56 13 50 C11 49 11 47 11 46 Z"
+            fill="rgba(234,179,8,0.12)" stroke="#EAB308" stroke-width="2.6" stroke-linejoin="round" />
+          <g clip-path="url(#stkTop)" stroke="#EAB308" stroke-width="2" stroke-linecap="round">
+            <line x1="16" y1="20" x2="46" y2="50" />
+            <line x1="28" y1="18" x2="60" y2="48" />
+            <line x1="8" y1="32" x2="32" y2="56" />
+            <line x1="16" y1="52" x2="46" y2="22" />
+            <line x1="28" y1="54" x2="60" y2="24" />
+            <line x1="8" y1="44" x2="30" y2="20" />
+          </g>
+          <path d="M13 45 C26 50 46 50 60 45" fill="none" stroke="#EAB308" stroke-width="2" stroke-linecap="round" />
+          <g stroke="#EAB308" stroke-width="1.5" stroke-linecap="round">
+            <line x1="23" y1="49" x2="23" y2="53" />
+            <line x1="31" y1="50" x2="31" y2="54" />
+            <line x1="40" y1="50" x2="40" y2="54" />
+            <line x1="48" y1="49" x2="48" y2="53" />
+          </g>
+        </g>
+      </svg>
     </div>
-    <div class="lx2-flash"></div>
-  </div>
-  <div class="lx2-lockup">
-    <div class="lx2-confetti" id="ios-launch-confetti"></div>
-    <div class="lx2-mark">S</div>
-    <div class="lx2-word" id="ios-launch-word"></div>
-  </div>
-  <div class="lx2-bottom">
-    <div class="lx2-track">
-      <div class="lx2-bar"><div class="lx2-fill"></div></div>
-      <div class="lx2-ball">⚽</div>
-    </div>
-    <div class="lx2-load-label">Sorting the hat · 48 teams</div>
-    <div class="lx2-ticker"><div class="lx2-tick-track" id="ios-launch-ticker"></div></div>
+    <div class="lx3-word">SWEETSTEAK</div>
+    <div class="lx3-kick">World Cup 2026 · Sweepstake</div>
   </div>
 </div>
 
@@ -1660,81 +1609,28 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
 })();
 
 // ─── iOS LAUNCH ANIMATION ────────────────────────────────────────────────────
+// Logo-forward cold-open: glow blooms, the steak crest pops in, SWEETSTEAK
+// rises, the kicker fades. ~1.5s, fully CSS-driven — no per-run JS setup.
 (function initLaunchAnimation() {
   if (!document.documentElement.classList.contains('ios-app')) return;
   // Always show the splash on launch — whether it's followed by Sign In,
   // the Create/Join landing, or the device's saved game just depends on
   // what's already on the page underneath once it fades out.
-
-  // Show the launch overlay now that we know it's needed
   document.getElementById('ios-launch').style.display = 'block';
-
-  const REEL_FLAGS = ['🇫🇷','🇧🇷','🇦🇷','🇪🇸','🇩🇪','🇵🇹','🇳🇱','🇭🇷','🇯🇵','🇺🇸','🇲🇽','🇲🇦','🇸🇳','🇧🇪','🇺🇾','🇮🇹'];
-  const TEAMS_TICK = ['🇫🇷 France','🇧🇷 Brazil','🇦🇷 Argentina','🇪🇸 Spain','🇩🇪 Germany','🇵🇹 Portugal','🇳🇱 Netherlands','🇭🇷 Croatia','🇯🇵 Japan','🇺🇸 USA','🇲🇽 Mexico','🇲🇦 Morocco','🇸🇳 Senegal','🇧🇪 Belgium','🇺🇾 Uruguay','🇮🇹 Italy'];
-  const ITEM_H = 56;
-
-  // Build reel rows (3 copies for runway)
-  const reelEl = document.getElementById('ios-launch-reel');
-  [...REEL_FLAGS, ...REEL_FLAGS, ...REEL_FLAGS].forEach(f => {
-    const row = document.createElement('div');
-    row.className = 'lx2-reel-row';
-    row.innerHTML = `<span class="lx2-flag">${f}</span>`;
-    reelEl.appendChild(row);
-  });
-
-  // Build SWEETSTEAK letter-by-letter word
-  const wordEl = document.getElementById('ios-launch-word');
-  'SWEETSTEAK'.split('').forEach((c, i) => {
-    const span = document.createElement('span');
-    span.textContent = c;
-    span.style.animationDelay = (1.92 + i * 0.045) + 's';
-    wordEl.appendChild(span);
-  });
-
-  // Build confetti pieces
-  const confettiEl = document.getElementById('ios-launch-confetti');
-  const COLS = ['#EAB308','#22C55E','#FFFFFF','#A16207','#DCFCE7'];
-  for (let i = 0; i < 26; i++) {
-    const p = document.createElement('span');
-    p.className = 'lx2-piece';
-    const w = 6 + Math.random() * 5, h = 9 + Math.random() * 7, round = Math.random() > 0.6;
-    p.style.cssText = `left:${50 + (Math.random()*64-32)}%;width:${w}px;height:${round?w:h}px;background:${COLS[i%COLS.length]};border-radius:${round?'50%':'2px'};animation-delay:${1.28+Math.random()*.18}s;animation-duration:${1+Math.random()*.7}s`;
-    p.style.setProperty('--dx', (Math.random()*160-80)+'px');
-    p.style.setProperty('--dy', (240+Math.random()*200)+'px');
-    p.style.setProperty('--rot', (Math.random()*720-360)+'deg');
-    confettiEl.appendChild(p);
-  }
-
-  // Build ticker
-  const tick = TEAMS_TICK.join('  ·  ') + '  ·  ';
-  const tickEl = document.getElementById('ios-launch-ticker');
-  tickEl.innerHTML = `<span>${tick}</span><span>${tick}</span>`;
-
-  // Animate reel spin
-  const target = Math.floor(Math.random() * REEL_FLAGS.length);
-  const restIndex = REEL_FLAGS.length + target;
-  const rest = restIndex * ITEM_H;
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    reelEl.animate(
-      [{ transform: 'translateY(0)' }, { transform: `translateY(-${rest}px)` }],
-      { duration: 1700, delay: 400, easing: 'cubic-bezier(.12,.62,.18,1)', fill: 'forwards' }
-    );
-  } else {
-    reelEl.style.transform = `translateY(-${rest}px)`;
-  }
 
   // Pre-show sign-in behind the animation if not yet signed in
   if (!localStorage.getItem('sg_apple_id')) {
     document.getElementById('ios-signin').classList.add('active');
   }
 
-  // Fade out launch after animation completes (~3.5s splash out + buffer)
+  // Fade out launch once the cold-open has finished (kicker fades in at
+  // ~1.48s) plus a short hold, then a quick fade.
   const launch = document.getElementById('ios-launch');
   setTimeout(() => {
     launch.style.transition = 'opacity 0.5s ease-out';
     launch.style.opacity = '0';
     setTimeout(() => { launch.style.display = 'none'; }, 500);
-  }, 3800);
+  }, 2000);
 })();
 
 // ─── iOS SIGN-IN ──────────────────────────────────────────────────────────────
