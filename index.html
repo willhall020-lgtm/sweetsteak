@@ -839,7 +839,7 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS Launch Animation ──────────────────────────────────────── */
 #ios-launch {
   display: none;
-  position: fixed; inset: 0; z-index: 400;
+  position: fixed; inset: 0; z-index: 700; /* above .tab-bar (500) and #ios-signin/#ios-pick-player (550) */
   background: linear-gradient(180deg,#166534 0%,#0B3D1F 100%);
   overflow: hidden;
 }
@@ -884,7 +884,7 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS Sign-In Screen ─────────────────────────────────────────── */
 #ios-signin {
   display: none;
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 550; /* above .tab-bar (500) so the saved game's chrome doesn't show through */
   background: linear-gradient(180deg,#0E5A33 0%,#0B3D1F 100%);
   overflow: hidden; color: #fff; font-family: 'Inter', sans-serif;
 }
@@ -950,7 +950,7 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS Pick Player Screen ─────────────────────────────────────── */
 #ios-pick-player {
   display: none;
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 550; /* above .tab-bar (500) */
   background: linear-gradient(180deg,#0E5A33 0%,#0B3D1F 100%);
   overflow: hidden; color: #fff; font-family: 'Inter', sans-serif;
 }
