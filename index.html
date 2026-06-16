@@ -1662,15 +1662,9 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
 // ─── iOS LAUNCH ANIMATION ────────────────────────────────────────────────────
 (function initLaunchAnimation() {
   if (!document.documentElement.classList.contains('ios-app')) return;
-  // Only show when the landing would be shown (no saved game)
-  const hasGame = (function() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && k.startsWith('sg_role_')) return true;
-    }
-    return false;
-  })();
-  if (hasGame) return;
+  // Always show the splash on launch — whether it's followed by Sign In,
+  // the Create/Join landing, or the device's saved game just depends on
+  // what's already on the page underneath once it fades out.
 
   // Show the launch overlay now that we know it's needed
   document.getElementById('ios-launch').style.display = 'block';
