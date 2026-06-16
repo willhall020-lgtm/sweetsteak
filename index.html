@@ -1747,7 +1747,9 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
 (function initSignIn() {
   if (!document.documentElement.classList.contains('ios-app')) return;
   // If no launch animation (has game) we never show sign-in either, so just wire the button
-  document.getElementById('ios-signin-apple-btn').addEventListener('click', function() {
+  const appleBtn = document.getElementById('ios-signin-apple-btn');
+  const appleBtnOriginalHTML = appleBtn.innerHTML;
+  appleBtn.addEventListener('click', function() {
     this.disabled = true;
     this.textContent = 'Signing in…';
     // Call native Swift handler if available
@@ -1758,6 +1760,11 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       window.handleAppleSignIn({ userId: 'dev_' + Date.now(), name: '' });
     }
   });
+  // Called by Swift if the native Apple Sign-In sheet errors or is cancelled
+  window.handleAppleSignInError = function() {
+    appleBtn.disabled = false;
+    appleBtn.innerHTML = appleBtnOriginalHTML;
+  };
 })();
 
 // Called by Swift WKWebView after successful Apple authentication

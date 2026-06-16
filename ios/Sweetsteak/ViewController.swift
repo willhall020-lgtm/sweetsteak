@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import AuthenticationServices
 
 class ViewController: UIViewController {
 
@@ -33,6 +34,7 @@ class ViewController: UIViewController {
         webView.uiDelegate = self
         webView.navigationDelegate = self
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.configuration.userContentController.add(self, name: "sweetsteak")
 
         view.addSubview(webView)
         NSLayoutConstraint.activate([
@@ -77,6 +79,18 @@ class ViewController: UIViewController {
 
     @objc private func handleRefresh() {
         loadApp()
+    }
+
+    // MARK: - Sign in with Apple
+
+    private func handleSignInWithApple() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName]
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
 }
 
@@ -152,5 +166,62 @@ extension ViewController: WKUIDelegate {
             completionHandler(alert.textFields?.first?.text)
         })
         present(alert, animated: true)
+    }
+}
+
+// MARK: - WKScriptMessageHandler (JS -> native bridge)
+
+extension ViewController: WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController,
+                                didReceive message: WKScriptMessage) {
+        guard message.name == "sweetsteak",
+              let body = message.body as? [String: Any],
+              let action = body["action"] as? String else { return }
+
+        switch action {
+        case "signInWithApple":
+            handleSignInWithApple()
+        default:
+            break
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerDelegate
+
+extension ViewController: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController,
+                                  didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+            return
+        }
+
+        let userId = credential.user
+        var name = ""
+        if let fullName = credential.fullName {
+            name = PersonNameComponentsFormatter().string(from: fullName)
+        }
+
+        let payload: [String: Any] = ["userId": userId, "name": name]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload),
+              let json = String(data: data, encoding: .utf8) else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript("window.handleAppleSignIn(\(json));")
+        }
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript("window.handleAppleSignInError && window.handleAppleSignInError();")
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+extension ViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        view.window ?? ASPresentationAnchor()
     }
 }
