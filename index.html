@@ -660,6 +660,12 @@ html.ios-app > body > header { display: none !important; }
 /* ── Hide statusBar in iOS (header pill takes its place) ── */
 .ios-app #statusBar { display: none !important; }
 
+/* ── iOS: "Log out" replaces "Leave game" in More ── */
+.ios-app #leaveGameBtn, .ios-app #leaveGameHint,
+.ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
+.ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
+.ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
+
 /* ── Fix fixtures content spacing ── */
 .ios-app #view-fixtures section { margin-top: 0 !important; }
 .ios-app #fixtures-list { margin-top: 0 !important; }
@@ -1406,7 +1412,9 @@ html.ios-app > body > header { display: none !important; }
       <h3>Game</h3>
       <p style="font-size:.92rem;margin-bottom:1rem;" id="settings-group-name">—</p>
       <button class="btn-danger" id="leaveGameBtn">Leave game</button>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;">Removes this game from your device. You can rejoin with the code.</p>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;" id="leaveGameHint">Removes this game from your device. You can rejoin with the code.</p>
+      <button class="btn-danger" id="iosLogoutBtn" style="display:none;">Log out</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out and removes all your games from this device. You can sign back in any time.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
@@ -1463,8 +1471,10 @@ html.ios-app > body > header { display: none !important; }
     <div class="asec" id="atab-leave">
       <div class="panel" style="margin-top:1.25rem;">
         <h3>Leave game</h3>
-        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;" id="adminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
         <button class="btn-danger" id="adminLeaveBtn">Leave game</button>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;display:none;" id="iosAdminLogoutHint">Signs you out and removes all your games from this device. You remain the admin — sign back in any time.</p>
+        <button class="btn-danger" id="iosAdminLogoutBtn" style="display:none;">Log out</button>
       </div>
     </div>
   </section>
@@ -2679,6 +2689,20 @@ function leaveGame() {
 }
 document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
 document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
+
+// ─── iOS LOG OUT (clears every game + sign-in on this device) ────────────────
+function iosLogOut() {
+  if (!confirm('Log out? This removes all your games and sign-in from this device.')) return;
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sg_')) localStorage.removeItem(k);
+  }
+  window.location.href = window.location.pathname;
+}
+const iosLogoutBtn = document.getElementById('iosLogoutBtn');
+if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
+const iosAdminLogoutBtn = document.getElementById('iosAdminLogoutBtn');
+if (iosAdminLogoutBtn) iosAdminLogoutBtn.addEventListener('click', iosLogOut);
 
 // ─── CLAIM ADMIN ──────────────────────────────────────────────────────────────
 if (!IS_ADMIN) {
