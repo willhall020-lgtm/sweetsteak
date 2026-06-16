@@ -212,6 +212,10 @@ extension ViewController: ASAuthorizationControllerDelegate {
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("⚠️ Sign in with Apple failed: \(error)")
+        if let authError = error as? ASAuthorizationError {
+            print("⚠️ ASAuthorizationError code: \(authError.code.rawValue) (\(authError.code))")
+        }
         DispatchQueue.main.async { [weak self] in
             self?.webView.evaluateJavaScript("window.handleAppleSignInError && window.handleAppleSignInError();")
         }
