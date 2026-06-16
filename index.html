@@ -3018,11 +3018,11 @@ function initIOS() {
   }
 
   function equalizeHeaderHeights() {
+    // Each view header sizes to its own content (kicker/title/desc/
+    // ticker) instead of all views being force-matched to the tallest
+    // header (Rules/Draw, which have extra desc text).
     const headers = Array.from(document.querySelectorAll('.ios-view-header'));
-    if (!headers.length) return;
     headers.forEach(h => { h.style.minHeight = ''; });
-    const maxH = Math.max(...headers.map(h => h.offsetHeight));
-    headers.forEach(h => { h.style.minHeight = maxH + 'px'; });
   }
 
   // iOS Rules page rendering
