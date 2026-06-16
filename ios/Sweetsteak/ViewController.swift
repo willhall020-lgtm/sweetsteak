@@ -71,11 +71,12 @@ class ViewController: UIViewController {
     }
 
     private func loadApp() {
-        webView.load(URLRequest(url: appURL))
+        let request = URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
+        webView.load(request)
     }
 
     @objc private func handleRefresh() {
-        webView.reload()
+        loadApp()
     }
 }
 
