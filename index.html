@@ -1414,7 +1414,7 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="leaveGameBtn">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;" id="leaveGameHint">Removes this game from your device. You can rejoin with the code.</p>
       <button class="btn-danger" id="iosLogoutBtn" style="display:none;">Log out</button>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out and removes all your games from this device. You can sign back in any time.</p>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple. Your game stays saved on this device — sign back in any time to pick up where you left off.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
@@ -1473,7 +1473,7 @@ html.ios-app > body > header { display: none !important; }
         <h3>Leave game</h3>
         <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;" id="adminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
         <button class="btn-danger" id="adminLeaveBtn">Leave game</button>
-        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;display:none;" id="iosAdminLogoutHint">Signs you out and removes all your games from this device. You remain the admin — sign back in any time.</p>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;display:none;" id="iosAdminLogoutHint">Signs you out of Apple. Your game stays saved on this device and you remain the admin — sign back in any time.</p>
         <button class="btn-danger" id="iosAdminLogoutBtn" style="display:none;">Log out</button>
       </div>
     </div>
@@ -2691,14 +2691,14 @@ function leaveGame() {
 document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
 document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
 
-// ─── iOS LOG OUT (clears every game + sign-in on this device) ────────────────
+// ─── iOS LOG OUT (clears sign-in only — keeps the device's saved game) ───────
+// Logging back in should go straight back to the leaderboard, not through
+// Create/Join again, so this must NOT touch sg_role_*/sg_player_*.
 function iosLogOut() {
-  if (!confirm('Log out? This removes all your games and sign-in from this device.')) return;
-  for (let i = localStorage.length - 1; i >= 0; i--) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith('sg_')) localStorage.removeItem(k);
-  }
-  window.location.href = window.location.pathname;
+  if (!confirm('Log out? You can sign back in any time — your game stays saved on this device.')) return;
+  localStorage.removeItem('sg_apple_id');
+  localStorage.removeItem('sg_apple_name');
+  window.location.href = window.location.pathname + window.location.search;
 }
 const iosLogoutBtn = document.getElementById('iosLogoutBtn');
 if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
