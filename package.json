@@ -2,7 +2,9 @@
   "name": "wc2026-sweepstake",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "posthog-node": "^5.38.0"
   }
 }
