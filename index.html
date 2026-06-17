@@ -1808,10 +1808,7 @@ function norm(name, tla) {
 }
 
 // ─── TICKER ───────────────────────────────────────────────────────────────────
-const tickerBase = [
-  'It\'s coming home, it\'s coming home — It\'s coming, Football\'s coming home — It\'s coming home, it\'s coming home — It\'s coming, Football\'s coming home — It\'s coming home, it\'s coming home 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  '🇦🇷 🇦🇷 🇦🇷',
-].join('     ') + '     ';
+const tickerBase = 'It\'s coming home, it\'s coming home — It\'s coming, Football\'s coming home — It\'s coming home, it\'s coming home — It\'s coming, Football\'s coming home — It\'s coming home, it\'s coming home 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁥󠁮󠁧󠁿     ';
 const tickerEl = document.getElementById('ticker');
 // Repeat enough copies so the element always spans > 3× viewport width on any screen.
 // The @keyframes tick animates translateX(0 → -50%), scrolling exactly half the element.
