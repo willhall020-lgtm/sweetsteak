@@ -2209,13 +2209,19 @@ document.getElementById('copyLockedBtn').addEventListener('click', () => {
 });
 
 // ─── REFRESH BUTTONS ─────────────────────────────────────────────────────────
+function triggerRefresh(btn) {
+  loadMatches().then(() => {
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = '↻'; }, 1000);
+  });
+}
 ['lbRefreshBtn','fixRefreshBtn'].forEach(id => {
   const el = document.getElementById(id);
-  if (el) el.addEventListener('click', () => loadMatches());
+  if (el) el.addEventListener('click', () => triggerRefresh(el));
 });
-// iOS refresh buttons are injected later; use event delegation
 document.addEventListener('click', e => {
-  if (e.target.closest('.ios-refresh-btn')) loadMatches();
+  const btn = e.target.closest('.ios-refresh-btn');
+  if (btn) triggerRefresh(btn);
 });
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
