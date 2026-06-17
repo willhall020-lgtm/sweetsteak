@@ -1495,7 +1495,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       const key = localStorage.key(i);
       if (key && key.startsWith('sg_role_')) {
         const savedCode = key.slice(8);
-        window.location.replace(window.location.pathname + '?g=' + savedCode);
+        window.location.replace('/?g=' + savedCode);
         return;
       }
     }
@@ -1528,7 +1528,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   if (GROUP_CODE) {
     document.getElementById('lg-code').value = GROUP_CODE;
     showPanel('join');
-    history.replaceState(null, '', window.location.pathname);
+    history.replaceState(null, '', '/');
   }
 
   // Populate player count dropdown on landing form
@@ -1566,7 +1566,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       }
 
       setRole(data.code, 'admin');
-      const url = window.location.origin + window.location.pathname + '?g=' + data.code;
+      const url = window.location.origin + '/?g=' + data.code;
       document.getElementById('lg-url').textContent = data.code;
       document.getElementById('create-form').classList.add('hidden');
       document.getElementById('create-share').classList.remove('hidden');
@@ -1619,7 +1619,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       if (isIOS && !localStorage.getItem('sg_player_' + code)) {
         iosShowPickPlayer(code, joinData.names || [], joinData.group_name || '');
       } else {
-        window.location.href = window.location.pathname + '?g=' + code;
+        window.location.href = '/?g=' + code;
       }
     } catch (e) {
       err.textContent = 'Network error — try again.';
@@ -1901,7 +1901,7 @@ function showInvalidGroup() {
   document.getElementById('invalidGroupBack').addEventListener('click', e => {
     e.preventDefault();
     clearRole(GROUP_CODE);
-    location.href = location.pathname;
+    location.href = '/';
   });
 }
 
@@ -2626,7 +2626,7 @@ document.getElementById('resetDrawBtn').addEventListener('click', async () => {
 function leaveGame() {
   if (!confirm('Leave this game? You can rejoin with the code.')) return;
   clearRole(GROUP_CODE);
-  window.location.href = window.location.pathname;
+  window.location.href = '/';
 }
 document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
 document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
