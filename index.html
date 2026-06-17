@@ -2658,7 +2658,7 @@ if (!IS_ADMIN) {
       const r = await fetch(`/api/group?g=${GROUP_CODE}&pin=${encodeURIComponent(pin)}`);
       if (r.ok) {
         setRole(GROUP_CODE, 'admin');
-        window.location.reload();
+        window.location.href = '/?g=' + GROUP_CODE;
       } else {
         const data = await r.json().catch(() => ({}));
         err.textContent = data.error || 'Incorrect PIN.';
