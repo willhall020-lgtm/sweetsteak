@@ -1896,9 +1896,10 @@ function showInvalidGroup() {
   });
 }
 
-async function loadMatches() {
+async function loadMatches(bust = false) {
   try {
-    const r = await fetch('/api/matches');
+    const url = bust ? '/api/matches?_=' + Date.now() : '/api/matches';
+    const r = await fetch(url);
     if (!r.ok) return;
     const { matches, lastUpdated: ts } = await r.json();
     apiMatches  = matches.map(transformMatch).filter(Boolean);
@@ -2579,7 +2580,7 @@ document.getElementById('copyLockedBtn').addEventListener('click', () => {
 
 // ─── REFRESH BUTTONS ─────────────────────────────────────────────────────────
 function triggerRefresh(btn) {
-  loadMatches().then(() => {
+  loadMatches(true).then(() => {
     btn.innerHTML = '✓';
     setTimeout(() => { btn.innerHTML = '<span>↻</span>'; }, 1000);
   });
