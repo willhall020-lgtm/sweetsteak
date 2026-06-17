@@ -1535,7 +1535,10 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
         navigator.clipboard?.writeText(data.code).catch(() => {});
         document.getElementById('lg-copy').textContent = 'Copied!';
       });
-      document.getElementById('lg-go').addEventListener('click', () => { window.location.href = url; });
+      document.getElementById('lg-go').addEventListener('click', () => {
+        window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+        window.location.href = url;
+      });
     } catch (e) {
       err.textContent = 'Network error — try again.';
       err.classList.add('show');
@@ -1699,6 +1702,7 @@ function iosShowPickPlayer(code, names, groupName) {
   cta.onclick = function() {
     if (!selected) return;
     localStorage.setItem('sg_player_' + code, selected);
+    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
     el.classList.remove('active');
     window.location.href = window.location.pathname + '?g=' + code;
   };

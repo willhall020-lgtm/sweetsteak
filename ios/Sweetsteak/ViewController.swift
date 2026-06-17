@@ -1,6 +1,7 @@
 import UIKit
 import WebKit
 import AuthenticationServices
+import UserNotifications
 
 class ViewController: UIViewController {
 
@@ -16,6 +17,7 @@ class ViewController: UIViewController {
         setupWebView()
         setupRefreshControl()
         injectUserSelectNone()
+        observeNotificationEvents()
         loadApp()
     }
 
@@ -79,6 +81,48 @@ class ViewController: UIViewController {
 
     @objc private func handleRefresh() {
         loadApp()
+    }
+
+    // MARK: - Notifications
+
+    private func observeNotificationEvents() {
+        NotificationCenter.default.addObserver(forName: .pushTokenReceived, object: nil, queue: .main) { [weak self] note in
+            guard let token = note.object as? String else { return }
+            self?.sendToWeb("window.handlePushToken && window.handlePushToken({token:'\(token)'})")
+        }
+        NotificationCenter.default.addObserver(forName: .notificationTapped, object: nil, queue: .main) { [weak self] _ in
+            // Route to leaderboard on any notification tap
+            self?.sendToWeb("window.handleNotificationTap && window.handleNotificationTap()")
+        }
+    }
+
+    private func handleRequestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, _ in
+            DispatchQueue.main.async {
+                if granted { UIApplication.shared.registerForRemoteNotifications() }
+                let status = granted ? "authorized" : "denied"
+                self?.sendToWeb("window.handleNotificationPermission && window.handleNotificationPermission({granted:\(granted),status:'\(status)'})")
+            }
+        }
+    }
+
+    private func handleGetNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            let status: String
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral: status = "authorized"
+            case .denied:                               status = "denied"
+            default:                                    status = "notDetermined"
+            }
+            let token = AppDelegate.pushToken.map { "'\($0)'" } ?? "null"
+            DispatchQueue.main.async {
+                self?.sendToWeb("window.handleNotificationStatus && window.handleNotificationStatus({status:'\(status)',token:\(token)})")
+            }
+        }
+    }
+
+    private func sendToWeb(_ js: String) {
+        webView.evaluateJavaScript(js)
     }
 
     // MARK: - Sign in with Apple
@@ -181,6 +225,14 @@ extension ViewController: WKScriptMessageHandler {
         switch action {
         case "signInWithApple":
             handleSignInWithApple()
+        case "requestNotificationPermission":
+            handleRequestNotificationPermission()
+        case "getNotificationStatus":
+            handleGetNotificationStatus()
+        case "openNotificationSettings":
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
         default:
             break
         }
