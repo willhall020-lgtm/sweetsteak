@@ -1476,6 +1476,7 @@ document.querySelectorAll('.tab-bar button').forEach(btn =>
     btn.classList.add('active');
     document.getElementById('view-'+btn.dataset.view).classList.add('active');
     sessionStorage.setItem('sg_tab', btn.dataset.view);
+    if (window.posthog) posthog.capture('$pageview', { $current_url: window.location.origin + '/' + btn.dataset.view });
   })
 );
 document.querySelectorAll('.admin-tabs button').forEach(btn =>
