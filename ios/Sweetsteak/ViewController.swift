@@ -2,6 +2,7 @@ import UIKit
 import WebKit
 import AuthenticationServices
 import UserNotifications
+import SafariServices
 
 class ViewController: UIViewController {
 
@@ -171,6 +172,17 @@ extension ViewController: WKNavigationDelegate {
 // MARK: - WKUIDelegate (prompt / confirm / alert)
 
 extension ViewController: WKUIDelegate {
+
+    // target="_blank" links
+    func webView(_ webView: WKWebView,
+                 createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction,
+                 windowFeatures: WKWindowFeatures) -> WKWebView? {
+        if let url = navigationAction.request.url {
+            present(SFSafariViewController(url: url), animated: true)
+        }
+        return nil
+    }
 
     // window.alert()
     func webView(_ webView: WKWebView,
