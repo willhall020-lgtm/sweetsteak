@@ -316,7 +316,8 @@ details.fix-results[open] summary::after{transform:rotate(90deg);}
 .tips-help-btn:hover{background:var(--rule);color:var(--ink);}
 
 /* APP BAR */
-#app-bar{position:fixed;top:0;left:0;width:100%;height:44px;background:var(--pitch-dark);border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 1.25rem;z-index:500;}
+#app-bar{position:fixed;top:0;left:0;width:100%;height:44px;background:var(--pitch-dark);border-bottom:3px solid var(--gold);display:flex;align-items:center;gap:.5rem;padding:0 1.25rem;z-index:500;}
+.app-bar-logo{width:26px;height:26px;flex-shrink:0;}
 .app-bar-name{font-family:'Anton',sans-serif;font-size:1.15rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);line-height:1;}
 #landing{padding-top:44px;}
 
@@ -988,6 +989,22 @@ html.ios-app > body > header { display: none !important; }
 <body>
 
 <div id="app-bar">
+  <svg class="app-bar-logo" aria-hidden="true" viewBox="8 17 56 42" xmlns="http://www.w3.org/2000/svg">
+    <defs><clipPath id="ab-clip"><path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 39 62 44 60 45 C46 50 24 50 13 45 Z"/></clipPath></defs>
+    <g transform="rotate(-2 36 36)">
+      <path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 41 61 47 58 50 C50 56 22 56 13 50 C11 49 11 47 11 46 Z" fill="rgba(201,162,39,0.18)" stroke="#C9A227" stroke-width="2.5" stroke-linejoin="round"/>
+      <g clip-path="url(#ab-clip)" stroke="#C9A227" stroke-width="1.6" stroke-linecap="round">
+        <line x1="16" y1="20" x2="46" y2="50"/><line x1="28" y1="18" x2="60" y2="48"/>
+        <line x1="8" y1="32" x2="32" y2="56"/><line x1="16" y1="52" x2="46" y2="22"/>
+        <line x1="28" y1="54" x2="60" y2="24"/><line x1="8" y1="44" x2="30" y2="20"/>
+      </g>
+      <path d="M13 45 C26 50 46 50 60 45" fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round"/>
+      <g stroke="#C9A227" stroke-width="1.5" stroke-linecap="round">
+        <line x1="23" y1="49" x2="23" y2="53"/><line x1="31" y1="50" x2="31" y2="54"/>
+        <line x1="40" y1="50" x2="40" y2="54"/><line x1="48" y1="49" x2="48" y2="53"/>
+      </g>
+    </g>
+  </svg>
   <span class="app-bar-name">Sweetsteak</span>
 </div>
 
@@ -1769,17 +1786,8 @@ function norm(name, tla) {
 
 // ─── TICKER ───────────────────────────────────────────────────────────────────
 const tickerBase = [
-  'Australians all let us rejoice,',
-  'For we are young and free;',
-  'We\'ve golden soil and wealth for toil;',
-  'Our home is girt by sea;',
-  'Our land abounds in nature\'s gifts',
-  'Of beauty rich and rare;',
-  'In history\'s page, let every stage',
-  'Advance Australia Fair.',
-  'In joyful strains then let us sing,',
-  'Advance Australia Fair.',
-  '🇦🇺 🇦🇺 🇦🇺',
+  'Ankara Messi',
+  '🇦🇷 🇦🇷 🇦🇷',
 ].join('     ') + '     ';
 const tickerEl = document.getElementById('ticker');
 tickerEl.textContent = tickerBase + tickerBase;
@@ -3040,5 +3048,6 @@ function initIOS() {
   }
 }
 </script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
