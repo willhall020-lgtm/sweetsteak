@@ -1209,7 +1209,7 @@ html.ios-app > body > header { display: none !important; }
     <p class="kicker">Live standings</p>
     <div class="h2-row">
       <h2 class="display">Leaderboard</h2>
-      <button class="refresh-btn" id="lbRefreshBtn" title="Refresh" aria-label="Refresh leaderboard">↻</button>
+      <button class="refresh-btn" id="lbRefreshBtn" title="Refresh" aria-label="Refresh leaderboard"><span>↻</span></button>
     </div>
     <div class="status-bar" id="statusBar">
       <span class="dot off" id="statusDot"></span>
@@ -1353,7 +1353,7 @@ html.ios-app > body > header { display: none !important; }
     <p class="kicker">Schedule</p>
     <div class="h2-row">
       <h2 class="display">Fixtures</h2>
-      <button class="refresh-btn" id="fixRefreshBtn" title="Refresh" aria-label="Refresh fixtures">↻</button>
+      <button class="refresh-btn" id="fixRefreshBtn" title="Refresh" aria-label="Refresh fixtures"><span>↻</span></button>
     </div>
     <div id="ios-fix-seg" style="display:none"></div>
     <div id="fixtures-list" style="margin-top:1.25rem;"></div>
@@ -2580,8 +2580,8 @@ document.getElementById('copyLockedBtn').addEventListener('click', () => {
 // ─── REFRESH BUTTONS ─────────────────────────────────────────────────────────
 function triggerRefresh(btn) {
   loadMatches().then(() => {
-    btn.textContent = '✓';
-    setTimeout(() => { btn.textContent = '↻'; }, 1000);
+    btn.innerHTML = '✓';
+    setTimeout(() => { btn.innerHTML = '<span>↻</span>'; }, 1000);
   });
 }
 ['lbRefreshBtn','fixRefreshBtn'].forEach(id => {
@@ -2761,7 +2761,7 @@ function initIOS() {
     const extraHtml = id === 'leaderboard' ? `<div id="ios-status-pill-wrap"></div>` : '';
     const segHtml = id === 'fixtures' ? `<div id="ios-fix-seg"></div>` : '';
     const refreshHtml = (id === 'leaderboard' || id === 'fixtures')
-      ? `<button class="refresh-btn ios-refresh-btn" id="ios-refresh-${id}" title="Refresh" aria-label="Refresh ${id}">↻</button>`
+      ? `<button class="refresh-btn ios-refresh-btn" id="ios-refresh-${id}" title="Refresh" aria-label="Refresh ${id}"><span>↻</span></button>`
       : '';
     const h = document.createElement('div');
     h.className = 'ios-view-header';
