@@ -40,12 +40,8 @@ section{margin-top:2.5rem;}
 h2.display{font-size:clamp(1.6rem,4.5vw,2.2rem);margin-bottom:1rem;}
 .h2-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
 .h2-row h2.display{margin-bottom:0;}
-.refresh-btn{background:none;border:none;color:var(--pitch);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:background .15s,transform .2s;}
-.refresh-btn:hover{background:rgba(0,0,0,.06);}
+.refresh-btn{background:none;border:none;color:var(--pitch);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;}
 .ios-view-header .refresh-btn{color:#fff;}
-.ios-view-header .refresh-btn:hover{background:rgba(255,255,255,.12);}
-.refresh-btn.spinning{animation:spin .6s linear;}
-@keyframes spin{to{transform:rotate(360deg)}}
 
 /* STATUS */
 .status-bar{background:var(--pitch);color:#fff;border-radius:10px;padding:.65rem 1rem;font-size:.82rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
@@ -2213,19 +2209,13 @@ document.getElementById('copyLockedBtn').addEventListener('click', () => {
 });
 
 // ─── REFRESH BUTTONS ─────────────────────────────────────────────────────────
-function triggerRefresh(btn) {
-  btn.classList.add('spinning');
-  btn.addEventListener('animationend', () => btn.classList.remove('spinning'), { once: true });
-  loadMatches();
-}
 ['lbRefreshBtn','fixRefreshBtn'].forEach(id => {
   const el = document.getElementById(id);
-  if (el) el.addEventListener('click', () => triggerRefresh(el));
+  if (el) el.addEventListener('click', () => loadMatches());
 });
 // iOS refresh buttons are injected later; use event delegation
 document.addEventListener('click', e => {
-  const btn = e.target.closest('.ios-refresh-btn');
-  if (btn) triggerRefresh(btn);
+  if (e.target.closest('.ios-refresh-btn')) loadMatches();
 });
 
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
