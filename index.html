@@ -17,7 +17,8 @@
 body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;font-size:16px;padding-top:44px;}
 .display{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.02em;text-transform:uppercase;}
 
-header{background:var(--pitch);color:#fff;padding:2.5rem 1.25rem 0;text-align:center;border-bottom:3px solid var(--gold);}
+header{background:var(--pitch);color:#fff;padding:2rem 1.25rem 0;text-align:center;border-bottom:3px solid var(--gold);}
+header .header-logo{width:52px;height:52px;margin:0 auto .75rem;display:block;}
 header h1{font-size:clamp(2.4rem,8vw,4.5rem);line-height:1;}
 header h1 .yr{color:var(--gold);}
 header .strap{margin:.75rem auto 1.75rem;font-size:.95rem;opacity:.92;max-width:34rem;}
@@ -199,6 +200,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 /* LANDING */
 #landing{position:fixed;inset:0;background:var(--pitch);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;}
 #landing.hidden{display:none!important;}
+.landing-logo-img{width:88px;height:88px;margin-bottom:1rem;display:block;margin-left:auto;margin-right:auto;}
 .landing-logo{font-family:'Anton',sans-serif;font-size:clamp(2rem,7vw,3rem);text-transform:uppercase;color:#fff;text-align:center;margin-bottom:2rem;line-height:1.1;}
 .landing-logo span{color:var(--gold);}
 .landing-sub{font-size:.85rem;color:rgba(255,255,255,.65);text-align:center;margin-bottom:2rem;}
@@ -833,6 +835,7 @@ html.ios-app > body > header { display: none !important; }
 
 <!-- LANDING (shown when no ?g= group code in URL) -->
 <div id="landing">
+  <img src="/logo.svg" class="landing-logo-img" alt="" aria-hidden="true">
   <div class="landing-logo">World Cup <span>2026</span><br>Sweepstake</div>
   <p class="landing-sub">Draw your teams. Climb the board.<br>Win the pot — or the wooden spoon.</p>
 
@@ -922,6 +925,7 @@ html.ios-app > body > header { display: none !important; }
 </div>
 
 <header>
+  <img src="/logo.svg" class="header-logo" alt="" aria-hidden="true">
   <h1 class="display">World Cup <span class="yr">2026</span><br>Sweepstake</h1>
   <p class="strap" id="headerStrap">48 teams</p>
   <div class="ticker-wrap"><div class="ticker" id="ticker" aria-hidden="true"></div></div>
