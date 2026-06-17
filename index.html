@@ -1790,11 +1790,17 @@ const tickerBase = [
   '🇦🇷 🇦🇷 🇦🇷',
 ].join('     ') + '     ';
 const tickerEl = document.getElementById('ticker');
-tickerEl.textContent = tickerBase + tickerBase;
+// Repeat enough copies so the element always spans > 3× viewport width on any screen.
+// The @keyframes tick animates translateX(0 → -50%), scrolling exactly half the element.
+// With evenCopies repeats, -50% = evenCopies/2 copies, which is always > viewport width.
+const _minPx = (window.innerWidth || 1280) * 3;
+const _copies = Math.max(4, Math.ceil(_minPx / (tickerBase.length * 9)));
+const _evenCopies = _copies % 2 === 0 ? _copies : _copies + 1;
+tickerEl.textContent = tickerBase.repeat(_evenCopies);
 tickerEl.style.animation = 'none';
-tickerEl.offsetHeight; // force reflow so the reset takes effect
-const tickerDuration = Math.max(5, tickerBase.length / 4.4).toFixed(1);
-tickerEl.style.animation = `tick ${tickerDuration}s linear infinite`;
+tickerEl.offsetHeight; // force reflow
+// Measure actual rendered width for accurate constant-speed duration (35 px/s calibrated to original anthem)
+tickerEl.style.animation = `tick ${(tickerEl.offsetWidth / 2 / 35).toFixed(1)}s linear infinite`;
 
 // Ranked team list (rules page)
 ['A','B','C','D'].forEach(tier => {
