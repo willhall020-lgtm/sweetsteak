@@ -38,6 +38,10 @@ main{max-width:900px;margin:0 auto;padding:0 1.25rem 4rem;}
 section{margin-top:2.5rem;}
 .kicker{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dark);margin-bottom:.35rem;}
 h2.display{font-size:clamp(1.6rem,4.5vw,2.2rem);margin-bottom:1rem;}
+.h2-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.h2-row h2.display{margin-bottom:0;}
+.refresh-btn{background:none;border:none;color:var(--pitch);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;}
+.ios-view-header .refresh-btn{color:#fff;}
 
 /* STATUS */
 .status-bar{background:var(--pitch);color:#fff;border-radius:10px;padding:.65rem 1rem;font-size:.82rem;display:flex;align-items:center;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}
@@ -443,6 +447,12 @@ html.ios-app > body > header { display: none !important; }
   background: rgba(255,255,255,0.18);
   border-radius: 999px;
   padding: 4px 10px;
+}
+.ios-app .ios-refresh-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  border-color: rgba(255,255,255,0.25);
 }
 .ios-app .ios-view-header .ios-kicker {
   font-family: 'IBM Plex Mono', monospace;
@@ -1197,7 +1207,10 @@ html.ios-app > body > header { display: none !important; }
 <div id="view-leaderboard" class="view active">
   <section>
     <p class="kicker">Live standings</p>
-    <h2 class="display">Leaderboard</h2>
+    <div class="h2-row">
+      <h2 class="display">Leaderboard</h2>
+      <button class="refresh-btn" id="lbRefreshBtn" title="Refresh" aria-label="Refresh leaderboard">↻</button>
+    </div>
     <div class="status-bar" id="statusBar">
       <span class="dot off" id="statusDot"></span>
       <span id="statusText">Loading…</span>
@@ -1338,7 +1351,10 @@ html.ios-app > body > header { display: none !important; }
 <div id="view-fixtures" class="view">
   <section>
     <p class="kicker">Schedule</p>
-    <h2 class="display">Fixtures</h2>
+    <div class="h2-row">
+      <h2 class="display">Fixtures</h2>
+      <button class="refresh-btn" id="fixRefreshBtn" title="Refresh" aria-label="Refresh fixtures">↻</button>
+    </div>
     <div id="ios-fix-seg" style="display:none"></div>
     <div id="fixtures-list" style="margin-top:1.25rem;"></div>
   </section>
@@ -2561,6 +2577,22 @@ document.getElementById('copyLockedBtn').addEventListener('click', () => {
   if (drawData) copyDrawText({...drawData, idx:drawData.plan?.length||0});
 });
 
+// ─── REFRESH BUTTONS ─────────────────────────────────────────────────────────
+function triggerRefresh(btn) {
+  loadMatches().then(() => {
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = '↻'; }, 1000);
+  });
+}
+['lbRefreshBtn','fixRefreshBtn'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => triggerRefresh(el));
+});
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.ios-refresh-btn');
+  if (btn) triggerRefresh(btn);
+});
+
 // ─── ADMIN ────────────────────────────────────────────────────────────────────
 document.getElementById('refreshBtn').addEventListener('click', () => { loadMatches(); });
 document.getElementById('resetDrawBtn').addEventListener('click', async () => {
@@ -2728,12 +2760,15 @@ function initIOS() {
     const tickerHtml = cfg.ticker ? `<div class="ios-ticker-wrap"><div class="ios-ticker" id="ios-ticker-${id}">loading…</div></div>` : '';
     const extraHtml = id === 'leaderboard' ? `<div id="ios-status-pill-wrap"></div>` : '';
     const segHtml = id === 'fixtures' ? `<div id="ios-fix-seg"></div>` : '';
+    const refreshHtml = (id === 'leaderboard' || id === 'fixtures')
+      ? `<button class="refresh-btn ios-refresh-btn" id="ios-refresh-${id}" title="Refresh" aria-label="Refresh ${id}">↻</button>`
+      : '';
     const h = document.createElement('div');
     h.className = 'ios-view-header';
     h.innerHTML = `
       <div class="ios-view-header-top">
         <span class="ios-app-name">Sweetsteak</span>
-        <span class="ios-group-code">${code}</span>
+        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}<span class="ios-group-code">${code}</span></div>
       </div>
       <div class="ios-kicker">${cfg.kicker}</div>
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
