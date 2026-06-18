@@ -1592,9 +1592,16 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
         btn.disabled = false; btn.textContent = 'Join game';
         return;
       }
-      // Valid — store as member and navigate
+      const joinData = await r.json();
+      // Valid — store as member
       if (getRole(code) !== 'admin') setRole(code, 'member');
-      window.location.href = '/?g=' + code;
+      // iOS: show player picker before navigating (skip if already linked)
+      const isIOS = document.documentElement.classList.contains('ios-app');
+      if (isIOS && !localStorage.getItem('sg_player_' + code)) {
+        iosShowPickPlayer(code, joinData.names || [], joinData.group_name || '');
+      } else {
+        window.location.href = '/?g=' + code;
+      }
     } catch (e) {
       err.textContent = 'Network error — try again.';
       err.classList.add('show');
