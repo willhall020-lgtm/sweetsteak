@@ -1009,7 +1009,6 @@ html.ios-app > body > header { display: none !important; }
 <!-- RULES -->
 <div id="view-rules" class="view">
   <section>
-    <p class="kicker">Official rules</p>
     <h2 class="display">The small print</h2>
     <div class="rules-grid">
 <div class="panel">
@@ -1052,7 +1051,6 @@ html.ios-app > body > header { display: none !important; }
 <!-- DRAW -->
 <div id="view-draw" class="view">
   <section>
-    <p class="kicker">The main event</p>
     <h2 class="display">The draw</h2>
 
     <div id="draw-locked" class="draw-locked hidden">
@@ -2371,8 +2369,8 @@ function initIOS() {
   const VIEW_HEADERS = {
     'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
     'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
-    'draw':        { kicker: 'The main event',  title: 'The Draw',    emoji: '🎲', ticker: true },
-    'rules':       { kicker: 'How it works',    title: 'Rules',       emoji: '📋', ticker: true, desc: 'Score points every time your teams score, win, and progress through the tournament.' },
+    'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
+    'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true, desc: 'Score points every time your teams score, win, and progress through the tournament.' },
     'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true, desc: 'Group settings, admin tools, and your game code.' },
   };
 
@@ -2391,10 +2389,13 @@ function initIOS() {
     h.className = 'ios-view-header';
     h.innerHTML = `
       <div class="ios-view-header-top">
-        <span class="ios-app-name">Sweetsteak</span>
-        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}<span class="ios-group-code">${code}</span></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <img src="/logo.svg" width="22" height="22" aria-hidden="true" style="display:block;flex-shrink:0;">
+          <span class="ios-app-name">Sweetsteak</span>
+        </div>
+        <span class="ios-group-code">${code}</span>
       </div>
-      <div class="ios-kicker">${cfg.kicker}</div>
+      ${cfg.kicker ? `<div class="ios-kicker">${cfg.kicker}</div>` : ''}
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
       ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
       ${extraHtml}${segHtml}${tickerHtml}
@@ -2610,13 +2611,14 @@ function initIOS() {
     const prizes = computePrizes();
     const ruleRows = [
       { title: 'Goal scored', sub: 'Any goal by one of your teams', pts: '+1 pt' },
-      { title: 'Match won', sub: 'Group stage draw is worth +1 pt', pts: '+3 pts' },
+      { title: 'Match won', sub: '', pts: '+3 pts' },
+      { title: 'Group stage draw', sub: '', pts: '+1 pt' },
       { title: 'Giant-killing', sub: 'Beat a team 1 / 2 / 3 tiers above', pts: '+3/6/10' },
       { title: 'Reach Round of 16', sub: '', pts: '+2 pts' },
       { title: 'Reach Quarter-finals', sub: '', pts: '+3 pts' },
       { title: 'Reach Semi-finals', sub: '', pts: '+4 pts' },
       { title: 'Reach the Final', sub: '', pts: '+5 pts' },
-      { title: 'Win the tournament', sub: 'Progression bonuses stack — champion earns +19 total', pts: '+5 pts', accent: true },
+      { title: 'Win the tournament', sub: '', pts: '+5 pts', accent: true },
     ];
     const tiers = [
       { k:1, label:'Contenders', desc:'Top seeds (1–12)', bg:'#E3EFE7', fg:'#0E5A33' },
@@ -2630,6 +2632,10 @@ function initIOS() {
       { emoji:'🥉', label:'Third place',  amt: prizes?.third  || '£10', cls:'' },
       { emoji:'🥄', label:'Wooden spoon', amt: prizes?.spoon  || '£5',  cls:'spoon' },
     ];
+
+    const tierColors = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}};
+    const tierTeams = {A:[],B:[],C:[],D:[]};
+    RANKED_TEAMS.forEach(t => tierTeams[TIER_MAP[t]].push(t));
 
     const div = document.createElement('div');
     div.id = 'ios-rules-content';
@@ -2646,21 +2652,6 @@ function initIOS() {
           </div>`).join('')}
       </div>
 
-      <div class="ios-rules-label">The draw</div>
-      <div class="ios-rules-card">
-        <div style="padding:14px 14px 6px">
-          <div style="font-size:13px;line-height:1.5;color:#16211A;margin-bottom:13px">
-            48 teams split into four ranked tiers. Each player is drawn teams from multiple tiers — top seeds to long shots.
-          </div>
-          ${tiers.map((t,i) => `
-            <div class="ios-rules-tier-row">
-              <span class="ios-rules-tier-badge" style="background:${t.bg};color:${t.fg}">T${t.k}</span>
-              <span class="ios-rules-tier-name">${esc(t.label)}</span>
-              <span class="ios-rules-tier-desc">${esc(t.desc)}</span>
-            </div>`).join('')}
-        </div>
-      </div>
-
       ${prizes ? `<div class="ios-rules-label">The pot · ${prizes.pot}</div>` : '<div class="ios-rules-label">The pot</div>'}
       <div class="ios-rules-card">
         ${potRows.map(p => `
@@ -2669,10 +2660,47 @@ function initIOS() {
             <span class="ios-rules-pot-label">${esc(p.label)}</span>
             <span class="ios-rules-pot-amt ${p.cls}">${esc(p.amt)}</span>
           </div>`).join('')}
-      </div>`;
+      </div>
+
+      <div class="ios-rules-label">The draw</div>
+      <div class="ios-rules-card">
+        <div style="padding:14px 14px 6px">
+          <div style="font-size:13px;line-height:1.5;color:#16211A;margin-bottom:13px">
+            48 teams split into four ranked tiers. Each player is drawn teams from multiple tiers — top seeds to long shots.
+          </div>
+          ${tiers.map(t => `
+            <div class="ios-rules-tier-row">
+              <span class="ios-rules-tier-badge" style="background:${t.bg};color:${t.fg}">T${t.k}</span>
+              <span class="ios-rules-tier-name">${esc(t.label)}</span>
+              <span class="ios-rules-tier-desc">${esc(t.desc)}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="ios-rules-label">Teams by tier</div>
+      ${'ABCD'.split('').map(k => {
+        const c = tierColors[k];
+        const t = tiers[{A:0,B:1,C:2,D:3}[k]];
+        return `<div class="ios-rules-card" style="margin-bottom:10px">
+          <div style="padding:10px 14px 6px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px">
+            <span class="ios-rules-tier-badge" style="background:${c.bg};color:${c.fg}">T${t.k}</span>
+            <span style="font-weight:700;font-size:13px;color:#16211A">${esc(t.label)}</span>
+            <span style="font-size:11px;color:#5C6A60;margin-left:auto">${esc(t.desc)}</span>
+          </div>
+          <div style="padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px">
+            ${tierTeams[k].map(team => `<span style="font-size:12px;font-weight:600;color:${c.fg};background:${c.bg};border-radius:6px;padding:3px 8px">${esc(team)}</span>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}`;
 
     const section = rulesView.querySelector('section');
     if (section) section.appendChild(div);
+  }
+
+  // Update all iOS header name spans when group data is available
+  function updateIOSGroupName() {
+    const name = drawData?.group_name || GROUP_CODE || '—';
+    document.querySelectorAll('.ios-group-code').forEach(el => { el.textContent = name; });
   }
 
   // Patch renderLeaderboard to also render cards
@@ -2681,6 +2709,7 @@ function initIOS() {
     _origRenderLeaderboard();
     renderLBCards();
     renderIOSRules();
+    updateIOSGroupName();
   };
   renderLBCards();
   renderIOSRules();

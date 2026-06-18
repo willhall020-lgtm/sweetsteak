@@ -7,21 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		14BAC135EDDE4779AA2E3556 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59866D06F26A4818911D7D2A /* ViewController.swift */; };
 		32263F98B42B482194F01FA4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71ECE5CF2997498883D5638F /* AppDelegate.swift */; };
 		3822BB8DAB8B4C9595580503 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D13C180C19B4B0F870511ED /* SceneDelegate.swift */; };
-		14BAC135EDDE4779AA2E3556 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59866D06F26A4818911D7D2A /* ViewController.swift */; };
-		888980D0E93C4F1BA31A78C1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 58B09C321A8241B09246A91A /* LaunchScreen.storyboard */; };
 		4A81A57D92BB41F0AE5BE445 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 41F5DD0FB8E24C02A434A24D /* Assets.xcassets */; };
+		888980D0E93C4F1BA31A78C1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 58B09C321A8241B09246A91A /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		91AE915D850E4396BA93C135 /* Sweetsteak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sweetsteak.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		71ECE5CF2997498883D5638F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		3D13C180C19B4B0F870511ED /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		59866D06F26A4818911D7D2A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		58B09C321A8241B09246A91A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1254123688BF40418A4933CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3D13C180C19B4B0F870511ED /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		41F5DD0FB8E24C02A434A24D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		58B09C321A8241B09246A91A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		59866D06F26A4818911D7D2A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		71ECE5CF2997498883D5638F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		91AE915D850E4396BA93C135 /* Sweetsteak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sweetsteak.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,20 +35,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BFC5D4065CD743A2B5FB786E /* Root */ = {
+		BFC5D4065CD743A2B5FB786E = {
 			isa = PBXGroup;
 			children = (
 				D667719AACB54E9BBDB271CA /* Sweetsteak */,
 				F1FDA012BC4741EE9664C2F3 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		F1FDA012BC4741EE9664C2F3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				91AE915D850E4396BA93C135 /* Sweetsteak.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		D667719AACB54E9BBDB271CA /* Sweetsteak */ = {
@@ -62,6 +54,14 @@
 				1254123688BF40418A4933CE /* Info.plist */,
 			);
 			path = Sweetsteak;
+			sourceTree = "<group>";
+		};
+		F1FDA012BC4741EE9664C2F3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				91AE915D850E4396BA93C135 /* Sweetsteak.app */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -205,6 +205,32 @@
 			};
 			name = Debug;
 		};
+		395FE5E17CA449D599114D52 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sweetsteak/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = uk.co.sweetsteak.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		9510FA000A904D72A7FAAB5A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -267,6 +293,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = WJ3ZL8A7H3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sweetsteak/Info.plist;
@@ -284,43 +311,9 @@
 			};
 			name = Debug;
 		};
-		395FE5E17CA449D599114D52 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Sweetsteak/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = uk.co.sweetsteak.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "Sweetsteak" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2A38854589F3479181CAFE2D /* Debug */,
-				9510FA000A904D72A7FAAB5A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		0665CE35671F41AA8C0D1454 /* Build configuration list for PBXNativeTarget "Sweetsteak" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -330,8 +323,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		5D15AE73C004421381A1EFAE /* Build configuration list for PBXProject "Sweetsteak" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A38854589F3479181CAFE2D /* Debug */,
+				9510FA000A904D72A7FAAB5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = 810A4131952546F09B70115F /* Project object */;
 }
