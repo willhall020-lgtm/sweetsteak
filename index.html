@@ -1142,7 +1142,7 @@ html.ios-app > body > header { display: none !important; }
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Game</h3>
       <p style="font-size:.92rem;margin-bottom:1rem;" id="settings-group-name">—</p>
-      <button class="btn-danger" id="leaveGameBtn">Leave game</button>
+      <button class="btn-danger" id="leaveGameBtn">Log out</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;">Removes this game from your device. You can rejoin with the code.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
@@ -2408,7 +2408,7 @@ function initIOS() {
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
+    seg.innerHTML = ['Live','Upcoming'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
