@@ -2728,7 +2728,7 @@ function initIOS() {
           <img src="/logo.svg" width="22" height="22" aria-hidden="true" style="display:block;flex-shrink:0;">
           <span class="ios-app-name">Sweetsteak</span>
         </div>
-        <span class="ios-group-code">${code}</span>
+        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}<span class="ios-group-code">${code}</span></div>
       </div>
       ${cfg.kicker ? `<div class="ios-kicker">${cfg.kicker}</div>` : ''}
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
