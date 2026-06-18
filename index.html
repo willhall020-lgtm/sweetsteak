@@ -834,6 +834,152 @@ html.ios-app > body > header { display: none !important; }
   background: rgba(255,255,255,0.06) !important;
   border-color: rgba(255,255,255,0.15) !important;
 }
+
+/* ── iOS: "Log out" replaces "Leave game" in More ── */
+.ios-app #leaveGameBtn, .ios-app #leaveGameHint,
+.ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
+.ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
+.ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
+
+/* ── iOS Launch Animation ──────────────────────────────────────── */
+#ios-launch {
+  display: none;
+  position: fixed; inset: 0; z-index: 700;
+  background: linear-gradient(180deg,#166534 0%,#0B3D1F 100%);
+  overflow: hidden;
+}
+.lx3-glow {
+  position: absolute; left: 50%; top: 44%; width: 360px; height: 360px;
+  transform: translate(-50%,-50%);
+  background: radial-gradient(circle, rgba(234,179,8,0.30) 0%, rgba(234,179,8,0.06) 42%, transparent 66%);
+  opacity: 0; animation: lx3-glowIn .8s ease-out .1s forwards, lx3-breathe 3.4s ease-in-out 1.2s infinite;
+}
+.lx3-lock {
+  position: absolute; left: 0; right: 0; top: 44%; padding: 0 28px; box-sizing: border-box;
+  transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 18px;
+}
+.lx3-crest {
+  display: flex; line-height: 0; opacity: 0; transform: scale(.5) translateY(8px);
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.32));
+  animation: lx3-crestIn .56s cubic-bezier(.34,1.6,.45,1) .35s forwards;
+}
+.lx3-word {
+  font-family: 'Anton', sans-serif; font-size: 38px; letter-spacing: .04em; text-transform: uppercase; color: #fff;
+  opacity: 0; transform: translateY(12px); animation: lx3-up .5s cubic-bezier(.2,.7,.2,1) .7s forwards;
+}
+.lx3-kick {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: #DCFCE7;
+  opacity: 0; animation: lx3-fade .5s ease-out .98s forwards;
+}
+@keyframes lx3-crestIn { 0% { opacity: 0; transform: scale(.5) translateY(8px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes lx3-up { to { opacity: 1; transform: translateY(0); } }
+@keyframes lx3-fade { to { opacity: 1; } }
+@keyframes lx3-glowIn { from { opacity: 0; transform: translate(-50%,-50%) scale(.6); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+@keyframes lx3-breathe { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.28); } }
+@media (prefers-reduced-motion: reduce) {
+  .ios-app #ios-launch { display: none !important; }
+}
+
+/* ── iOS Sign-In Screen ─────────────────────────────────────────── */
+#ios-signin {
+  display: none;
+  position: fixed; inset: 0; z-index: 550;
+  background: linear-gradient(180deg,#0E5A33 0%,#0B3D1F 100%);
+  overflow: hidden; color: #fff; font-family: 'Inter', sans-serif;
+}
+.ios-app #ios-signin.active { display: flex; flex-direction: column; }
+.ios-ob-glow {
+  position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 460px; height: 460px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(234,179,8,0.16) 0%, rgba(234,179,8,0) 62%);
+  pointer-events: none;
+}
+.ios-ob-ring1 {
+  position: absolute; top: 96px; right: -64px; width: 200px; height: 200px;
+  border: 2px solid rgba(255,255,255,0.06); border-radius: 50%; pointer-events: none;
+}
+.ios-ob-ring2 {
+  position: absolute; bottom: 150px; left: -56px; width: 176px; height: 176px;
+  border: 2px solid rgba(234,179,8,0.16); border-radius: 50%; pointer-events: none;
+}
+.ios-signin-content {
+  position: relative; flex: 1; display: flex; flex-direction: column;
+  padding: 64px 26px 0; min-height: 0;
+}
+.ios-signin-brand { display: flex; align-items: center; gap: 9px; justify-content: center; }
+.ios-signin-mark {
+  width: 26px; height: 26px; border-radius: 7px; background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ios-signin-mark-s { font-family: 'Anton', sans-serif; font-size: 21px; color: #EAB308; line-height: 1; }
+.ios-signin-brand-name { font-family: 'Anton', sans-serif; font-size: 19px; letter-spacing: .06em; text-transform: uppercase; color: #EAB308; }
+.ios-signin-kicker {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: #EAB308; text-align: center; margin-bottom: 14px;
+}
+.ios-signin-title {
+  font-family: 'Anton', sans-serif; font-size: 42px; line-height: 1.04;
+  text-transform: uppercase; text-align: center; margin: 0; letter-spacing: .01em; color: #fff;
+}
+.ios-signin-title .yr { color: #EAB308; }
+.ios-signin-apple-btn {
+  width: 100%; height: 52px; display: flex; align-items: center; justify-content: center;
+  gap: 8px; background: #000; color: #fff;
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 12px;
+  font-family: -apple-system, 'SF Pro Text', 'Inter', sans-serif;
+  font-size: 17px; font-weight: 500; cursor: pointer; box-sizing: border-box;
+}
+.ios-signin-apple-icon { width: 18px; height: 22px; flex-shrink: 0; display: block; }
+
+/* ── iOS Pick Player Screen ─────────────────────────────────────── */
+#ios-pick-player {
+  display: none;
+  position: fixed; inset: 0; z-index: 550;
+  background: linear-gradient(180deg,#0E5A33 0%,#0B3D1F 100%);
+  overflow: hidden; color: #fff; font-family: 'Inter', sans-serif;
+}
+.ios-app #ios-pick-player.active { display: flex; flex-direction: column; }
+.ios-pick-header { padding: 60px 22px 14px; flex-shrink: 0; }
+.ios-pick-kicker {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: #EAB308; margin-bottom: 10px;
+}
+.ios-pick-title {
+  font-family: 'Anton', sans-serif; font-size: 34px; line-height: 1.02;
+  text-transform: uppercase; margin: 0; letter-spacing: .01em; color: #fff;
+}
+.ios-pick-sub { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.6); margin: 12px 0 0; max-width: 300px; }
+.ios-pick-list { flex: 1; overflow-y: auto; padding: 6px 18px 8px; min-height: 0; }
+.ios-pick-row {
+  display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-radius: 14px;
+  background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.18);
+  margin-bottom: 10px; cursor: pointer; transition: background .12s, border-color .12s;
+}
+.ios-pick-row.selected { background: rgba(234,179,8,0.12) !important; border-color: #EAB308 !important; }
+.ios-pick-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.1); color: #fff; font-family: 'Anton', sans-serif; font-size: 16px;
+}
+.ios-pick-row.selected .ios-pick-avatar { background: #EAB308; color: #0B3D1F; }
+.ios-pick-name { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; color: #fff; }
+.ios-pick-chevron { color: rgba(255,255,255,0.4); font-size: 18px; line-height: 1; }
+.ios-pick-selected-badge {
+  font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; font-weight: 700;
+  color: #0B3D1F; background: #EAB308; padding: 3px 7px; border-radius: 5px; letter-spacing: .06em;
+}
+.ios-pick-cta {
+  flex-shrink: 0;
+  padding: 14px 18px calc(18px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(11,61,31,0) 0%, #0B3D1F 32%);
+}
+.ios-pick-cta-btn {
+  width: 100%; height: 54px; border: none; border-radius: 999px;
+  background: #EAB308; color: #0B3D1F; font-family: 'Inter', sans-serif;
+  font-weight: 700; font-size: 17px; cursor: pointer;
+  box-shadow: 0 8px 22px rgba(234,179,8,0.34); box-sizing: border-box;
+}
+.ios-pick-cta-btn:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
 </style>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="init capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId setPersonPropertiesForFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -863,6 +1009,85 @@ html.ios-app > body > header { display: none !important; }
     </g>
   </svg>
   <span class="app-bar-name">Sweetsteak</span>
+</div>
+
+<!-- iOS LAUNCH ANIMATION (hidden on web) -->
+<div id="ios-launch" aria-hidden="true">
+  <div class="lx3-glow"></div>
+  <div class="lx3-lock">
+    <div class="lx3-crest">
+      <svg viewBox="0 0 72 72" width="84" height="84" style="overflow:visible">
+        <defs>
+          <clipPath id="stkTop">
+            <path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 39 62 44 60 45 C46 50 24 50 13 45 C11.5 46 11 46 11 46 Z" />
+          </clipPath>
+        </defs>
+        <g transform="rotate(-2 36 36)">
+          <path d="M11 46 C9 36 13 27 23 23 C31 20 36 25 43 22 C52 18 61 21 62 32 C63 41 61 47 58 50 C50 56 22 56 13 50 C11 49 11 47 11 46 Z"
+            fill="rgba(234,179,8,0.12)" stroke="#EAB308" stroke-width="2.6" stroke-linejoin="round" />
+          <g clip-path="url(#stkTop)" stroke="#EAB308" stroke-width="2" stroke-linecap="round">
+            <line x1="16" y1="20" x2="46" y2="50" />
+            <line x1="28" y1="18" x2="60" y2="48" />
+            <line x1="8" y1="32" x2="32" y2="56" />
+            <line x1="16" y1="52" x2="46" y2="22" />
+            <line x1="28" y1="54" x2="60" y2="24" />
+            <line x1="8" y1="44" x2="30" y2="20" />
+          </g>
+          <path d="M13 45 C26 50 46 50 60 45" fill="none" stroke="#EAB308" stroke-width="2" stroke-linecap="round" />
+          <g stroke="#EAB308" stroke-width="1.5" stroke-linecap="round">
+            <line x1="23" y1="49" x2="23" y2="53" />
+            <line x1="31" y1="50" x2="31" y2="54" />
+            <line x1="40" y1="50" x2="40" y2="54" />
+            <line x1="48" y1="49" x2="48" y2="53" />
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="lx3-word">SWEETSTEAK</div>
+    <div class="lx3-kick">World Cup 2026 · Sweepstake</div>
+  </div>
+</div>
+
+<!-- iOS SIGN-IN SCREEN (hidden on web, shown on iOS before account exists) -->
+<div id="ios-signin">
+  <div class="ios-ob-glow"></div>
+  <div class="ios-ob-ring1"></div>
+  <div class="ios-ob-ring2"></div>
+  <div class="ios-signin-content">
+    <div class="ios-signin-brand">
+      <span class="ios-signin-brand-name">Sweetsteak</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="ios-signin-kicker">11 June – 19 July 2026</div>
+    <h1 class="ios-signin-title">World Cup <span class="yr">2026</span><br>Sweepstake</h1>
+    <div style="flex:1.1"></div>
+    <button class="ios-signin-apple-btn" id="ios-signin-apple-btn">
+      <svg class="ios-signin-apple-icon" viewBox="0 0 384 512" aria-hidden="true">
+        <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C61.5 141.6 0 184.5 0 268.4c0 30.9 4.6 62.8 13.8 95.5 12.3 43 56.6 148.5 102.8 147.1 24.1-.6 41.2-17.2 72.5-17.2 30.4 0 46.2 17.2 72.5 17.2 46.7-.7 86.6-99.7 98.3-142.8-62.6-29.5-59.2-86.4-59.2-99.5zm-72.4-178.5c34.9-41.4 31.7-79.1 30.7-92.7-30.8 1.8-66.5 21-86.6 44.6-22.4 25.6-35.6 57.5-32.6 90.9 33.4 2.6 64-14.7 88.5-42.8z"/>
+      </svg>
+      Sign in with Apple
+    </button>
+    <p style="text-align:center;font-size:11px;color:rgba(255,255,255,0.38);margin:10px 0 0;line-height:1.5;">
+      By continuing you agree to our <a href="/privacy.html" target="_blank" style="color:rgba(255,255,255,0.58);text-decoration:underline;">Privacy Policy</a>
+    </p>
+    <div style="flex:0.5"></div>
+  </div>
+</div>
+
+<!-- iOS PICK PLAYER SCREEN (hidden on web, shown on iOS after joining a game) -->
+<div id="ios-pick-player">
+  <div class="ios-ob-glow"></div>
+  <div class="ios-ob-ring1"></div>
+  <div class="ios-ob-ring2"></div>
+  <div class="ios-pick-header">
+    <div class="ios-pick-kicker" id="ios-pick-kicker">WELCOME TO THE GAME</div>
+    <h1 class="ios-pick-title">Which player<br>are you?</h1>
+    <p class="ios-pick-sub">We'll use this to send you notifications about your teams.</p>
+  </div>
+  <div class="ios-pick-list" id="ios-pick-list"></div>
+  <div class="ios-pick-cta">
+    <button class="ios-pick-cta-btn" id="ios-pick-cta" disabled>That's me →</button>
+  </div>
 </div>
 
 <!-- LANDING (shown when no ?g= group code in URL) -->
@@ -1142,8 +1367,10 @@ html.ios-app > body > header { display: none !important; }
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Game</h3>
       <p style="font-size:.92rem;margin-bottom:1rem;" id="settings-group-name">—</p>
-      <button class="btn-danger" id="leaveGameBtn">Log out</button>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;">Removes this game from your device. You can rejoin with the code.</p>
+      <button class="btn-danger" id="leaveGameBtn">Leave game</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;" id="leaveGameHint">Removes this game from your device. You can rejoin with the code.</p>
+      <button class="btn-danger" id="iosLogoutBtn" style="display:none;">Log out</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple. Your game stays saved on this device — sign back in any time to pick up where you left off.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
@@ -1200,8 +1427,10 @@ html.ios-app > body > header { display: none !important; }
     <div class="asec" id="atab-leave">
       <div class="panel" style="margin-top:1.25rem;">
         <h3>Leave game</h3>
-        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;" id="adminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
         <button class="btn-danger" id="adminLeaveBtn">Leave game</button>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;display:none;" id="iosAdminLogoutHint">Signs you out of Apple. Your game stays saved on this device and you remain the admin — sign back in any time.</p>
+        <button class="btn-danger" id="iosAdminLogoutBtn" style="display:none;">Log out</button>
       </div>
     </div>
   </section>
@@ -1378,6 +1607,100 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
     if (e.key === 'Enter') document.getElementById('lg-join-btn').click();
   });
 })();
+
+// ─── iOS LAUNCH ANIMATION ────────────────────────────────────────────────────
+(function initLaunchAnimation() {
+  if (!document.documentElement.classList.contains('ios-app')) return;
+  document.getElementById('ios-launch').style.display = 'block';
+  if (!localStorage.getItem('sg_apple_id')) {
+    document.getElementById('ios-signin').classList.add('active');
+  }
+  const launch = document.getElementById('ios-launch');
+  setTimeout(() => {
+    launch.style.transition = 'opacity 0.5s ease-out';
+    launch.style.opacity = '0';
+    setTimeout(() => { launch.style.display = 'none'; }, 500);
+  }, 2000);
+})();
+
+// ─── iOS SIGN-IN ──────────────────────────────────────────────────────────────
+(function initSignIn() {
+  if (!document.documentElement.classList.contains('ios-app')) return;
+  const appleBtn = document.getElementById('ios-signin-apple-btn');
+  const appleBtnOriginalHTML = appleBtn.innerHTML;
+  appleBtn.addEventListener('click', function() {
+    this.disabled = true;
+    this.textContent = 'Signing in…';
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.sweetsteak) {
+      window.webkit.messageHandlers.sweetsteak.postMessage({ action: 'signInWithApple' });
+    } else {
+      window.handleAppleSignIn({ userId: 'dev_' + Date.now(), name: '' });
+    }
+  });
+  window.handleAppleSignInError = function() {
+    appleBtn.disabled = false;
+    appleBtn.innerHTML = appleBtnOriginalHTML;
+  };
+})();
+
+window.handleAppleSignIn = function(payload) {
+  const { userId, name } = payload || {};
+  if (!userId) return;
+  localStorage.setItem('sg_apple_id', userId);
+  if (name) localStorage.setItem('sg_apple_name', name);
+  document.getElementById('ios-signin').classList.remove('active');
+};
+
+// ─── iOS PICK PLAYER ──────────────────────────────────────────────────────────
+function iosShowPickPlayer(code, names, groupName) {
+  if (!names || !names.length) {
+    window.location.href = window.location.pathname + '?g=' + code;
+    return;
+  }
+  const el = document.getElementById('ios-pick-player');
+  const list = document.getElementById('ios-pick-list');
+  const cta = document.getElementById('ios-pick-cta');
+  document.getElementById('ios-pick-kicker').textContent =
+    'WELCOME TO ' + (groupName || 'THE GAME').toUpperCase();
+  list.innerHTML = '';
+  let selected = null;
+  (names || []).forEach(function(name) {
+    const row = document.createElement('div');
+    row.className = 'ios-pick-row';
+    row.innerHTML =
+      `<div class="ios-pick-avatar">${(name[0]||'?').toUpperCase()}</div>` +
+      `<span class="ios-pick-name">${name}</span>` +
+      `<span class="ios-pick-chevron">›</span>`;
+    row.addEventListener('click', function() {
+      list.querySelectorAll('.ios-pick-row').forEach(function(r) {
+        r.classList.remove('selected');
+        const ch = r.querySelector('.ios-pick-chevron');
+        const ba = r.querySelector('.ios-pick-selected-badge');
+        if (ch) ch.style.display = '';
+        if (ba) ba.remove();
+      });
+      row.classList.add('selected');
+      const ch = row.querySelector('.ios-pick-chevron');
+      if (ch) ch.style.display = 'none';
+      const badge = document.createElement('span');
+      badge.className = 'ios-pick-selected-badge';
+      badge.textContent = 'SELECTED';
+      row.appendChild(badge);
+      selected = name;
+      cta.disabled = false;
+    });
+    list.appendChild(row);
+  });
+  cta.disabled = true;
+  cta.onclick = function() {
+    if (!selected) return;
+    localStorage.setItem('sg_player_' + code, selected);
+    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+    el.classList.remove('active');
+    window.location.href = window.location.pathname + '?g=' + code;
+  };
+  el.classList.add('active');
+}
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 // Teams ranked 1–48 by FIFA ranking. Rank derived from array index.
@@ -2256,6 +2579,18 @@ function leaveGame() {
 }
 document.getElementById('leaveGameBtn').addEventListener('click', leaveGame);
 document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
+
+// ─── iOS LOG OUT ──────────────────────────────────────────────────────────────
+function iosLogOut() {
+  if (!confirm('Log out? You can sign back in any time — your game stays saved on this device.')) return;
+  localStorage.removeItem('sg_apple_id');
+  localStorage.removeItem('sg_apple_name');
+  window.location.href = window.location.pathname + window.location.search;
+}
+const iosLogoutBtn = document.getElementById('iosLogoutBtn');
+if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
+const iosAdminLogoutBtn = document.getElementById('iosAdminLogoutBtn');
+if (iosAdminLogoutBtn) iosAdminLogoutBtn.addEventListener('click', iosLogOut);
 
 // ─── CLAIM ADMIN ──────────────────────────────────────────────────────────────
 if (!IS_ADMIN) {
