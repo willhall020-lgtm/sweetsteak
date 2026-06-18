@@ -10,6 +10,7 @@ class ViewController: UIViewController {
 
     private var webView: WKWebView!
     private var refreshControl: UIRefreshControl!
+    private var popupWebView: WKWebView?
 
     // MARK: - Lifecycle
 
@@ -173,15 +174,31 @@ extension ViewController: WKNavigationDelegate {
 
 extension ViewController: WKUIDelegate {
 
-    // target="_blank" links
+    // window.open() — required for Sign in with Apple JS SDK popup
     func webView(_ webView: WKWebView,
                  createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
-        if let url = navigationAction.request.url {
-            present(SFSafariViewController(url: url), animated: true)
-        }
-        return nil
+        let popup = WKWebView(frame: .zero, configuration: configuration)
+        popup.translatesAutoresizingMaskIntoConstraints = false
+        popup.navigationDelegate = self
+        popup.uiDelegate = self
+        view.addSubview(popup)
+        NSLayoutConstraint.activate([
+            popup.topAnchor.constraint(equalTo: view.topAnchor),
+            popup.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            popup.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            popup.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        popupWebView = popup
+        return popup
+    }
+
+    // window.close() — tear down the popup after auth completes
+    func webViewDidClose(_ webView: WKWebView) {
+        guard webView === popupWebView else { return }
+        popupWebView?.removeFromSuperview()
+        popupWebView = nil
     }
 
     // window.alert()
