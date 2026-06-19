@@ -1,5 +1,8 @@
 import UIKit
 import WebKit
+import AuthenticationServices
+import UserNotifications
+import SafariServices
 
 class ViewController: UIViewController {
 
@@ -16,6 +19,7 @@ class ViewController: UIViewController {
         setupWebView()
         setupRefreshControl()
         injectUserSelectNone()
+        observeNotificationEvents()
         loadApp()
     }
 
@@ -34,6 +38,7 @@ class ViewController: UIViewController {
         webView.uiDelegate = self
         webView.navigationDelegate = self
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.configuration.userContentController.add(self, name: "sweetsteak")
 
         view.addSubview(webView)
         NSLayoutConstraint.activate([
@@ -72,11 +77,66 @@ class ViewController: UIViewController {
     }
 
     private func loadApp() {
-        webView.load(URLRequest(url: appURL))
+        let request = URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
+        webView.load(request)
     }
 
     @objc private func handleRefresh() {
-        webView.reload()
+        loadApp()
+    }
+
+    // MARK: - Notifications
+
+    private func observeNotificationEvents() {
+        NotificationCenter.default.addObserver(forName: .pushTokenReceived, object: nil, queue: .main) { [weak self] note in
+            guard let token = note.object as? String else { return }
+            self?.sendToWeb("window.handlePushToken && window.handlePushToken({token:'\(token)'})")
+        }
+        NotificationCenter.default.addObserver(forName: .notificationTapped, object: nil, queue: .main) { [weak self] _ in
+            // Route to leaderboard on any notification tap
+            self?.sendToWeb("window.handleNotificationTap && window.handleNotificationTap()")
+        }
+    }
+
+    private func handleRequestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, _ in
+            DispatchQueue.main.async {
+                if granted { UIApplication.shared.registerForRemoteNotifications() }
+                let status = granted ? "authorized" : "denied"
+                self?.sendToWeb("window.handleNotificationPermission && window.handleNotificationPermission({granted:\(granted),status:'\(status)'})")
+            }
+        }
+    }
+
+    private func handleGetNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            let status: String
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral: status = "authorized"
+            case .denied:                               status = "denied"
+            default:                                    status = "notDetermined"
+            }
+            let token = AppDelegate.pushToken.map { "'\($0)'" } ?? "null"
+            DispatchQueue.main.async {
+                self?.sendToWeb("window.handleNotificationStatus && window.handleNotificationStatus({status:'\(status)',token:\(token)})")
+            }
+        }
+    }
+
+    private func sendToWeb(_ js: String) {
+        webView.evaluateJavaScript(js)
+    }
+
+    // MARK: - Sign in with Apple
+
+    private func handleSignInWithApple() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName]
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
 }
 
@@ -179,5 +239,74 @@ extension ViewController: WKUIDelegate {
             completionHandler(alert.textFields?.first?.text)
         })
         present(alert, animated: true)
+    }
+}
+
+// MARK: - WKScriptMessageHandler (JS -> native bridge)
+
+extension ViewController: WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController,
+                                didReceive message: WKScriptMessage) {
+        guard message.name == "sweetsteak",
+              let body = message.body as? [String: Any],
+              let action = body["action"] as? String else { return }
+
+        switch action {
+        case "signInWithApple":
+            handleSignInWithApple()
+        case "requestNotificationPermission":
+            handleRequestNotificationPermission()
+        case "getNotificationStatus":
+            handleGetNotificationStatus()
+        case "openNotificationSettings":
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        default:
+            break
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerDelegate
+
+extension ViewController: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController,
+                                  didCompleteWithAuthorization authorization: ASAuthorization) {
+        guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+            return
+        }
+
+        let userId = credential.user
+        var name = ""
+        if let fullName = credential.fullName {
+            name = PersonNameComponentsFormatter().string(from: fullName)
+        }
+
+        let payload: [String: Any] = ["userId": userId, "name": name]
+        guard let data = try? JSONSerialization.data(withJSONObject: payload),
+              let json = String(data: data, encoding: .utf8) else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript("window.handleAppleSignIn(\(json));")
+        }
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("⚠️ Sign in with Apple failed: \(error)")
+        if let authError = error as? ASAuthorizationError {
+            print("⚠️ ASAuthorizationError code: \(authError.code.rawValue) (\(authError.code))")
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript("window.handleAppleSignInError && window.handleAppleSignInError();")
+        }
+    }
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+extension ViewController: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        view.window ?? ASPresentationAnchor()
     }
 }

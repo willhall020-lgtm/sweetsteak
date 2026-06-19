@@ -1092,6 +1092,7 @@ html.ios-app > body > header { display: none !important; }
 
 <!-- LANDING (shown when no ?g= group code in URL) -->
 <div id="landing">
+  <button id="landing-back-btn" class="hidden" style="position:absolute;top:max(env(safe-area-inset-top,0px),1rem);left:1rem;background:none;border:none;color:rgba(255,255,255,.7);font-size:.9rem;font-family:'Inter',sans-serif;cursor:pointer;padding:.25rem .5rem;z-index:1;">← Back</button>
   <div class="landing-logo">World Cup <span>2026</span><br>Sweepstake</div>
   <p class="landing-sub">Draw your teams. Climb the board.<br>Win the pot — or the wooden spoon.</p>
 
@@ -1373,6 +1374,11 @@ html.ios-app > body > header { display: none !important; }
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple. Your game stays saved on this device — sign back in any time to pick up where you left off.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
+      <h3>New game</h3>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Want to run another sweepstake? Create a new game — you can still come back to this one.</p>
+      <button class="btn-ink" id="createNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
+    </div>
+    <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
       <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">If you created this game on another device, enter your admin PIN to restore access. Admin access lets you reset the draw, view live match stats, and manage the game.</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
@@ -1469,28 +1475,6 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
 // ─── LANDING ──────────────────────────────────────────────────────────────────
 (function initLanding() {
   const landing = document.getElementById('landing');
-  if (GROUP_CODE && localStorage.getItem('sg_role_' + GROUP_CODE)) {
-    landing.classList.add('hidden'); return;
-  }
-
-  // No group code in URL — check if this device has a previously joined game
-  if (!GROUP_CODE) {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('sg_role_')) {
-        const savedCode = key.slice(8);
-        window.location.replace('/?g=' + savedCode);
-        return;
-      }
-    }
-  }
-
-  // No group code (or unrecognised code on new device) — show landing only
-  document.querySelector('.tab-bar').style.display = 'none';
-  document.querySelector('main').style.display = 'none';
-  document.querySelector('footer').style.display = 'none';
-
-  // Option toggle
   const optCreate = document.getElementById('opt-create');
   const optJoin   = document.getElementById('opt-join');
   const panelCreate = document.getElementById('panel-create');
@@ -1503,19 +1487,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
     panelJoin.classList.toggle('hidden', which !== 'join');
   }
 
-  optCreate.addEventListener('click', () => showPanel('create'));
-  optJoin.addEventListener('click', () => showPanel('join'));
-  optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
-  optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
-
-  // Shared link on new device — pre-fill and open join panel
-  if (GROUP_CODE) {
-    document.getElementById('lg-code').value = GROUP_CODE;
-    showPanel('join');
-    history.replaceState(null, '', '/');
-  }
-
-  // Populate player count dropdown on landing form
+  // Populate player count dropdown
   const lgPlayers = document.getElementById('lg-players');
   for (let i=2;i<=48;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i+' players'; o.style.background='#1a3a2a'; lgPlayers.appendChild(o); }
 
@@ -1613,6 +1585,63 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   document.getElementById('lg-code').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('lg-join-btn').click();
   });
+
+  // Back button — shown when landing is opened from within a game
+  const backBtn = document.getElementById('landing-back-btn');
+  backBtn.addEventListener('click', () => {
+    landing.classList.add('hidden');
+    backBtn.classList.add('hidden');
+  });
+
+  // Expose for in-game "Create new game" navigation
+  window.openLandingCreate = function() {
+    document.getElementById('create-form').classList.remove('hidden');
+    document.getElementById('create-share').classList.add('hidden');
+    document.getElementById('lg-name').value = '';
+    document.getElementById('lg-price').value = '£5';
+    document.getElementById('lg-players').value = '';
+    document.getElementById('lg-pin').value = '';
+    document.getElementById('lg-err').classList.remove('show');
+    const btn = document.getElementById('lg-create-btn');
+    btn.disabled = false; btn.textContent = 'Create game';
+    backBtn.classList.remove('hidden');
+    landing.classList.remove('hidden');
+    showPanel('create');
+  };
+
+  // In-game: hide landing and return early (skip full landing init)
+  if (GROUP_CODE && localStorage.getItem('sg_role_' + GROUP_CODE)) {
+    landing.classList.add('hidden'); return;
+  }
+
+  // No group code in URL — check if this device has a previously joined game
+  if (!GROUP_CODE) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sg_role_')) {
+        const savedCode = key.slice(8);
+        window.location.replace('/?g=' + savedCode);
+        return;
+      }
+    }
+  }
+
+  // No group code (or unrecognised code on new device) — show landing only
+  document.querySelector('.tab-bar').style.display = 'none';
+  document.querySelector('main').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+
+  optCreate.addEventListener('click', () => showPanel('create'));
+  optJoin.addEventListener('click', () => showPanel('join'));
+  optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
+  optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
+
+  // Shared link on new device — pre-fill and open join panel
+  if (GROUP_CODE) {
+    document.getElementById('lg-code').value = GROUP_CODE;
+    showPanel('join');
+    history.replaceState(null, '', '/');
+  }
 })();
 
 // ─── iOS LAUNCH ANIMATION ────────────────────────────────────────────────────
@@ -2598,6 +2627,11 @@ const iosLogoutBtn = document.getElementById('iosLogoutBtn');
 if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
 const iosAdminLogoutBtn = document.getElementById('iosAdminLogoutBtn');
 if (iosAdminLogoutBtn) iosAdminLogoutBtn.addEventListener('click', iosLogOut);
+
+// ─── CREATE NEW GAME (from More) ──────────────────────────────────────────────
+document.getElementById('createNewGameBtn').addEventListener('click', () => {
+  if (window.openLandingCreate) window.openLandingCreate();
+});
 
 // ─── CLAIM ADMIN ──────────────────────────────────────────────────────────────
 if (!IS_ADMIN) {
