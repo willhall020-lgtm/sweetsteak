@@ -40,17 +40,17 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const rows = await sql`
-        SELECT completed, names, plan, idx, group_name, entry_price, player_count
+        SELECT completed, names, plan, idx, group_name, entry_price, player_count, admin_apple_id
         FROM sweepstake_groups WHERE group_code = ${code}
       `;
       if (!rows.length) return res.status(404).json({ error: 'Group not found' });
-      const { completed, names, plan, idx, group_name, entry_price, player_count } = rows[0];
+      const { completed, names, plan, idx, group_name, entry_price, player_count, admin_apple_id } = rows[0];
       posthog.capture({
         distinctId: code,
         event: 'draw viewed',
         properties: { group_code: code, completed, player_count },
       });
-      return res.json({ completed, names, plan, idx, group_name, entry_price, player_count });
+      return res.json({ completed, names, plan, idx, group_name, entry_price, player_count, admin_apple_id });
     }
 
     if (req.method === 'POST') {

@@ -1511,7 +1511,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
       const r = await fetch('/api/group', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin, player_count: playerCount })
+        body: JSON.stringify({ group_name: name, entry_price: price || '£5', admin_pin: pin, player_count: playerCount, apple_id: localStorage.getItem('sg_apple_id') || undefined })
       });
       const data = await r.json();
       if (!r.ok) {
@@ -1685,6 +1685,11 @@ window.handleAppleSignIn = function(payload) {
   localStorage.setItem('sg_apple_id', userId);
   if (name) localStorage.setItem('sg_apple_name', name);
   document.getElementById('ios-signin').classList.remove('active');
+  // Auto-restore admin role if this Apple ID created the current game
+  if (GROUP_CODE && !IS_ADMIN && drawData?.admin_apple_id === userId) {
+    setRole(GROUP_CODE, 'admin');
+    window.location.reload();
+  }
 };
 
 // ─── iOS PICK PLAYER ──────────────────────────────────────────────────────────
@@ -1859,6 +1864,15 @@ async function loadDraw() {
     if (r.status === 404) { showInvalidGroup(); return; }
     if (!r.ok) return;
     drawData = await r.json();
+    // iOS: auto-restore admin role if Apple ID matches the game creator
+    if (!IS_ADMIN && drawData.admin_apple_id) {
+      const storedAppleId = localStorage.getItem('sg_apple_id');
+      if (storedAppleId && storedAppleId === drawData.admin_apple_id) {
+        setRole(GROUP_CODE, 'admin');
+        window.location.reload();
+        return;
+      }
+    }
     // Update header and settings with group metadata
     if (drawData.group_name) {
       document.title = drawData.group_name + ' · Sweepstake';
