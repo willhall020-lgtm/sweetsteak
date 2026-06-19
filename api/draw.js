@@ -19,6 +19,7 @@ async function getDb() {
     )
   `;
   await sql`ALTER TABLE sweepstake_groups ADD COLUMN IF NOT EXISTS player_count INT NOT NULL DEFAULT 14`;
+  await sql`ALTER TABLE sweepstake_groups ADD COLUMN IF NOT EXISTS admin_apple_id TEXT`;
   return sql;
 }
 
