@@ -2748,7 +2748,12 @@ async function joinOtherGame(codeInputId, errId) {
     const data = await r.json();
     if (getRole(code) !== 'admin') setRole(code, 'member');
     if (data.group_name) localStorage.setItem('sg_name_' + code, data.group_name);
-    window.location.href = '/?g=' + code;
+    const isIOS = document.documentElement.classList.contains('ios-app');
+    if (isIOS && !localStorage.getItem('sg_player_' + code)) {
+      iosShowPickPlayer(code, data.names || [], data.group_name || '');
+    } else {
+      window.location.href = '/?g=' + code;
+    }
   } catch {
     err.textContent = 'Network error — try again.';
     err.classList.add('show'); btn.disabled = false; btn.textContent = 'Join';
@@ -2909,8 +2914,8 @@ function initIOS() {
         >${esc(g.name)}</button>`;
     }
     if (overflow.length) {
-      html += `<button class="ios-switcher-more" id="ios-switcher-more">+${overflow.length}</button>`;
-      html += `<div class="ios-switcher-dropdown" id="ios-switcher-dropdown">`;
+      html += `<button class="ios-switcher-more">+${overflow.length}</button>`;
+      html += `<div class="ios-switcher-dropdown">`;
       for (const g of overflow) {
         html += `<button class="ios-switcher-dropdown-item" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
       }
@@ -2921,16 +2926,17 @@ function initIOS() {
     return html;
   }
 
-  // Toggle overflow dropdown
+  // Toggle overflow dropdown — use class selectors since IDs repeat across view headers
   document.addEventListener('click', e => {
-    const moreBtn = e.target.closest('#ios-switcher-more');
-    const dropdown = document.getElementById('ios-switcher-dropdown');
-    if (!dropdown) return;
+    const moreBtn = e.target.closest('.ios-switcher-more');
     if (moreBtn) {
-      dropdown.classList.toggle('open');
+      const dropdown = moreBtn.nextElementSibling;
+      if (dropdown) dropdown.classList.toggle('open');
       e.stopPropagation();
-    } else if (!e.target.closest('#ios-switcher-dropdown')) {
-      dropdown.classList.remove('open');
+      return;
+    }
+    if (!e.target.closest('.ios-switcher-dropdown')) {
+      document.querySelectorAll('.ios-switcher-dropdown.open').forEach(d => d.classList.remove('open'));
     }
   });
 
