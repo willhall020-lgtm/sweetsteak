@@ -2819,11 +2819,11 @@ function initIOS() {
   });
 
   // ── Fixtures segmented control ──
-  let fixtureTab = 'Live';
+  let fixtureTab = 'Fixtures';
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
+    seg.innerHTML = ['Fixtures','Results'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
@@ -2838,20 +2838,16 @@ function initIOS() {
   function applyFixtureFilter() {
     const list = document.getElementById('fixtures-list');
     if (!list) return;
-    const want = fixtureTab.toLowerCase();
     list.querySelectorAll('.fix-section').forEach(s => {
       const type = s.dataset.type || '';
-      s.style.display = (type === want || (!type && want === 'live')) ? '' : 'none';
-    });
-    // If Live tab but no live matches, show upcoming instead
-    if (fixtureTab === 'Live') {
-      const liveSec = list.querySelector('.fix-section[data-type="live"]');
-      if (!liveSec || liveSec.querySelectorAll('.fix-card').length === 0) {
-        list.querySelectorAll('.fix-section').forEach(s => {
-          s.style.display = s.dataset.type === 'upcoming' ? '' : 'none';
-        });
+      if (fixtureTab === 'Fixtures') {
+        // Show live (at top) + upcoming; hide results
+        s.style.display = (type === 'live' || type === 'upcoming') ? '' : 'none';
+      } else {
+        // Results tab
+        s.style.display = type === 'results' ? '' : 'none';
       }
-    }
+    });
   }
 
   // Patch renderFixtures to add data-type attrs and call filter
