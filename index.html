@@ -884,7 +884,7 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
-.notif-panel-wrap { display: none; }
+html:not(.ios-app) .notif-panel-wrap { display: none; }
 .notif-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: .65rem 0; border-bottom: 1px solid var(--rule);
@@ -3042,6 +3042,10 @@ if (GROUP_CODE) {
 function initIOS() {
   if (!document.documentElement.classList.contains('ios-app')) return;
 
+  // Populate notifications panels immediately (panels visible via CSS on iOS)
+  renderNotifPanel();
+  window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
+
   // ── Tab bar: wrap buttons in glass pill ──
   const tabBar = document.querySelector('.tab-bar');
   if (tabBar) {
@@ -3492,10 +3496,6 @@ function initIOS() {
     };
   }
 
-  // Show and populate notifications panels (iOS only)
-  document.querySelectorAll('.notif-panel-wrap').forEach(el => { el.style.display = 'block'; });
-  renderNotifPanel();
-  window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
 }
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
