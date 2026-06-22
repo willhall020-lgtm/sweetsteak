@@ -1442,6 +1442,10 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
   <section id="settings-view">
     <p class="kicker">Your game</p>
     <h2 class="display">More</h2>
+    <div class="panel notif-panel-wrap" style="margin-top:1.5rem;display:block;">
+      <h3>Notifications</h3>
+      <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
+    </div>
     <div class="panel" style="margin-top:1.5rem;">
       <h3>Game code</h3>
       <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="member-share-url">—</p>
@@ -1457,10 +1461,6 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple ID. Your games stay saved on this device — sign back in any time.</p>
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
-    </div>
-    <div class="panel notif-panel-wrap" style="margin-top:1.25rem;display:block;">
-      <h3>Notifications</h3>
-      <div class="notif-panel-content"></div>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
@@ -1502,6 +1502,10 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
     </div>
 
     <div class="asec active" id="atab-code">
+      <div class="panel notif-panel-wrap" style="margin-top:1.25rem;display:block;">
+        <h3>Notifications</h3>
+        <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
+      </div>
       <div class="panel" style="margin-top:1.25rem;">
         <h3>Game code</h3>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="admin-share-url">—</p>
@@ -1523,10 +1527,6 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
           </div>
           <p class="landing-err" id="adminJoinOtherErr" style="margin-top:.5rem;"></p>
         </div>
-      </div>
-      <div class="panel notif-panel-wrap" style="margin-top:1.25rem;display:block;">
-        <h3>Notifications</h3>
-        <div class="notif-panel-content"></div>
       </div>
     </div>
 
