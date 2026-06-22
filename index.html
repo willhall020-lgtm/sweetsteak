@@ -1398,7 +1398,7 @@ html.ios-app > body > header { display: none !important; }
     <p class="kicker">Commissioner</p>
     <h2 class="display">Admin <button class="tips-help-btn" id="tipsHelpBtn" aria-label="Getting started guide">?</button></h2>
     <div class="admin-tabs">
-      <button class="active" data-atab="code">Game Code</button>
+      <button class="active" data-atab="code">Game</button>
       <button data-atab="status">Live Data</button>
       <button data-atab="danger">Reset Draw</button>
       <button data-atab="leave">Leave Game</button>
@@ -1410,6 +1410,11 @@ html.ios-app > body > header { display: none !important; }
         <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="admin-share-url">—</p>
         <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;">Share this code with your players — they enter it on the home screen to join.</p>
         <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
+      </div>
+      <div class="panel" style="margin-top:1.25rem;">
+        <h3>New game</h3>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Want to run another sweepstake? Create a new game — you can still come back to this one.</p>
+        <button class="btn-ink" id="adminCreateNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
       </div>
     </div>
 
@@ -2664,8 +2669,11 @@ if (document.documentElement.classList.contains('ios-app')) {
   if (leaveH3) leaveH3.textContent = 'Log out';
 }
 
-// ─── CREATE NEW GAME (from More) ──────────────────────────────────────────────
+// ─── CREATE NEW GAME (from More / Admin) ──────────────────────────────────────
 document.getElementById('createNewGameBtn').addEventListener('click', () => {
+  if (window.openLandingCreate) window.openLandingCreate();
+});
+document.getElementById('adminCreateNewGameBtn').addEventListener('click', () => {
   if (window.openLandingCreate) window.openLandingCreate();
 });
 
