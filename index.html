@@ -840,6 +840,9 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
 .ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
 .ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
+/* ── iOS: Hide landing options/sub when opened in-game ── */
+#landing.in-game-create .landing-options,
+#landing.in-game-create .landing-sub { display: none !important; }
 
 /* ── iOS Launch Animation ──────────────────────────────────────── */
 #ios-launch {
@@ -1590,6 +1593,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   const backBtn = document.getElementById('landing-back-btn');
   backBtn.addEventListener('click', () => {
     landing.classList.add('hidden');
+    landing.classList.remove('in-game-create');
     backBtn.classList.add('hidden');
   });
 
@@ -1605,6 +1609,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
     const btn = document.getElementById('lg-create-btn');
     btn.disabled = false; btn.textContent = 'Create game';
     backBtn.classList.remove('hidden');
+    landing.classList.add('in-game-create');
     landing.classList.remove('hidden');
     showPanel('create');
   };
@@ -1636,11 +1641,22 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   optCreate.addEventListener('keydown', e => e.key === 'Enter' && showPanel('create'));
   optJoin.addEventListener('keydown', e => e.key === 'Enter' && showPanel('join'));
 
-  // Shared link on new device — pre-fill and open join panel
+  // Game code in URL — auto-restore session (handles cleared localStorage / Safari ITP)
   if (GROUP_CODE) {
-    document.getElementById('lg-code').value = GROUP_CODE;
-    showPanel('join');
-    history.replaceState(null, '', '/');
+    (async () => {
+      try {
+        const r = await fetch('/api/draw?g=' + GROUP_CODE);
+        if (r.ok) {
+          if (getRole(GROUP_CODE) !== 'admin') setRole(GROUP_CODE, 'member');
+          window.location.reload();
+          return;
+        }
+      } catch (e) {}
+      // Game not found or network error — fall back to join panel
+      document.getElementById('lg-code').value = GROUP_CODE;
+      showPanel('join');
+      history.replaceState(null, '', '/');
+    })();
   }
 })();
 
@@ -2181,7 +2197,7 @@ function computeScores(assignments, matches) {
     for (const team of teams) if (team) t2p[team] = player;
 
   for (const m of matches) {
-    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
+    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner, isLive } = m;
     const hp = t2p[homeTeam], ap = t2p[awayTeam];
     const isKO = stage !== 'group';
     const sl = MATCH_STAGE_LABEL[stage] || stage;
@@ -2199,7 +2215,7 @@ function computeScores(assignments, matches) {
       if (wp) {
         scores[wp].wins += 1;
         scores[wp].matchPts += 3;
-        scores[wp].detail.push({team:winner, event:`Beat ${loser} (${sl})`, pts:3});
+        scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3});
         const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
         let gkBonus = 0;
         if (tierDiff >= 3) gkBonus = 10;
@@ -2208,8 +2224,8 @@ function computeScores(assignments, matches) {
         if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus}); }
       }
     } else if (!isKO) {
-      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:`Drew with ${awayTeam} (${sl})`, pts:1}); }
-      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:`Drew with ${homeTeam} (${sl})`, pts:1}); }
+      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1}); }
+      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:isLive ? `Drawing vs ${homeTeam} (${sl})` : `Drew with ${homeTeam} (${sl})`, pts:1}); }
     }
   }
 
@@ -2641,6 +2657,12 @@ const iosLogoutBtn = document.getElementById('iosLogoutBtn');
 if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
 const iosAdminLogoutBtn = document.getElementById('iosAdminLogoutBtn');
 if (iosAdminLogoutBtn) iosAdminLogoutBtn.addEventListener('click', iosLogOut);
+if (document.documentElement.classList.contains('ios-app')) {
+  const leaveTab = document.querySelector('[data-atab="leave"]');
+  if (leaveTab) leaveTab.textContent = 'Log out';
+  const leaveH3 = document.querySelector('#atab-leave h3');
+  if (leaveH3) leaveH3.textContent = 'Log out';
+}
 
 // ─── CREATE NEW GAME (from More) ──────────────────────────────────────────────
 document.getElementById('createNewGameBtn').addEventListener('click', () => {
@@ -2760,7 +2782,7 @@ function initIOS() {
     'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
     'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
-    'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true, desc: 'Score points every time your teams score, win, and progress through the tournament.' },
+    'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
     'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true, desc: 'Group settings, admin tools, and your game code.' },
   };
 
