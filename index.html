@@ -1408,9 +1408,20 @@ html.ios-app > body > header { display: none !important; }
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple. Your game stays saved on this device — sign back in any time to pick up where you left off.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
-      <h3>New game</h3>
-      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Want to run another sweepstake? Create a new game — you can still come back to this one.</p>
-      <button class="btn-ink" id="createNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
+      <h3>Other games</h3>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Create a new sweepstake or join one that's already running.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
+        <button class="btn-ink" id="createNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
+        <button class="btn-ink" id="joinOtherGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Join a game</button>
+      </div>
+      <div id="joinOtherGameForm" class="hidden" style="margin-top:.75rem;">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <input type="text" id="joinOtherCodeInput" placeholder="Game code" maxlength="6"
+            style="flex:1;min-width:0;padding:.55rem .75rem;border:1.5px solid var(--rule);border-radius:8px;font-size:.95rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:lowercase;background:var(--surface);color:var(--ink);">
+          <button class="btn-ink" id="joinOtherCodeBtn" style="padding:.55rem 1.2rem;font-size:.85rem;white-space:nowrap;">Join</button>
+        </div>
+        <p class="landing-err" id="joinOtherErr" style="margin-top:.5rem;"></p>
+      </div>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
@@ -1443,9 +1454,20 @@ html.ios-app > body > header { display: none !important; }
         <button class="btn-ink" id="adminCopyLinkBtn" style="padding:.5rem 1.2rem;font-size:.85rem;">Copy code</button>
       </div>
       <div class="panel" style="margin-top:1.25rem;">
-        <h3>New game</h3>
-        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Want to run another sweepstake? Create a new game — you can still come back to this one.</p>
-        <button class="btn-ink" id="adminCreateNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
+        <h3>Other games</h3>
+        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Create a new sweepstake or join one that's already running.</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
+          <button class="btn-ink" id="adminCreateNewGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Create new game</button>
+          <button class="btn-ink" id="adminJoinOtherGameBtn" style="padding:.55rem 1.3rem;font-size:.85rem;">Join a game</button>
+        </div>
+        <div id="adminJoinOtherGameForm" class="hidden" style="margin-top:.75rem;">
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <input type="text" id="adminJoinOtherCodeInput" placeholder="Game code" maxlength="6"
+              style="flex:1;min-width:0;padding:.55rem .75rem;border:1.5px solid var(--rule);border-radius:8px;font-size:.95rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:lowercase;background:var(--surface);color:var(--ink);">
+            <button class="btn-ink" id="adminJoinOtherCodeBtn" style="padding:.55rem 1.2rem;font-size:.85rem;white-space:nowrap;">Join</button>
+          </div>
+          <p class="landing-err" id="adminJoinOtherErr" style="margin-top:.5rem;"></p>
+        </div>
       </div>
     </div>
 
@@ -2702,12 +2724,53 @@ if (document.documentElement.classList.contains('ios-app')) {
   if (leaveH3) leaveH3.textContent = 'Log out';
 }
 
-// ─── CREATE NEW GAME (from More / Admin) ──────────────────────────────────────
+// ─── CREATE / JOIN OTHER GAME (from More / Admin) ─────────────────────────────
 document.getElementById('createNewGameBtn').addEventListener('click', () => {
   if (window.openLandingCreate) window.openLandingCreate();
 });
 document.getElementById('adminCreateNewGameBtn').addEventListener('click', () => {
   if (window.openLandingCreate) window.openLandingCreate();
+});
+
+async function joinOtherGame(codeInputId, errId) {
+  const input = document.getElementById(codeInputId);
+  const err   = document.getElementById(errId);
+  const code  = input.value.trim().toLowerCase();
+  err.classList.remove('show');
+  if (code.length < 4) { err.textContent = 'Enter a valid game code.'; err.classList.add('show'); return; }
+  if (code === GROUP_CODE) { err.textContent = 'You're already in this game.'; err.classList.add('show'); return; }
+  const btn = document.getElementById(codeInputId.replace('Input', 'Btn'));
+  btn.disabled = true; btn.textContent = 'Joining…';
+  try {
+    const r = await fetch('/api/draw?g=' + code);
+    if (r.status === 404) { err.textContent = 'Game not found.'; err.classList.add('show'); btn.disabled = false; btn.textContent = 'Join'; return; }
+    if (!r.ok) { err.textContent = 'Something went wrong — try again.'; err.classList.add('show'); btn.disabled = false; btn.textContent = 'Join'; return; }
+    const data = await r.json();
+    if (getRole(code) !== 'admin') setRole(code, 'member');
+    if (data.group_name) localStorage.setItem('sg_name_' + code, data.group_name);
+    window.location.href = '/?g=' + code;
+  } catch {
+    err.textContent = 'Network error — try again.';
+    err.classList.add('show'); btn.disabled = false; btn.textContent = 'Join';
+  }
+}
+
+// Member More — join toggle
+document.getElementById('joinOtherGameBtn').addEventListener('click', () => {
+  document.getElementById('joinOtherGameForm').classList.toggle('hidden');
+});
+document.getElementById('joinOtherCodeBtn').addEventListener('click', () => joinOtherGame('joinOtherCodeInput', 'joinOtherErr'));
+document.getElementById('joinOtherCodeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') joinOtherGame('joinOtherCodeInput', 'joinOtherErr');
+});
+
+// Admin Game tab — join toggle
+document.getElementById('adminJoinOtherGameBtn').addEventListener('click', () => {
+  document.getElementById('adminJoinOtherGameForm').classList.toggle('hidden');
+});
+document.getElementById('adminJoinOtherCodeBtn').addEventListener('click', () => joinOtherGame('adminJoinOtherCodeInput', 'adminJoinOtherErr'));
+document.getElementById('adminJoinOtherCodeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') joinOtherGame('adminJoinOtherCodeInput', 'adminJoinOtherErr');
 });
 
 // ─── CLAIM ADMIN ──────────────────────────────────────────────────────────────
@@ -2853,7 +2916,7 @@ function initIOS() {
       }
       html += `</div>`;
     }
-    html += '<span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.04em;text-align:right;margin-top:1px;">switch between games</span>';
+    html += '<span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.04em;text-align:right;margin-top:4px;">switch between games</span>';
     html += '</div>';
     return html;
   }
