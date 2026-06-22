@@ -883,6 +883,31 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint,
 .ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
+/* ── Notifications panel (iOS only) ─────────────────────────────── */
+#notif-panel { display: none; }
+.ios-app #notif-panel { display: block; }
+.notif-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .65rem 0; border-bottom: 1px solid var(--rule);
+}
+.notif-toggle-row:last-child { border-bottom: none; }
+.notif-toggle-title { font-size: .88rem; font-weight: 600; }
+.notif-toggle-desc  { font-size: .74rem; color: var(--muted); margin-top: 2px; }
+.ios-toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; cursor: pointer; }
+.ios-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.ios-toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: #ccc; border-radius: 13px; transition: background .2s;
+}
+.ios-toggle-slider::before {
+  content: ''; position: absolute;
+  height: 22px; width: 22px; left: 2px; bottom: 2px;
+  background: #fff; border-radius: 50%; transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.ios-toggle input:checked + .ios-toggle-slider { background: #15803D; }
+.ios-toggle input:checked + .ios-toggle-slider::before { transform: translateX(18px); }
+
 /* ── iOS Launch Animation ──────────────────────────────────────── */
 #ios-launch {
   display: none;
@@ -1121,14 +1146,31 @@ html.ios-app > body > header { display: none !important; }
   <div class="ios-ob-glow"></div>
   <div class="ios-ob-ring1"></div>
   <div class="ios-ob-ring2"></div>
-  <div class="ios-pick-header">
-    <div class="ios-pick-kicker" id="ios-pick-kicker">WELCOME TO THE GAME</div>
-    <h1 class="ios-pick-title">Which player<br>are you?</h1>
-    <p class="ios-pick-sub">We'll use this to send you notifications about your teams.</p>
+
+  <!-- Page 1: who are you? -->
+  <div id="ios-pick-page-player" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="ios-pick-header">
+      <div class="ios-pick-kicker" id="ios-pick-kicker">WELCOME TO THE GAME</div>
+      <h1 class="ios-pick-title">Which player<br>are you?</h1>
+      <p class="ios-pick-sub">Pick your name so we can track your teams.</p>
+    </div>
+    <div class="ios-pick-list" id="ios-pick-list"></div>
+    <div class="ios-pick-cta">
+      <button class="ios-pick-cta-btn" id="ios-pick-cta" disabled>That's me →</button>
+    </div>
   </div>
-  <div class="ios-pick-list" id="ios-pick-list"></div>
-  <div class="ios-pick-cta">
-    <button class="ios-pick-cta-btn" id="ios-pick-cta" disabled>That's me →</button>
+
+  <!-- Page 2: notification pre-prompt -->
+  <div id="ios-pick-page-notif" style="display:none;flex-direction:column;flex:1;">
+    <div class="ios-pick-header" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:32px;">
+      <div class="ios-pick-kicker">STAY IN THE GAME</div>
+      <h1 class="ios-pick-title">Know when<br>your team plays</h1>
+      <p class="ios-pick-sub" style="margin-top:14px;">Kick-off alerts, half-time scores, and giant killings — only for your teams. No general match spam.</p>
+    </div>
+    <div class="ios-pick-cta" style="flex-direction:column;gap:10px;">
+      <button class="ios-pick-cta-btn" id="ios-notif-enable-btn">Turn on notifications</button>
+      <button id="ios-notif-skip-btn" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;padding:10px 0;">Maybe later</button>
+    </div>
   </div>
 </div>
 
@@ -1417,6 +1459,10 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
     </div>
+    <div class="panel" id="notif-panel" style="margin-top:1.25rem;">
+      <h3>Notifications</h3>
+      <div id="notif-panel-content"></div>
+    </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
       <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Create a new sweepstake or join one that's already running.</p>
@@ -1531,6 +1577,90 @@ const GROUP_CODE = new URLSearchParams(window.location.search).get('g');
 function getRole(code) { return localStorage.getItem('sg_role_' + code) || 'member'; }
 function setRole(code, role) { localStorage.setItem('sg_role_' + code, role); }
 function clearRole(code) { localStorage.removeItem('sg_role_' + code); }
+
+// ─── NOTIFICATION HELPERS ─────────────────────────────────────────────────────
+function getNotifPrefs() {
+  try { return JSON.parse(localStorage.getItem('sg_notif_prefs') || '{}'); } catch { return {}; }
+}
+function setNotifPref(key, value) {
+  const prefs = getNotifPrefs();
+  prefs[key] = value;
+  localStorage.setItem('sg_notif_prefs', JSON.stringify(prefs));
+  const token = localStorage.getItem('sg_push_token');
+  if (token && GROUP_CODE) {
+    fetch('/api/notifications?g=' + GROUP_CODE, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-push-token': token },
+      body: JSON.stringify({ prefs }),
+    }).catch(() => {});
+  }
+}
+function renderNotifPanel() {
+  const container = document.getElementById('notif-panel-content');
+  if (!container) return;
+  const status = localStorage.getItem('sg_notif_status') || 'notDetermined';
+  if (status === 'authorized') {
+    const p = getNotifPrefs();
+    const pv = (k, d) => p[k] !== undefined ? p[k] : d;
+    const row = (key, label, desc, def) =>
+      `<div class="notif-toggle-row">
+        <div><div class="notif-toggle-title">${label}</div><div class="notif-toggle-desc">${desc}</div></div>
+        <label class="ios-toggle">
+          <input type="checkbox" onchange="setNotifPref('${key}',this.checked)" ${pv(key, def) ? 'checked' : ''}>
+          <span class="ios-toggle-slider"></span>
+        </label>
+      </div>`;
+    container.innerHTML =
+      row('kickoff',  'Kick-off',              'When your team starts playing',         true)  +
+      row('halftime', 'Half-time',             'Score at the break',                    false) +
+      row('fulltime', 'Full-time',             'Final result and any giant killings',   true)  +
+      row('knockout', 'Knockout elimination',  'When your team is knocked out',         true)  +
+      row('draw',     'Draw completed',        'When teams are assigned',               true);
+  } else if (status === 'denied') {
+    container.innerHTML =
+      '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">You\'re missing out on match alerts for your team.</p>' +
+      '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'openNotificationSettings\'})">Open Settings</button>' +
+      '<p style="font-size:.75rem;color:var(--muted);margin-top:.5rem;">Enable notifications for Sweetsteak in iOS Settings.</p>';
+  } else {
+    container.innerHTML =
+      '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Get notified when your team plays, scores, and more.</p>' +
+      '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'requestNotificationPermission\'})">Enable notifications</button>';
+  }
+}
+// iOS push callbacks — called by native
+window.handlePushToken = function(data) {
+  if (!data || !data.token) return;
+  const token = data.token;
+  localStorage.setItem('sg_push_token', token);
+  const prefs = getNotifPrefs();
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('sg_role_')) {
+      const gCode = key.slice(8);
+      const playerName = localStorage.getItem('sg_player_' + gCode) || null;
+      fetch('/api/notifications?g=' + gCode, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, player_name: playerName, prefs }),
+      }).catch(() => {});
+    }
+  }
+};
+window.handleNotificationPermission = function(data) {
+  if (!data) return;
+  localStorage.setItem('sg_notif_status', data.granted ? 'authorized' : 'denied');
+  renderNotifPanel();
+};
+window.handleNotificationStatus = function(data) {
+  if (!data) return;
+  localStorage.setItem('sg_notif_status', data.status || 'notDetermined');
+  if (data.token) localStorage.setItem('sg_push_token', data.token);
+  renderNotifPanel();
+};
+window.handleNotificationTap = function() {
+  const lb = document.querySelector('[data-view="leaderboard"]');
+  if (lb) lb.click();
+};
 
 const IS_ADMIN = GROUP_CODE ? getRole(GROUP_CODE) === 'admin' : false;
 
@@ -1823,9 +1953,30 @@ function iosShowPickPlayer(code, names, groupName) {
   cta.onclick = function() {
     if (!selected) return;
     localStorage.setItem('sg_player_' + code, selected);
-    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
-    el.classList.remove('active');
-    window.location.href = window.location.pathname + '?g=' + code;
+    const notifStatus = localStorage.getItem('sg_notif_status');
+    const showPrompt = !notifStatus || notifStatus === 'notDetermined' || notifStatus === 'skipped';
+    if (showPrompt) {
+      document.getElementById('ios-pick-page-player').style.display = 'none';
+      document.getElementById('ios-pick-page-notif').style.display = 'flex';
+      document.getElementById('ios-notif-enable-btn').onclick = function() {
+        localStorage.setItem('sg_notif_status', 'requested');
+        window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+        el.classList.remove('active');
+        document.getElementById('ios-pick-page-player').style.display = 'flex';
+        document.getElementById('ios-pick-page-notif').style.display = 'none';
+        window.location.href = window.location.pathname + '?g=' + code;
+      };
+      document.getElementById('ios-notif-skip-btn').onclick = function() {
+        localStorage.setItem('sg_notif_status', 'skipped');
+        el.classList.remove('active');
+        document.getElementById('ios-pick-page-player').style.display = 'flex';
+        document.getElementById('ios-pick-page-notif').style.display = 'none';
+        window.location.href = window.location.pathname + '?g=' + code;
+      };
+    } else {
+      el.classList.remove('active');
+      window.location.href = window.location.pathname + '?g=' + code;
+    }
   };
   el.classList.add('active');
 }
@@ -3335,6 +3486,10 @@ function initIOS() {
       updateTickers();
     };
   }
+
+  // Render notifications panel from stored status, then query native for fresh status
+  renderNotifPanel();
+  window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
 }
 </script>
 <script defer src="/_vercel/insights/script.js"></script>

@@ -1,6 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import { verifyPin } from './group.js';
 import { createPostHogClient } from '../lib/posthog.js';
+import { sendPush } from '../lib/apns.js';
+import { teamFlag } from '../lib/team-data.js';
 
 async function getDb() {
   const sql = neon(process.env.DATABASE_URL);
@@ -21,6 +23,47 @@ async function getDb() {
   await sql`ALTER TABLE sweepstake_groups ADD COLUMN IF NOT EXISTS player_count INT NOT NULL DEFAULT 14`;
   await sql`ALTER TABLE sweepstake_groups ADD COLUMN IF NOT EXISTS admin_apple_id TEXT`;
   return sql;
+}
+
+async function sendDrawNotifications(sql, groupCode, plan) {
+  const already = await sql`
+    SELECT id FROM notif_log
+    WHERE group_code = ${groupCode} AND notif_type = 'draw' AND match_id IS NULL
+    LIMIT 1
+  `;
+  if (already.length) return; // already sent for this draw
+
+  const tokens = await sql`
+    SELECT token, player_name, prefs FROM push_tokens WHERE group_code = ${groupCode}
+  `;
+  if (!tokens.length) return;
+
+  // Build player → first team mapping
+  const playerFirstTeam = {};
+  for (const entry of plan) {
+    if (!playerFirstTeam[entry.p]) playerFirstTeam[entry.p] = entry.team;
+  }
+
+  const pushes = tokens
+    .filter(t => (t.prefs?.draw ?? true) !== false)
+    .map(t => {
+      const team = playerFirstTeam[t.player_name];
+      if (!team) return null;
+      const flag = teamFlag(team);
+      return sendPush(t.token, {
+        title: 'The draw is done! 🎲',
+        body: `You've got ${flag} ${team} — check the leaderboard.`,
+      });
+    })
+    .filter(Boolean);
+
+  await Promise.allSettled(pushes);
+
+  await sql`
+    INSERT INTO notif_log (group_code, notif_type)
+    VALUES (${groupCode}, 'draw')
+    ON CONFLICT DO NOTHING
+  `;
 }
 
 async function authOk(req, sql, code) {
@@ -71,6 +114,12 @@ export default async function handler(req, res) {
         event: 'draw saved',
         properties: { group_code: code, completed, names_count: Array.isArray(names) ? names.length : 0 },
       });
+
+      // Send draw-complete push notifications (fire-and-forget)
+      if (completed && Array.isArray(plan) && plan.length) {
+        sendDrawNotifications(sql, code, plan).catch(err => console.error('[draw notif]', err));
+      }
+
       return res.json({ ok: true });
     }
 
