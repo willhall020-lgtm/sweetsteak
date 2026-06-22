@@ -840,7 +840,14 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
 .ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
 .ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
-/* ── iOS: Hide landing options/sub when opened in-game ── */
+/* ── iOS: in-game create overlay — sit above tab bar & app bar ── */
+#landing.in-game-create {
+  z-index: 600;
+  justify-content: flex-start;
+  padding-top: max(env(safe-area-inset-top, 0px), 1.25rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 #landing.in-game-create .landing-options,
 #landing.in-game-create .landing-sub { display: none !important; }
 
@@ -2791,7 +2798,7 @@ function initIOS() {
     'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
     'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
-    'admin':       { kicker: 'Your game',       title: 'More',        emoji: '⚙️', ticker: true, desc: 'Group settings, admin tools, and your game code.' },
+    'admin':       { kicker: '',                title: 'More',        emoji: '⚙️', ticker: true },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
