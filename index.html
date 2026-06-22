@@ -844,14 +844,22 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS: in-game create overlay — sit above tab bar & app bar ── */
 #landing.in-game-create {
   z-index: 600;
-  display: block;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: max(env(safe-area-inset-top, 0px), 3rem) 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding: 0;
 }
 #landing.in-game-create .landing-panel {
-  max-width: 480px;
-  margin: 0 auto;
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  padding: max(env(safe-area-inset-top, 0px), 3rem) 1.25rem 2rem;
+  max-width: none;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
 }
 #landing.in-game-create #landing-back-btn {
   position: fixed;
@@ -1635,6 +1643,8 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
     backBtn.classList.remove('hidden');
     landing.classList.add('in-game-create');
     landing.classList.remove('hidden');
+    const panel = landing.querySelector('.landing-panel');
+    if (panel) panel.scrollTop = 0;
     showPanel('create');
   };
 
@@ -2127,7 +2137,7 @@ function renderFixtures() {
     results.forEach(m => {
       const key = m.utcDate ? dateKey(m.utcDate) : '__nodate__';
       if (key !== lastKey) {
-        resultsHtml += `<div class="fix-section-head" style="margin-top:1rem;">${m.utcDate ? dateHeading(m.utcDate) : 'Results'}</div>`;
+        resultsHtml += `<div class="fix-section-head">${m.utcDate ? dateHeading(m.utcDate) : 'Results'}</div>`;
         lastKey = key;
       }
       const scoreStr = `${m.homeGoals} – ${m.awayGoals}`;
