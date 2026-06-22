@@ -844,20 +844,20 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS: in-game create overlay — sit above tab bar & app bar ── */
 #landing.in-game-create {
   z-index: 600;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
+  display: block;
   overflow: hidden;
   padding: 0;
 }
 #landing.in-game-create .landing-panel {
-  flex: 1;
-  overflow-y: scroll;
+  position: absolute;
+  top: max(env(safe-area-inset-top, 0px), 3rem);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: max(env(safe-area-inset-top, 0px), 3rem) 1.25rem 2rem;
+  padding: 0.5rem 1.25rem 2rem;
   max-width: none;
-  width: 100%;
   box-sizing: border-box;
   margin-top: 0;
 }
