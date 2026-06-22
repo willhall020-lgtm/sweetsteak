@@ -844,11 +844,22 @@ html.ios-app > body > header { display: none !important; }
 /* ── iOS: in-game create overlay — sit above tab bar & app bar ── */
 #landing.in-game-create {
   z-index: 600;
-  justify-content: flex-start;
-  padding-top: max(env(safe-area-inset-top, 0px), 1.25rem);
+  display: block;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding: max(env(safe-area-inset-top, 0px), 3rem) 1.25rem 2rem;
 }
+#landing.in-game-create .landing-panel {
+  max-width: 480px;
+  margin: 0 auto;
+}
+#landing.in-game-create #landing-back-btn {
+  position: fixed;
+  top: max(env(safe-area-inset-top, 0px), 0.75rem);
+  left: 1rem;
+  z-index: 601;
+}
+#landing.in-game-create .landing-logo,
 #landing.in-game-create .landing-options,
 #landing.in-game-create .landing-sub { display: none !important; }
 
@@ -2810,9 +2821,7 @@ function initIOS() {
     const tickerHtml = cfg.ticker ? `<div class="ios-ticker-wrap"><div class="ios-ticker" id="ios-ticker-${id}">loading…</div></div>` : '';
     const extraHtml = id === 'leaderboard' ? `<div id="ios-status-pill-wrap"></div>` : '';
     const segHtml = id === 'fixtures' ? `<div id="ios-fix-seg"></div>` : '';
-    const refreshHtml = (id === 'leaderboard' || id === 'fixtures')
-      ? `<button class="refresh-btn ios-refresh-btn" id="ios-refresh-${id}" title="Refresh" aria-label="Refresh ${id}"><span>↻</span></button>`
-      : '';
+    const refreshHtml = '';
     const h = document.createElement('div');
     h.className = 'ios-view-header';
     h.innerHTML = `
@@ -2836,7 +2845,7 @@ function initIOS() {
   function renderFixSeg() {
     const seg = document.getElementById('ios-fix-seg');
     if (!seg) return;
-    seg.innerHTML = ['Live','Upcoming'].map(t =>
+    seg.innerHTML = ['Live','Upcoming','Results'].map(t =>
       `<button class="${t === fixtureTab ? 'active' : ''}" data-tab="${t}">${t}</button>`
     ).join('');
     seg.querySelectorAll('button').forEach(btn => {
@@ -2851,17 +2860,19 @@ function initIOS() {
   function applyFixtureFilter() {
     const list = document.getElementById('fixtures-list');
     if (!list) return;
+    const want = fixtureTab.toLowerCase();
     list.querySelectorAll('.fix-section').forEach(s => {
-      const type = s.dataset.type;
-      s.style.display = (type === fixtureTab.toLowerCase() || !type) ? '' : 'none';
+      const type = s.dataset.type || '';
+      s.style.display = (type === want || (!type && want === 'live')) ? '' : 'none';
     });
-    // If no live, auto-switch
-    const liveSec = list.querySelector('.fix-section[data-type="live"]');
-    if (fixtureTab === 'Live' && liveSec && liveSec.querySelectorAll('.fix-card').length === 0) {
-      // show upcoming instead
-      list.querySelectorAll('.fix-section').forEach(s => {
-        s.style.display = s.dataset.type === 'upcoming' ? '' : 'none';
-      });
+    // If Live tab but no live matches, show upcoming instead
+    if (fixtureTab === 'Live') {
+      const liveSec = list.querySelector('.fix-section[data-type="live"]');
+      if (!liveSec || liveSec.querySelectorAll('.fix-card').length === 0) {
+        list.querySelectorAll('.fix-section').forEach(s => {
+          s.style.display = s.dataset.type === 'upcoming' ? '' : 'none';
+        });
+      }
     }
   }
 
