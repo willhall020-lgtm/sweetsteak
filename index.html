@@ -884,7 +884,8 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
-html:not(.ios-app) .notif-panel-wrap { display: none; }
+#member-notif-panel, #admin-notif-panel { display: none; }
+.ios-app #member-notif-panel, .ios-app #admin-notif-panel { display: block !important; }
 .notif-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: .65rem 0; border-bottom: 1px solid var(--rule);
@@ -1442,7 +1443,7 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
   <section id="settings-view">
     <p class="kicker">Your game</p>
     <h2 class="display">More</h2>
-    <div class="panel notif-panel-wrap" style="margin-top:1.5rem;display:block;">
+    <div id="member-notif-panel" class="panel" style="margin-top:1.5rem;display:block!important;">
       <h3>Notifications</h3>
       <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
     </div>
@@ -1502,7 +1503,7 @@ html:not(.ios-app) .notif-panel-wrap { display: none; }
     </div>
 
     <div class="asec active" id="atab-code">
-      <div class="panel notif-panel-wrap" style="margin-top:1.25rem;display:block;">
+      <div id="admin-notif-panel" class="panel" style="margin-top:1.25rem;display:block!important;">
         <h3>Notifications</h3>
         <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
       </div>
@@ -1599,7 +1600,7 @@ function setNotifPref(key, value) {
   }
 }
 function renderNotifPanel() {
-  const containers = document.querySelectorAll('.notif-panel-content');
+  const containers = document.querySelectorAll('#member-notif-panel .notif-panel-content, #admin-notif-panel .notif-panel-content');
   if (!containers.length) return;
   const status = localStorage.getItem('sg_notif_status') || 'notDetermined';
   let html;
