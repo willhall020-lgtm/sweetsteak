@@ -884,8 +884,8 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
-#notif-panel { display: none; }
-.ios-app #notif-panel { display: block; }
+.notif-panel-wrap { display: none; }
+.ios-app .notif-panel-wrap { display: block; }
 .notif-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: .65rem 0; border-bottom: 1px solid var(--rule);
@@ -1459,9 +1459,9 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
     </div>
-    <div class="panel" id="notif-panel" style="margin-top:1.25rem;">
+    <div class="panel notif-panel-wrap" style="margin-top:1.25rem;">
       <h3>Notifications</h3>
-      <div id="notif-panel-content"></div>
+      <div class="notif-panel-content"></div>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
@@ -1524,6 +1524,10 @@ html.ios-app > body > header { display: none !important; }
           </div>
           <p class="landing-err" id="adminJoinOtherErr" style="margin-top:.5rem;"></p>
         </div>
+      </div>
+      <div class="panel notif-panel-wrap" style="margin-top:1.25rem;">
+        <h3>Notifications</h3>
+        <div class="notif-panel-content"></div>
       </div>
     </div>
 
@@ -1596,9 +1600,10 @@ function setNotifPref(key, value) {
   }
 }
 function renderNotifPanel() {
-  const container = document.getElementById('notif-panel-content');
-  if (!container) return;
+  const containers = document.querySelectorAll('.notif-panel-content');
+  if (!containers.length) return;
   const status = localStorage.getItem('sg_notif_status') || 'notDetermined';
+  let html;
   if (status === 'authorized') {
     const p = getNotifPrefs();
     const pv = (k, d) => p[k] !== undefined ? p[k] : d;
@@ -1610,22 +1615,23 @@ function renderNotifPanel() {
           <span class="ios-toggle-slider"></span>
         </label>
       </div>`;
-    container.innerHTML =
-      row('kickoff',  'Kick-off',              'When your team starts playing',         true)  +
-      row('halftime', 'Half-time',             'Score at the break',                    false) +
-      row('fulltime', 'Full-time',             'Final result and any giant killings',   true)  +
-      row('knockout', 'Knockout elimination',  'When your team is knocked out',         true)  +
-      row('draw',     'Draw completed',        'When teams are assigned',               true);
+    html =
+      row('kickoff',  'Kick-off',             'When your team starts playing',        true)  +
+      row('halftime', 'Half-time',            'Score at the break',                   false) +
+      row('fulltime', 'Full-time',            'Final result and any giant killings',  true)  +
+      row('knockout', 'Knockout elimination', 'When your team is knocked out',        true)  +
+      row('draw',     'Draw completed',       'When teams are assigned',              true);
   } else if (status === 'denied') {
-    container.innerHTML =
+    html =
       '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">You\'re missing out on match alerts for your team.</p>' +
       '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'openNotificationSettings\'})">Open Settings</button>' +
       '<p style="font-size:.75rem;color:var(--muted);margin-top:.5rem;">Enable notifications for Sweetsteak in iOS Settings.</p>';
   } else {
-    container.innerHTML =
+    html =
       '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Get notified when your team plays, scores, and more.</p>' +
       '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'requestNotificationPermission\'})">Enable notifications</button>';
   }
+  containers.forEach(c => { c.innerHTML = html; });
 }
 // iOS push callbacks — called by native
 window.handlePushToken = function(data) {
