@@ -2738,7 +2738,7 @@ async function joinOtherGame(codeInputId, errId) {
   const code  = input.value.trim().toLowerCase();
   err.classList.remove('show');
   if (code.length < 4) { err.textContent = 'Enter a valid game code.'; err.classList.add('show'); return; }
-  if (code === GROUP_CODE) { err.textContent = 'You're already in this game.'; err.classList.add('show'); return; }
+  if (code === GROUP_CODE) { err.textContent = "You're already in this game."; err.classList.add('show'); return; }
   const btn = document.getElementById(codeInputId.replace('Input', 'Btn'));
   btn.disabled = true; btn.textContent = 'Joining…';
   try {
