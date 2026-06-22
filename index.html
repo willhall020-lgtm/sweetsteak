@@ -841,35 +841,6 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
 .ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
 .ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
-/* ── iOS: in-game create overlay — sit above tab bar & app bar ── */
-#landing.in-game-create {
-  z-index: 600;
-  display: block;
-  overflow: hidden;
-  padding: 0;
-}
-#landing.in-game-create .landing-panel {
-  position: absolute;
-  top: max(env(safe-area-inset-top, 0px), 3rem);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.5rem 1.25rem 2rem;
-  max-width: none;
-  box-sizing: border-box;
-  margin-top: 0;
-}
-#landing.in-game-create #landing-back-btn {
-  position: fixed;
-  top: max(env(safe-area-inset-top, 0px), 0.75rem);
-  left: 1rem;
-  z-index: 601;
-}
-#landing.in-game-create .landing-logo,
-#landing.in-game-create .landing-options,
-#landing.in-game-create .landing-sub { display: none !important; }
 
 /* ── iOS Launch Animation ──────────────────────────────────────── */
 #ios-launch {
@@ -1625,27 +1596,15 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   const backBtn = document.getElementById('landing-back-btn');
   backBtn.addEventListener('click', () => {
     landing.classList.add('hidden');
-    landing.classList.remove('in-game-create');
     backBtn.classList.add('hidden');
   });
 
   // Expose for in-game "Create new game" navigation
+  // Navigate to / so the landing renders as a normal page (not an overlay),
+  // which avoids WKWebView fixed-position scroll issues entirely.
   window.openLandingCreate = function() {
-    document.getElementById('create-form').classList.remove('hidden');
-    document.getElementById('create-share').classList.add('hidden');
-    document.getElementById('lg-name').value = '';
-    document.getElementById('lg-price').value = '£5';
-    document.getElementById('lg-players').value = '';
-    document.getElementById('lg-pin').value = '';
-    document.getElementById('lg-err').classList.remove('show');
-    const btn = document.getElementById('lg-create-btn');
-    btn.disabled = false; btn.textContent = 'Create game';
-    backBtn.classList.remove('hidden');
-    landing.classList.add('in-game-create');
-    landing.classList.remove('hidden');
-    const panel = landing.querySelector('.landing-panel');
-    if (panel) panel.scrollTop = 0;
-    showPanel('create');
+    if (GROUP_CODE) sessionStorage.setItem('sg_create_back', GROUP_CODE);
+    window.location.href = '/';
   };
 
   // In-game: hide landing and return early (skip full landing init)
@@ -1653,8 +1612,17 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
     landing.classList.add('hidden'); return;
   }
 
-  // No group code in URL — check if this device has a previously joined game
-  if (!GROUP_CODE) {
+  // Returning from in-game "Create new game" — skip auto-redirect, open create panel
+  const createBackCode = sessionStorage.getItem('sg_create_back');
+  if (createBackCode) {
+    sessionStorage.removeItem('sg_create_back');
+    backBtn.textContent = '← Back to game';
+    backBtn.onclick = () => { window.location.href = '/?g=' + createBackCode; };
+    backBtn.classList.remove('hidden');
+    showPanel('create');
+    // fall through to normal landing init so tab-bar/main are hidden etc.
+  } else if (!GROUP_CODE) {
+    // No group code in URL — check if this device has a previously joined game
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith('sg_role_')) {
