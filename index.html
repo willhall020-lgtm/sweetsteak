@@ -528,7 +528,8 @@ html.ios-app > body > header { display: none !important; }
 
 /* ── Hide existing section headers when iOS header shown ── */
 .ios-app .view > section > .kicker,
-.ios-app .view > section > h2.display {
+.ios-app .view > section > h2.display,
+.ios-app .view > section > .h2-row {
   display: none;
 }
 .ios-app .view > section {
@@ -2794,8 +2795,8 @@ function initIOS() {
 
   // ── Inject per-view headers ──
   const VIEW_HEADERS = {
-    'leaderboard': { kicker: 'Live standings', title: 'Leaderboard', emoji: '🏆', ticker: true },
-    'fixtures':    { kicker: 'Schedule',        title: 'Fixtures',    emoji: '⚽', ticker: true },
+    'leaderboard': { kicker: '', title: 'Leaderboard', emoji: '🏆', ticker: true },
+    'fixtures':    { kicker: '', title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
     'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
     'admin':       { kicker: '',                title: 'More',        emoji: '⚙️', ticker: true },
