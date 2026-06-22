@@ -885,7 +885,6 @@ html.ios-app > body > header { display: none !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
 .notif-panel-wrap { display: none; }
-.ios-app .notif-panel-wrap { display: block; }
 .notif-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: .65rem 0; border-bottom: 1px solid var(--rule);
@@ -3493,7 +3492,8 @@ function initIOS() {
     };
   }
 
-  // Render notifications panel from stored status, then query native for fresh status
+  // Show and populate notifications panels (iOS only)
+  document.querySelectorAll('.notif-panel-wrap').forEach(el => { el.style.display = 'block'; });
   renderNotifPanel();
   window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
 }
