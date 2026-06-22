@@ -836,7 +836,6 @@ html.ios-app > body > header { display: none !important; }
   border-color: rgba(255,255,255,0.15) !important;
 }
 /* ── Game switcher (iOS only) ── */
-.ios-switcher { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; position: relative; }
 .ios-switcher-pill {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
@@ -847,7 +846,7 @@ html.ios-app > body > header { display: none !important; }
 }
 .ios-switcher-pill.current {
   background: rgba(234,179,8,0.15); color: #EAB308;
-  border-color: rgba(234,179,8,0.45); font-weight: 700; pointer-events: none;
+  border-color: rgba(234,179,8,0.45); font-weight: 700; pointer-events: none; cursor: default;
 }
 .ios-switcher-more {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px;
@@ -856,7 +855,7 @@ html.ios-app > body > header { display: none !important; }
   padding: 3px 8px; cursor: pointer;
 }
 .ios-switcher-dropdown {
-  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  display: none; position: absolute; top: calc(100% + 6px); left: 0;
   background: #1a3a2a; border: 1px solid rgba(255,255,255,0.15);
   border-radius: 10px; padding: 4px; z-index: 800; min-width: 150px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -868,12 +867,21 @@ html.ios-app > body > header { display: none !important; }
   padding: 9px 12px; cursor: pointer; border-radius: 7px; white-space: nowrap;
 }
 .ios-switcher-dropdown-item:active { background: rgba(255,255,255,0.08); }
+.ios-switcher-below {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px; position: relative;
+}
+.ios-switcher-label {
+  font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: .04em;
+}
 
-/* ── iOS: "Log out" replaces "Leave game" in More ── */
+/* ── iOS: hide web leave btn, show both Log out + Leave game ── */
 .ios-app #leaveGameBtn, .ios-app #leaveGameHint,
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
-.ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn { display: inline-block !important; }
-.ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint { display: block !important; }
+.ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn,
+.ios-app #iosLeaveGameBtn, .ios-app #iosAdminLeaveBtn { display: inline-block !important; }
+.ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint,
+.ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
 /* ── iOS Launch Animation ──────────────────────────────────────── */
 #ios-launch {
@@ -1405,7 +1413,9 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="leaveGameBtn">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;" id="leaveGameHint">Removes this game from your device. You can rejoin with the code.</p>
       <button class="btn-danger" id="iosLogoutBtn" style="display:none;">Log out</button>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple. Your game stays saved on this device — sign back in any time to pick up where you left off.</p>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple ID. Your games stay saved on this device — sign back in any time.</p>
+      <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
@@ -1496,8 +1506,10 @@ html.ios-app > body > header { display: none !important; }
         <h3>Leave game</h3>
         <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;" id="adminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code.</p>
         <button class="btn-danger" id="adminLeaveBtn">Leave game</button>
-        <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;display:none;" id="iosAdminLogoutHint">Signs you out of Apple. Your game stays saved on this device and you remain the admin — sign back in any time.</p>
         <button class="btn-danger" id="iosAdminLogoutBtn" style="display:none;">Log out</button>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosAdminLogoutHint">Signs you out of Apple ID. Your games stay saved on this device — sign back in any time.</p>
+        <button class="btn-danger" id="iosAdminLeaveBtn" style="display:none;margin-top:.75rem;">Leave game</button>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosAdminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code any time.</p>
       </div>
     </div>
   </section>
@@ -2708,7 +2720,7 @@ document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
 
 // ─── iOS LOG OUT ──────────────────────────────────────────────────────────────
 function iosLogOut() {
-  if (!confirm('Log out? You can sign back in any time — your game stays saved on this device.')) return;
+  if (!confirm('Log out? You can sign back in any time — your games stay saved on this device.')) return;
   localStorage.removeItem('sg_apple_id');
   localStorage.removeItem('sg_apple_name');
   window.location.href = window.location.pathname + window.location.search;
@@ -2717,11 +2729,23 @@ const iosLogoutBtn = document.getElementById('iosLogoutBtn');
 if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
 const iosAdminLogoutBtn = document.getElementById('iosAdminLogoutBtn');
 if (iosAdminLogoutBtn) iosAdminLogoutBtn.addEventListener('click', iosLogOut);
+
+// ─── iOS LEAVE GAME (disassociate Apple ID from this game only) ───────────────
+function iosLeaveGame() {
+  if (!confirm('Leave this game? Your player slot stays in the game — you can rejoin with the code any time.')) return;
+  localStorage.removeItem('sg_player_' + GROUP_CODE);
+  localStorage.removeItem('sg_role_' + GROUP_CODE);
+  localStorage.removeItem('sg_name_' + GROUP_CODE);
+  window.location.href = '/';
+}
+const iosLeaveGameBtn = document.getElementById('iosLeaveGameBtn');
+if (iosLeaveGameBtn) iosLeaveGameBtn.addEventListener('click', iosLeaveGame);
+const iosAdminLeaveBtn = document.getElementById('iosAdminLeaveBtn');
+if (iosAdminLeaveBtn) iosAdminLeaveBtn.addEventListener('click', iosLeaveGame);
+
 if (document.documentElement.classList.contains('ios-app')) {
   const leaveTab = document.querySelector('[data-atab="leave"]');
   if (leaveTab) leaveTab.textContent = 'Log out';
-  const leaveH3 = document.querySelector('#atab-leave h3');
-  if (leaveH3) leaveH3.textContent = 'Log out';
 }
 
 // ─── CREATE / JOIN OTHER GAME (from More / Admin) ─────────────────────────────
@@ -2887,6 +2911,7 @@ function initIOS() {
   }
 
   // ── Game switcher ──
+  // Returns { top, below } — top goes in the header bar, below goes after the screen title
   function buildGameSwitcher() {
     const all = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -2897,33 +2922,37 @@ function initIOS() {
         all.push({ code, name, current: code === GROUP_CODE });
       }
     }
-    all.sort((a, b) => b.current - a.current); // current first
+    all.sort((a, b) => b.current - a.current);
 
-    if (all.length <= 1) {
-      return `<span class="ios-group-code">${GROUP_CODE || '—'}</span>`;
-    }
+    const current = all.find(g => g.current);
+    const others = all.filter(g => !g.current);
 
-    const MAX_INLINE = 2; // current + 1 other shown inline
-    const inline = all.slice(0, MAX_INLINE);
-    const overflow = all.slice(MAX_INLINE);
+    const top = current
+      ? `<span class="ios-switcher-pill current ios-current-game">${esc(current.name)}</span>`
+      : `<span class="ios-group-code">${GROUP_CODE || '—'}</span>`;
 
-    let html = '<div class="ios-switcher">';
+    if (!others.length) return { top, below: '' };
+
+    const MAX_INLINE = 3;
+    const inline = others.slice(0, MAX_INLINE);
+    const overflow = others.slice(MAX_INLINE);
+
+    let below = '<div class="ios-switcher-below">';
     for (const g of inline) {
-      html += `<button class="ios-switcher-pill${g.current ? ' current' : ''}"
-        ${g.current ? '' : `onclick="location.href='/?g=${esc(g.code)}'"` }
-        >${esc(g.name)}</button>`;
+      below += `<button class="ios-switcher-pill" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
     }
     if (overflow.length) {
-      html += `<button class="ios-switcher-more">+${overflow.length}</button>`;
-      html += `<div class="ios-switcher-dropdown">`;
+      below += `<button class="ios-switcher-more">+${overflow.length}</button>`;
+      below += `<div class="ios-switcher-dropdown">`;
       for (const g of overflow) {
-        html += `<button class="ios-switcher-dropdown-item" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
+        below += `<button class="ios-switcher-dropdown-item" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
       }
-      html += `</div>`;
+      below += `</div>`;
     }
-    html += '<span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.04em;text-align:right;margin-top:4px;">switch between games</span>';
-    html += '</div>';
-    return html;
+    below += `<span class="ios-switcher-label">switch between games</span>`;
+    below += '</div>';
+
+    return { top, below };
   }
 
   // Toggle overflow dropdown — use class selectors since IDs repeat across view headers
@@ -2958,6 +2987,7 @@ function initIOS() {
     const extraHtml = id === 'leaderboard' ? `<div id="ios-status-pill-wrap"></div>` : '';
     const segHtml = id === 'fixtures' ? `<div id="ios-fix-seg"></div>` : '';
     const refreshHtml = '';
+    const switcher = buildGameSwitcher();
     const h = document.createElement('div');
     h.className = 'ios-view-header';
     h.innerHTML = `
@@ -2966,10 +2996,11 @@ function initIOS() {
           <img src="/logo.svg" width="22" height="22" aria-hidden="true" style="display:block;flex-shrink:0;">
           <span class="ios-app-name">Sweetsteak</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}${buildGameSwitcher()}</div>
+        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}${switcher.top}</div>
       </div>
       ${cfg.kicker ? `<div class="ios-kicker">${cfg.kicker}</div>` : ''}
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
+      ${switcher.below}
       ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
       ${extraHtml}${segHtml}${tickerHtml}
     `;
@@ -3271,7 +3302,7 @@ function initIOS() {
   // Update all iOS header name spans when group data is available
   function updateIOSGroupName() {
     const name = drawData?.group_name || GROUP_CODE || '—';
-    document.querySelectorAll('.ios-group-code').forEach(el => { el.textContent = name; });
+    document.querySelectorAll('.ios-group-code, .ios-current-game').forEach(el => { el.textContent = name; });
   }
 
   // Patch renderLeaderboard to also render cards
