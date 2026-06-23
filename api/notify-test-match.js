@@ -93,9 +93,12 @@ export default async function handler(req, res) {
 
     const typesToSend = type === 'all' ? ALL_TYPES : [type];
 
+    // Deduplicate: one send per unique token regardless of how many groups it's in
+    const uniqueTokens = [...new Map(tokens.map(t => [t.token, t])).values()];
+
     const results = [];
     for (const t of typesToSend) {
-      for (const tok of tokens) {
+      for (const tok of uniqueTokens) {
         const team = tokenTeam[tok.token];
         if (!team) { results.push({ type: t, token_tail: tok.token.slice(-8), skipped: 'no team' }); continue; }
         const notif = notifForType(t, team);
