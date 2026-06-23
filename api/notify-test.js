@@ -3,6 +3,17 @@ import { sendPush } from '../lib/apns.js';
 
 export default async function handler(req, res) {
   try {
+    // Env var health check
+    const env = {
+      APNS_BUNDLE_ID: process.env.APNS_BUNDLE_ID || null,
+      APNS_TEAM_ID:   process.env.APNS_TEAM_ID   || null,
+      APNS_KEY_ID:    process.env.APNS_KEY_ID     || null,
+      APNS_PRODUCTION: process.env.APNS_PRODUCTION || 'false',
+      APNS_PRIVATE_KEY: process.env.APNS_PRIVATE_KEY
+        ? `set (${process.env.APNS_PRIVATE_KEY.length} chars, starts: ${process.env.APNS_PRIVATE_KEY.slice(0, 27)})`
+        : null,
+    };
+
     const sql = neon(process.env.DATABASE_URL);
 
     const tokens = await sql`
@@ -46,7 +57,7 @@ export default async function handler(req, res) {
     }));
 
     const sent = results.filter(r => r.status === 'fulfilled' && r.value?.ok !== false).length;
-    return res.json({ sent, total: tokens.length, details });
+    return res.json({ env, sent, total: tokens.length, details });
   } catch (err) {
     return res.status(500).json({ error: err.message, stack: err.stack });
   }
