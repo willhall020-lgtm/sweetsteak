@@ -875,6 +875,27 @@ html.ios-app > body > header { display: none !important; }
   font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: .04em;
 }
 
+/* ── iOS: other-games panel (More page body) ── */
+#ios-other-games-panel { margin-top: 1.25rem; }
+#ios-other-games-panel .ios-other-games-inner { display: flex; flex-direction: column; gap: 0; }
+#ios-other-games-panel .ios-other-game-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .75rem 1rem; background: var(--surface); border: 1.5px solid var(--rule);
+  border-radius: 0; cursor: pointer; width: 100%; text-align: left;
+  font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink);
+  transition: background .12s;
+}
+#ios-other-games-panel .ios-other-game-row:first-child { border-radius: 12px 12px 0 0; }
+#ios-other-games-panel .ios-other-game-row:last-child { border-radius: 0 0 12px 12px; }
+#ios-other-games-panel .ios-other-game-row:only-child { border-radius: 12px; }
+#ios-other-games-panel .ios-other-game-row + .ios-other-game-row { border-top: none; }
+#ios-other-games-panel .ios-other-game-row:active { background: var(--rule); }
+#ios-other-games-panel .ios-other-game-row-chevron { color: var(--muted); font-size: .9rem; }
+#ios-other-games-panel .ios-other-games-kicker {
+  font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: .5rem;
+}
+
 /* ── iOS: hide web leave btn, show both Log out + Leave game ── */
 .ios-app #leaveGameBtn, .ios-app #leaveGameHint,
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
@@ -1458,6 +1479,7 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
     </div>
+    <div id="ios-other-games-panel"></div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
       <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Create a new sweepstake or join one that's already running.</p>
@@ -3163,12 +3185,35 @@ function initIOS() {
       </div>
       ${cfg.kicker ? `<div class="ios-kicker">${cfg.kicker}</div>` : ''}
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
-      ${switcher.below}
+      ${id === 'admin' ? '' : switcher.below}
       ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
       ${extraHtml}${segHtml}${tickerHtml}
     `;
     view.insertBefore(h, view.firstChild);
   });
+
+  // ── Other-games panel (More page body) ──
+  (function() {
+    const panel = document.getElementById('ios-other-games-panel');
+    if (!panel) return;
+    const all = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sg_role_')) {
+        const code = key.slice(8);
+        const name = localStorage.getItem('sg_name_' + code) || code.toUpperCase();
+        all.push({ code, name, current: code === GROUP_CODE });
+      }
+    }
+    const others = all.filter(g => !g.current);
+    if (!others.length) return;
+    let html = `<div class="ios-other-games-kicker">Switch game</div><div class="ios-other-games-inner">`;
+    for (const g of others) {
+      html += `<button class="ios-other-game-row" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}<span class="ios-other-game-row-chevron">›</span></button>`;
+    }
+    html += `</div>`;
+    panel.innerHTML = html;
+  })();
 
   // ── Fixtures segmented control ──
   let fixtureTab = 'Fixtures';
