@@ -867,33 +867,9 @@ html.ios-app > body > header { display: none !important; }
   padding: 9px 12px; cursor: pointer; border-radius: 7px; white-space: nowrap;
 }
 .ios-switcher-dropdown-item:active { background: rgba(255,255,255,0.08); }
-.ios-switcher-below {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-  margin-top: 8px; position: relative; justify-content: flex-end;
-}
-.ios-switcher-label {
-  font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: .04em;
-}
-
-/* ── iOS: other-games panel (More page body) ── */
-#ios-other-games-panel { margin-top: 1.25rem; }
-#ios-other-games-panel .ios-other-games-inner { display: flex; flex-direction: column; gap: 0; }
-#ios-other-games-panel .ios-other-game-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .75rem 1rem; background: var(--surface); border: 1.5px solid var(--rule);
-  border-radius: 0; cursor: pointer; width: 100%; text-align: left;
-  font-family: inherit; font-size: .9rem; font-weight: 600; color: var(--ink);
-  transition: background .12s;
-}
-#ios-other-games-panel .ios-other-game-row:first-child { border-radius: 12px 12px 0 0; }
-#ios-other-games-panel .ios-other-game-row:last-child { border-radius: 0 0 12px 12px; }
-#ios-other-games-panel .ios-other-game-row:only-child { border-radius: 12px; }
-#ios-other-games-panel .ios-other-game-row + .ios-other-game-row { border-top: none; }
-#ios-other-games-panel .ios-other-game-row:active { background: var(--rule); }
-#ios-other-games-panel .ios-other-game-row-chevron { color: var(--muted); font-size: .9rem; }
-#ios-other-games-panel .ios-other-games-kicker {
-  font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: .5rem;
+.ios-switcher-stack {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  position: relative;
 }
 
 /* ── iOS: hide web leave btn, show both Log out + Leave game ── */
@@ -1479,7 +1455,6 @@ html.ios-app > body > header { display: none !important; }
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
     </div>
-    <div id="ios-other-games-panel"></div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Other games</h3>
       <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Create a new sweepstake or join one that's already running.</p>
@@ -3112,32 +3087,29 @@ function initIOS() {
     const current = all.find(g => g.current);
     const others = all.filter(g => !g.current);
 
-    const top = current
+    let stack = '<div class="ios-switcher-stack">';
+    stack += current
       ? `<span class="ios-switcher-pill current ios-current-game">${esc(current.name)}</span>`
       : `<span class="ios-group-code">${GROUP_CODE || '—'}</span>`;
-
-    if (!others.length) return { top, below: '' };
 
     const MAX_INLINE = 3;
     const inline = others.slice(0, MAX_INLINE);
     const overflow = others.slice(MAX_INLINE);
 
-    let below = '<div class="ios-switcher-below">';
     for (const g of inline) {
-      below += `<button class="ios-switcher-pill" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
+      stack += `<button class="ios-switcher-pill" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
     }
     if (overflow.length) {
-      below += `<button class="ios-switcher-more">+${overflow.length}</button>`;
-      below += `<div class="ios-switcher-dropdown">`;
+      stack += `<button class="ios-switcher-more">+${overflow.length}</button>`;
+      stack += `<div class="ios-switcher-dropdown">`;
       for (const g of overflow) {
-        below += `<button class="ios-switcher-dropdown-item" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
+        stack += `<button class="ios-switcher-dropdown-item" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}</button>`;
       }
-      below += `</div>`;
+      stack += `</div>`;
     }
-    below += `<span class="ios-switcher-label">switch between games</span>`;
-    below += '</div>';
+    stack += '</div>';
 
-    return { top, below };
+    return { stack };
   }
 
   // Toggle overflow dropdown — use class selectors since IDs repeat across view headers
@@ -3181,39 +3153,15 @@ function initIOS() {
           <img src="/logo.svg" width="22" height="22" aria-hidden="true" style="display:block;flex-shrink:0;">
           <span class="ios-app-name">Sweetsteak</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}${switcher.top}</div>
+        <div style="display:flex;align-items:center;gap:8px;">${refreshHtml}${switcher.stack}</div>
       </div>
       ${cfg.kicker ? `<div class="ios-kicker">${cfg.kicker}</div>` : ''}
       <div class="ios-title">${cfg.title}${cfg.emoji ? `<span style="font-size:26px;line-height:1">${cfg.emoji}</span>` : ''}</div>
-      ${id === 'admin' ? '' : switcher.below}
       ${cfg.desc ? `<div class="ios-header-desc">${cfg.desc}</div>` : ''}
       ${extraHtml}${segHtml}${tickerHtml}
     `;
     view.insertBefore(h, view.firstChild);
   });
-
-  // ── Other-games panel (More page body) ──
-  (function() {
-    const panel = document.getElementById('ios-other-games-panel');
-    if (!panel) return;
-    const all = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('sg_role_')) {
-        const code = key.slice(8);
-        const name = localStorage.getItem('sg_name_' + code) || code.toUpperCase();
-        all.push({ code, name, current: code === GROUP_CODE });
-      }
-    }
-    const others = all.filter(g => !g.current);
-    if (!others.length) return;
-    let html = `<div class="ios-other-games-kicker">Switch game</div><div class="ios-other-games-inner">`;
-    for (const g of others) {
-      html += `<button class="ios-other-game-row" onclick="location.href='/?g=${esc(g.code)}'">${esc(g.name)}<span class="ios-other-game-row-chevron">›</span></button>`;
-    }
-    html += `</div>`;
-    panel.innerHTML = html;
-  })();
 
   // ── Fixtures segmented control ──
   let fixtureTab = 'Fixtures';
