@@ -18,9 +18,10 @@ export default async function handler(req, res) {
 
     const tokens = await sql`
       SELECT pt.token, pt.group_code, pt.player_name, pt.prefs,
-             sg.plan, sg.group_name
+             sg.plan, sg.group_name, pt.updated_at
       FROM push_tokens pt
       LEFT JOIN sweepstake_groups sg ON sg.group_code = pt.group_code
+      ORDER BY pt.updated_at DESC
       LIMIT 30
     `;
 
@@ -40,6 +41,7 @@ export default async function handler(req, res) {
         player: t.player_name,
         teams: playerTeams,
         token_tail: t.token.slice(-8),
+        updated_at: t.updated_at,
       };
     });
 
