@@ -1582,12 +1582,17 @@ function setNotifPref(key, value) {
   prefs[key] = value;
   localStorage.setItem('sg_notif_prefs', JSON.stringify(prefs));
   const token = localStorage.getItem('sg_push_token');
-  if (token && GROUP_CODE) {
-    fetch('/api/notifications?g=' + GROUP_CODE, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-push-token': token },
-      body: JSON.stringify({ prefs }),
-    }).catch(() => {});
+  if (!token) return;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sg_role_')) {
+      const gCode = k.slice(8);
+      fetch('/api/notifications?g=' + gCode, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-push-token': token },
+        body: JSON.stringify({ prefs }),
+      }).catch(() => {});
+    }
   }
 }
 function renderNotifPanel() {
@@ -3042,7 +3047,7 @@ function initIOS() {
     _notifPanel.className = 'panel ios-injected-notif';
     _notifPanel.style.cssText = 'margin:16px 16px 0;display:block;';
     _notifPanel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
-    _adminView.insertBefore(_notifPanel, _adminView.firstChild);
+    _adminView.appendChild(_notifPanel);
   }
   renderNotifPanel();
   window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });

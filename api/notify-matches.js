@@ -125,6 +125,7 @@ export default async function handler(req, res) {
     let sent = 0;
     const pushPromises = [];
     const toLog = [];
+    const sentThisRun = new Set(); // deduplicate per device within a single run
 
     for (const m of matches) {
       const { status } = m;
@@ -160,6 +161,15 @@ export default async function handler(req, res) {
           if (notifType === 'kickoff'  && prefs.kickoff  === false) continue;
           if (notifType === 'halftime' && prefs.halftime !== true)  continue;
           if (notifType === 'fulltime' && prefs.fulltime === false) continue;
+
+          // Don't send the same notification twice to the same device in one run
+          const deviceKey = `${sub.token}|${matchId}_${playerTeam}|${notifType}`;
+          if (sentThisRun.has(deviceKey)) {
+            logSet.add(logKey); // still mark as logged so DB stays in sync
+            toLog.push({ group_code: sub.group_code, match_id: `${matchId}_${playerTeam}`, notif_type: notifType });
+            continue;
+          }
+          sentThisRun.add(deviceKey);
 
           pushPromises.push(sendPush(sub.token, notif));
           toLog.push({ group_code: sub.group_code, match_id: `${matchId}_${playerTeam}`, notif_type: notifType });
