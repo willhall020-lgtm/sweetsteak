@@ -3043,16 +3043,16 @@ if (GROUP_CODE) {
 function initIOS() {
   if (!document.documentElement.classList.contains('ios-app')) return;
 
-  // Inject notifications panel directly into DOM (bypasses any CSS hide issues)
-  ['settings-view', 'atab-code'].forEach(containerId => {
-    const container = document.getElementById(containerId);
-    if (!container || container.querySelector('.ios-injected-notif')) return;
-    const panel = document.createElement('div');
-    panel.className = 'panel ios-injected-notif';
-    panel.setAttribute('style', 'margin:0 0 1.25rem;display:block;');
-    panel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
-    container.insertBefore(panel, container.firstChild);
-  });
+  // Inject notifications panel into view-admin, right after the iOS header
+  // (inserted at view level so it's visible regardless of member/admin state)
+  const _adminView = document.getElementById('view-admin');
+  if (_adminView && !_adminView.querySelector('.ios-injected-notif')) {
+    const _notifPanel = document.createElement('div');
+    _notifPanel.className = 'panel ios-injected-notif';
+    _notifPanel.style.cssText = 'margin:0 16px 16px;display:block;';
+    _notifPanel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
+    _adminView.insertBefore(_notifPanel, _adminView.firstChild);
+  }
   renderNotifPanel();
   window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
 
@@ -3145,7 +3145,7 @@ function initIOS() {
     'fixtures':    { kicker: '', title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
     'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
-    'admin':       { kicker: '',                title: 'More',        emoji: '⚙️', ticker: true },
+    'admin':       { kicker: '',                title: 'More',        emoji: '🔔', ticker: true },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
