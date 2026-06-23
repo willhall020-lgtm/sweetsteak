@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/(draw|fixtures|leaderboard|rules|admin)", "destination": "/index.html" }
   ]
