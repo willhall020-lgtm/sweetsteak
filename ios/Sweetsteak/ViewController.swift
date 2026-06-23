@@ -77,7 +77,11 @@ class ViewController: UIViewController {
     }
 
     private func loadApp() {
-        webView.load(URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData))
+        let cacheTypes: Set<String> = [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache]
+        WKWebsiteDataStore.default().removeData(ofTypes: cacheTypes, modifiedSince: .distantPast) { [weak self] in
+            guard let self else { return }
+            self.webView.load(URLRequest(url: self.appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData))
+        }
     }
 
     @objc private func handleRefresh() {
@@ -142,27 +146,6 @@ class ViewController: UIViewController {
 // MARK: - WKNavigationDelegate
 
 extension ViewController: WKNavigationDelegate {
-
-    // Intercept all navigations to sweetsteak.co.uk and add ?_t= cache-buster
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
-                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        guard let url = navigationAction.request.url,
-              let host = url.host,
-              host.hasSuffix("sweetsteak.co.uk"),
-              var comps = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
-            decisionHandler(.allow)
-            return
-        }
-        var items = comps.queryItems ?? []
-        guard !items.contains(where: { $0.name == "_t" }) else {
-            decisionHandler(.allow)
-            return
-        }
-        items.append(URLQueryItem(name: "_t", value: String(Int(Date().timeIntervalSince1970))))
-        comps.queryItems = items
-        decisionHandler(.cancel)
-        webView.load(URLRequest(url: comps.url!, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData))
-    }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         refreshControl.endRefreshing()
