@@ -145,6 +145,7 @@ class ViewController: UIViewController {
 extension ViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         refreshControl.endRefreshing()
+        webView.evaluateJavaScript("document.body.classList.add('ios-app')") { _, _ in }
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
