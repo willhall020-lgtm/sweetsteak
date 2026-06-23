@@ -96,8 +96,11 @@ class ViewController: UIViewController {
             self?.sendToWeb("window.handlePushToken && window.handlePushToken({token:'\(token)'})")
         }
         NotificationCenter.default.addObserver(forName: .notificationTapped, object: nil, queue: .main) { [weak self] _ in
-            // Route to leaderboard on any notification tap
             self?.sendToWeb("window.handleNotificationTap && window.handleNotificationTap()")
+        }
+        // Re-check status when returning from background (e.g. user toggled in iOS Settings)
+        NotificationCenter.default.addObserver(forName: UIScene.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.handleGetNotificationStatus()
         }
     }
 

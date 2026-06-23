@@ -243,6 +243,7 @@ footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3
 .fix-time{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
 .fix-stage{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:1px;}
 .fix-ht{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;background:#f0ede5;border-radius:3px;padding:1px 5px;}
+.fix-min{font-size:.65rem;font-weight:700;letter-spacing:.05em;color:#2a7a45;background:#e8f5e9;border-radius:3px;padding:1px 5px;}
 .fix-empty{padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.9rem;}
 .fix-results-toggle{width:100%;cursor:pointer;list-style:none;margin-top:1.5rem;}
 .fix-results-toggle::-webkit-details-marker{display:none;}
@@ -1638,12 +1639,17 @@ window.handleNotificationPermission = function(data) {
 };
 window.handleNotificationStatus = function(data) {
   if (!data) return;
+  const prevStatus = localStorage.getItem('sg_notif_status');
   localStorage.setItem('sg_notif_status', data.status || 'notDetermined');
   if (data.token) {
     localStorage.setItem('sg_push_token', data.token);
-  } else if (data.status === 'authorized' && localStorage.getItem('sg_notif_enabled') === 'true') {
-    // Authorized in iOS Settings but no token yet — re-register (only if user explicitly enabled)
-    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+  } else if (data.status === 'authorized') {
+    const enabled = localStorage.getItem('sg_notif_enabled');
+    if (enabled === 'true' || prevStatus === 'denied') {
+      // Re-register: user explicitly enabled or just re-enabled in iOS Settings from denied
+      localStorage.setItem('sg_notif_enabled', 'true');
+      window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+    }
   }
   renderNotifPanel();
 };
@@ -1892,10 +1898,31 @@ window.handleAppleSignIn = function(payload) {
   localStorage.setItem('sg_apple_id', userId);
   if (name) localStorage.setItem('sg_apple_name', name);
   document.getElementById('ios-signin').classList.remove('active');
-  // Auto-restore admin role if this Apple ID created the current game
   if (GROUP_CODE && !IS_ADMIN && drawData?.admin_apple_id === userId) {
     setRole(GROUP_CODE, 'admin');
     window.location.reload();
+    return;
+  }
+  // Show notification pre-prompt if returning user hasn't enabled notifications
+  if (GROUP_CODE && localStorage.getItem('sg_notif_enabled') === 'false') {
+    const overlay = document.getElementById('ios-pick-player');
+    if (overlay) {
+      document.getElementById('ios-pick-page-player').style.display = 'none';
+      document.getElementById('ios-pick-page-notif').style.display = 'flex';
+      overlay.classList.add('active');
+      document.getElementById('ios-notif-enable-btn').onclick = function() {
+        localStorage.setItem('sg_notif_enabled', 'true');
+        window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+        overlay.classList.remove('active');
+        document.getElementById('ios-pick-page-player').style.display = 'flex';
+        document.getElementById('ios-pick-page-notif').style.display = 'none';
+      };
+      document.getElementById('ios-notif-skip-btn').onclick = function() {
+        overlay.classList.remove('active');
+        document.getElementById('ios-pick-page-player').style.display = 'flex';
+        document.getElementById('ios-pick-page-notif').style.display = 'none';
+      };
+    }
   }
 };
 
@@ -1944,12 +1971,12 @@ function iosShowPickPlayer(code, names, groupName) {
     if (!selected) return;
     localStorage.setItem('sg_player_' + code, selected);
     const notifStatus = localStorage.getItem('sg_notif_status');
-    const showPrompt = !notifStatus || notifStatus === 'notDetermined' || notifStatus === 'skipped';
+    const showPrompt = !notifStatus || notifStatus === 'notDetermined' || notifStatus === 'skipped' || localStorage.getItem('sg_notif_enabled') === 'false';
     if (showPrompt) {
       document.getElementById('ios-pick-page-player').style.display = 'none';
       document.getElementById('ios-pick-page-notif').style.display = 'flex';
       document.getElementById('ios-notif-enable-btn').onclick = function() {
-        localStorage.setItem('sg_notif_status', 'requested');
+        localStorage.setItem('sg_notif_enabled', 'true');
         window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
         el.classList.remove('active');
         document.getElementById('ios-pick-page-player').style.display = 'flex';
@@ -1957,7 +1984,6 @@ function iosShowPickPlayer(code, names, groupName) {
         window.location.href = window.location.pathname + '?g=' + code;
       };
       document.getElementById('ios-notif-skip-btn').onclick = function() {
-        localStorage.setItem('sg_notif_status', 'skipped');
         el.classList.remove('active');
         document.getElementById('ios-pick-page-player').style.display = 'flex';
         document.getElementById('ios-pick-page-notif').style.display = 'none';
@@ -2168,7 +2194,7 @@ function transformMatch(m) {
   if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
-           utcDate: m.utcDate || null,
+           utcDate: m.utcDate || null, minute: m.minute ?? null,
            isLive: m.status !== 'FINISHED', status: m.status };
 }
 
@@ -2216,7 +2242,7 @@ function transformFixture(m) {
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate, penaltyWinner,
            status: m.status, isLive: liveStatuses.includes(m.status),
-           isHalfTime: m.status === 'PAUSED' };
+           isHalfTime: m.status === 'PAUSED', minute: m.minute ?? null };
 }
 
 function buildTeamPlayerMap(draw) {
@@ -2302,7 +2328,7 @@ function renderFixtures() {
         ${teamCard(m.homeTeam, 'home')}
         <div class="fix-mid">
           <span class="fix-score is-live">${scoreStr}</span>
-          ${m.isHalfTime ? '<span class="fix-ht">HT</span>' : ''}
+          ${m.isHalfTime ? '<span class="fix-ht">HT</span>' : m.minute != null ? `<span class="fix-min">${m.minute}'</span>` : ''}
           <span class="fix-stage">${stageLabel(m.stage)}</span>
         </div>
         ${teamCard(m.awayTeam, 'away')}
