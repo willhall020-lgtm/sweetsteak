@@ -1641,8 +1641,8 @@ window.handleNotificationStatus = function(data) {
   localStorage.setItem('sg_notif_status', data.status || 'notDetermined');
   if (data.token) {
     localStorage.setItem('sg_push_token', data.token);
-  } else if (data.status === 'authorized' && localStorage.getItem('sg_notif_enabled') !== 'false') {
-    // Authorized in iOS Settings but no token yet — register to get one
+  } else if (data.status === 'authorized' && localStorage.getItem('sg_notif_enabled') === 'true') {
+    // Authorized in iOS Settings but no token yet — re-register (only if user explicitly enabled)
     window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
   }
   renderNotifPanel();
@@ -2863,14 +2863,16 @@ document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
 function iosLogOut() {
   if (!confirm('Log out? You can sign back in any time — your games stay saved on this device.')) return;
   const token = localStorage.getItem('sg_push_token');
-  if (token) {
-    fetch('/api/notifications', { method: 'DELETE', headers: { 'x-push-token': token }, keepalive: true }).catch(() => {});
-  }
   localStorage.removeItem('sg_push_token');
-  localStorage.removeItem('sg_notif_enabled');
+  localStorage.setItem('sg_notif_enabled', 'false');
   localStorage.removeItem('sg_apple_id');
   localStorage.removeItem('sg_apple_name');
-  window.location.href = window.location.pathname + window.location.search;
+  const doNav = () => { window.location.href = window.location.pathname + window.location.search; };
+  if (token) {
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'x-push-token': token } }).catch(() => {}).finally(doNav);
+  } else {
+    doNav();
+  }
 }
 const iosLogoutBtn = document.getElementById('iosLogoutBtn');
 if (iosLogoutBtn) iosLogoutBtn.addEventListener('click', iosLogOut);
