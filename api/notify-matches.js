@@ -159,7 +159,7 @@ export default async function handler(req, res) {
 
           const prefs = sub.prefs || {};
           if (notifType === 'kickoff'  && prefs.kickoff  === false) continue;
-          if (notifType === 'halftime' && prefs.halftime !== true)  continue;
+          if (notifType === 'halftime' && prefs.halftime === false) continue;
           if (notifType === 'fulltime' && prefs.fulltime === false) continue;
 
           // Don't send the same notification twice to the same device in one run

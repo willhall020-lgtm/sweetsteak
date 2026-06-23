@@ -1,0 +1,21 @@
+name: Notify Matches
+
+on:
+  schedule:
+    # Every 3 minutes during likely match hours UTC (10:00–23:59)
+    - cron: '*/3 10-23 * * *'
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call notify-matches
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://www.sweetsteak.co.uk/api/notify-matches")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Non-200 response: $STATUS"
+            exit 1
+          fi
