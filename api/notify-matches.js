@@ -1,6 +1,7 @@
 import { neon } from '@neondatabase/serverless';
 import { sendPush } from '../lib/apns.js';
 import { normTeam, teamFlag, giantKillTiers, TIER_MAP, TIER_RANK } from '../lib/team-data.js';
+import { normalizeMatch, computeScores } from '../lib/scores.js';
 
 const KNOCKOUT_STAGES = new Set([
   'ROUND_OF_16', 'LAST_16', 'QUARTER_FINALS', 'SEMI_FINALS',
@@ -66,6 +67,65 @@ function fulltimeCopy(playerTeam, homeTeam, awayTeam, s) {
   return { title: 'Full time', subtitle: scoreStr, body: '' };
 }
 
+async function checkLeaderChanges(sql, groups, tokens, rawMatches) {
+  const finishedMatches = rawMatches
+    .filter(m => m.status === 'FINISHED')
+    .map(normalizeMatch);
+
+  if (!finishedMatches.length) return 0;
+
+  let sent = 0;
+
+  for (const g of groups) {
+    const assignments = {};
+    for (const entry of g.plan || []) {
+      if (!assignments[entry.p]) assignments[entry.p] = [];
+      assignments[entry.p].push(entry.team);
+    }
+    if (!Object.keys(assignments).length) continue;
+
+    const scores = computeScores(assignments, finishedMatches);
+    const ranked = Object.entries(scores).sort(([, a], [, b]) => b.total - a.total);
+    if (!ranked.length) continue;
+
+    const topPts = ranked[0][1].total;
+    if (topPts === 0) continue;
+    const leaders = ranked.filter(([, s]) => s.total === topPts);
+    if (leaders.length !== 1) continue; // tied — don't notify
+
+    const currentLeader = leaders[0][0];
+
+    const [lastLog] = await sql`
+      SELECT match_id FROM notif_log
+      WHERE group_code = ${g.group_code} AND notif_type = 'top_spot'
+      ORDER BY sent_at DESC LIMIT 1
+    `;
+    if (lastLog?.match_id === currentLeader) continue; // no change
+
+    // New leader — notify their registered devices
+    const leaderTokens = [...new Map(
+      tokens
+        .filter(t => t.group_code === g.group_code && t.player_name === currentLeader)
+        .map(t => [t.token, t])
+    ).values()];
+
+    for (const t of leaderTokens) {
+      await sendPush(t.token, {
+        title: '🥇 You\'re leading!',
+        subtitle: g.group_name || g.group_code,
+        body: `${topPts}pts — you're top of the leaderboard`,
+      }).catch(() => {});
+      sent++;
+    }
+
+    // Record new leader (replace previous entry)
+    await sql`DELETE FROM notif_log WHERE group_code = ${g.group_code} AND notif_type = 'top_spot'`;
+    await sql`INSERT INTO notif_log (group_code, match_id, notif_type) VALUES (${g.group_code}, ${currentLeader}, 'top_spot')`;
+  }
+
+  return sent;
+}
+
 export default async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return res.status(405).end();
 
@@ -88,7 +148,7 @@ export default async function handler(req, res) {
 
     // 2. Fetch draw plans for groups that have tokens
     const groups = await sql`
-      SELECT group_code, plan FROM sweepstake_groups
+      SELECT group_code, group_name, plan FROM sweepstake_groups
       WHERE group_code = ANY(${groupCodes}) AND completed = TRUE
     `;
 
@@ -190,7 +250,10 @@ export default async function handler(req, res) {
       `;
     }
 
-    return res.json({ sent, checked: matches.length });
+    // Check if any group has a new leaderboard leader
+    const leaderSent = await checkLeaderChanges(sql, groups, tokens, matches);
+
+    return res.json({ sent, leaderSent, checked: matches.length });
   } catch (err) {
     console.error('[notify-matches]', err);
     return res.status(500).json({ error: err.message });
