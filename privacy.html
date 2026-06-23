@@ -23,7 +23,6 @@
   li{margin-bottom:.4rem;}
   .muted{color:var(--muted);font-size:.82rem;}
   a{color:var(--pitch);font-weight:600;}
-  .draft-note{background:#FFF7E0;border:1px solid #EAD9A0;border-radius:8px;padding:.9rem 1rem;font-size:.82rem;color:#6b5a1f;margin-bottom:2rem;}
   footer{text-align:center;font-size:.78rem;color:var(--muted);padding:2rem 1rem 3rem;border-top:1px solid var(--rule);}
 </style>
 </head>
@@ -35,13 +34,7 @@
 </header>
 
 <main>
-  <div class="draft-note">
-    <strong>Draft —</strong> this is a starting point written to match what the app actually
-    does, not a substitute for legal advice. Have it reviewed before relying on it for App
-    Store submission or UK GDPR compliance.
-  </div>
-
-  <p class="muted">Last updated: 16 June 2026</p>
+  <p class="muted">Last updated: 23 June 2026</p>
 
   <h2>What this is</h2>
   <p>Sweetsteak is a sweepstake game for friends and colleagues following the World Cup. This
@@ -68,7 +61,7 @@
     <li>To let you (or a game's admin) manage a game — viewing its code, resetting a draw, etc.</li>
   </ul>
   <p>We don't use your data for advertising, and we don't sell or share it with third parties
-  for marketing. There's no analytics or tracking SDK in the app.</p>
+  for marketing.</p>
 
   <h2>Who else sees it</h2>
   <ul>
@@ -76,6 +69,9 @@
     what Apple retains.</li>
     <li><strong>football-data.org</strong> — the source of live match scores and fixtures shown
     in the app. We send them no personal data; we only read public match data from them.</li>
+    <li><strong>PostHog</strong> — we use PostHog for anonymous usage analytics (page views,
+    feature interactions). Data is stored on PostHog's EU servers. No personally identifiable
+    information is sent. See <a href="https://posthog.com/privacy">posthog.com/privacy</a>.</li>
     <li><strong>Vercel / Neon (Postgres)</strong> — our hosting and database providers, who
     store game data on our behalf. They don't use it for their own purposes.</li>
   </ul>
