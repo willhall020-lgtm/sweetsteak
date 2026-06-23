@@ -1,6 +1,6 @@
 {
-  "cleanUrls": true,
   "rewrites": [
+    { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/(draw|fixtures|leaderboard|rules|admin)", "destination": "/index.html" }
   ]
 }
