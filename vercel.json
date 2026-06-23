@@ -1,11 +1,5 @@
 {
   "rewrites": [
     { "source": "/(draw|fixtures|leaderboard|rules|admin)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/api/notify-matches",
-      "schedule": "* * * * *"
-    }
   ]
 }
