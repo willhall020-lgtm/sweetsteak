@@ -25,23 +25,23 @@ function kickoffCopy(playerTeam, homeTeam, awayTeam) {
   const ot = TIER_MAP[opponent];
   const isUnderdog = pt && ot && TIER_RANK[pt] > TIER_RANK[ot];
   if (isUnderdog) {
-    return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opponent} just kicked off`, body: 'Can they do it?' };
+    return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opponent}`, body: 'Just kicked off. Can they do it?' };
   }
-  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `— vs ${of} ${opponent}. Come on!` };
+  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `vs ${of} ${opponent}. Come on!` };
 }
 
 function halftimeCopy(playerTeam, homeTeam, awayTeam, s) {
-  const isHome   = playerTeam === homeTeam;
-  const opponent = isHome ? awayTeam : homeTeam;
-  const pf       = teamFlag(playerTeam);
-  const of       = teamFlag(opponent);
-  const myGoals  = isHome ? s.home : s.away;
+  const isHome     = playerTeam === homeTeam;
+  const opponent   = isHome ? awayTeam : homeTeam;
+  const pf         = teamFlag(playerTeam);
+  const of         = teamFlag(opponent);
+  const myGoals    = isHome ? s.home : s.away;
   const theirGoals = isHome ? s.away : s.home;
-  const scoreStr = isHome
+  const scoreStr   = isHome
     ? `${pf} ${playerTeam} ${s.home}–${s.away} ${of} ${awayTeam}`
     : `${of} ${homeTeam} ${s.home}–${s.away} ${pf} ${playerTeam}`;
-  const suffix = myGoals < theirGoals ? ' — still 45 to go.' : '';
-  return { title: `Half-time: ${scoreStr}${suffix}`, body: '' };
+  const body = myGoals < theirGoals ? 'Still 45 to go.' : '';
+  return { title: 'Half-time', subtitle: scoreStr, body };
 }
 
 function fulltimeCopy(playerTeam, homeTeam, awayTeam, s) {
@@ -57,13 +57,13 @@ function fulltimeCopy(playerTeam, homeTeam, awayTeam, s) {
 
   if (myGoals > theirGoals) {
     const gk = giantKillTiers(playerTeam, opponent);
-    if (gk >= 2) return { title: `GIANT KILLING! 🪓🪓 ${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Massive.' };
-    if (gk === 1) return { title: `Giant Killing! 🪓 ${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Bonus pts incoming.' };
+    if (gk >= 2) return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Massive.' };
+    if (gk === 1) return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Bonus pts incoming.' };
     const pts = 3 + myGoals;
-    return { title: `Full time: ${scoreStr}`, body: `You earned ${pts}pts.` };
+    return { title: 'Full time', subtitle: scoreStr, body: `You earned ${pts}pts.` };
   }
-  if (myGoals === theirGoals) return { title: `Full time: ${scoreStr}`, body: 'A point each.' };
-  return { title: `Full time: ${scoreStr}`, body: '' };
+  if (myGoals === theirGoals) return { title: 'Full time', subtitle: scoreStr, body: 'A point each.' };
+  return { title: 'Full time', subtitle: scoreStr, body: '' };
 }
 
 export default async function handler(req, res) {

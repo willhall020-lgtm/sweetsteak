@@ -12,39 +12,39 @@ function notifForType(type, playerTeam) {
   switch (type) {
     case 'kickoff': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `— vs ${of} ${opp}. Come on!` };
+      return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `vs ${of} ${opp}. Come on!` };
     }
     case 'kickoff_underdog': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opp} just kicked off`, body: 'Can they do it?' };
+      return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opp}`, body: 'Just kicked off. Can they do it?' };
     }
     case 'halftime_win': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `Half-time: ${pf} ${playerTeam} 1–0 ${of} ${opp}`, body: '' };
+      return { title: 'Half-time', subtitle: `${pf} ${playerTeam} 1–0 ${of} ${opp}`, body: '' };
     }
     case 'halftime_lose': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `Half-time: ${of} ${opp} 1–0 ${pf} ${playerTeam} — still 45 to go.`, body: '' };
+      return { title: 'Half-time', subtitle: `${of} ${opp} 1–0 ${pf} ${playerTeam}`, body: 'Still 45 to go.' };
     }
     case 'win': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `Full time: ${pf} ${playerTeam} 2–1 ${of} ${opp}`, body: 'You earned 5pts.' };
+      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 2–1 ${of} ${opp}`, body: 'You earned 5pts.' };
     }
     case 'draw': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `Full time: ${pf} ${playerTeam} 1–1 ${of} ${opp}`, body: 'A point each.' };
+      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 1–1 ${of} ${opp}`, body: 'A point each.' };
     }
     case 'loss': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `Full time: ${of} ${opp} 2–0 ${pf} ${playerTeam}`, body: '' };
+      return { title: 'Full time', subtitle: `${of} ${opp} 2–0 ${pf} ${playerTeam}`, body: '' };
     }
     case 'gk1': {
       const opp = 'Germany'; const of = teamFlag(opp);
-      return { title: `Giant Killing! 🪓 ${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Bonus pts incoming.' };
+      return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Bonus pts incoming.' };
     }
     case 'gk2': {
       const opp = 'Brazil'; const of = teamFlag(opp);
-      return { title: `GIANT KILLING! 🪓🪓 ${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Massive.' };
+      return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Massive.' };
     }
     default:
       return null;
