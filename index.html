@@ -3501,24 +3501,9 @@ function initIOS() {
   renderIOSRules();
 
   // ── Country ticker ──
-  function updateTickers() {
-    const allTeams = drawData ? Object.keys(buildTeamPlayerMap(drawData)) : [];
-    const tickerText = allTeams.length
-      ? (allTeams.join('   ·   ') + '   ·   ').repeat(2)
-      : 'WC 2026   ·   48 teams   ·   11 Jun – 19 Jul   ·   '.repeat(2);
-    document.querySelectorAll('[id^="ios-ticker-"]').forEach(el => {
-      el.textContent = tickerText;
-    });
-  }
-  updateTickers();
-  // Refresh tickers when draw data loads
-  const _origRenderDraw = typeof renderDraw === 'function' ? renderDraw : null;
-  if (_origRenderDraw) {
-    window.renderDraw = function() {
-      _origRenderDraw();
-      updateTickers();
-    };
-  }
+  document.querySelectorAll('[id^="ios-ticker-"]').forEach(el => {
+    el.textContent = tickerBase.repeat(4);
+  });
 
 }
 </script>
