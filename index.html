@@ -1574,67 +1574,48 @@ function setRole(code, role) { localStorage.setItem('sg_role_' + code, role); }
 function clearRole(code) { localStorage.removeItem('sg_role_' + code); }
 
 // ─── NOTIFICATION HELPERS ─────────────────────────────────────────────────────
-function getNotifPrefs() {
-  try { return JSON.parse(localStorage.getItem('sg_notif_prefs') || '{}'); } catch { return {}; }
-}
-function setNotifPref(key, value) {
-  const prefs = getNotifPrefs();
-  prefs[key] = value;
-  localStorage.setItem('sg_notif_prefs', JSON.stringify(prefs));
-  const token = localStorage.getItem('sg_push_token');
-  if (!token) return;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith('sg_role_')) {
-      const gCode = k.slice(8);
-      fetch('/api/notifications?g=' + gCode, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-push-token': token },
-        body: JSON.stringify({ prefs }),
-      }).catch(() => {});
-    }
-  }
-}
 function renderNotifPanel() {
   const containers = document.querySelectorAll('.notif-panel-content');
   if (!containers.length) return;
   const status = localStorage.getItem('sg_notif_status') || 'notDetermined';
+  const enabled = status === 'authorized' && localStorage.getItem('sg_notif_enabled') !== 'false';
   let html;
-  if (status === 'authorized') {
-    const p = getNotifPrefs();
-    const pv = (k, d) => p[k] !== undefined ? p[k] : d;
-    const row = (key, label, desc, def) =>
-      `<div class="notif-toggle-row">
-        <div><div class="notif-toggle-title">${label}</div><div class="notif-toggle-desc">${desc}</div></div>
-        <label class="ios-toggle">
-          <input type="checkbox" onchange="setNotifPref('${key}',this.checked)" ${pv(key, def) ? 'checked' : ''}>
-          <span class="ios-toggle-slider"></span>
-        </label>
-      </div>`;
+  if (status === 'denied') {
     html =
-      row('kickoff',  'Kick-off',             'When your team starts playing',        true)  +
-      row('halftime', 'Half-time',            'Score at the break',                   false) +
-      row('fulltime', 'Full-time',            'Final result and any giant killings',  true)  +
-      row('knockout', 'Knockout elimination', 'When your team is knocked out',        true)  +
-      row('draw',     'Draw completed',       'When teams are assigned',              true);
-  } else if (status === 'denied') {
-    html =
-      '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">You\'re missing out on match alerts for your team.</p>' +
-      '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'openNotificationSettings\'})">Open Settings</button>' +
-      '<p style="font-size:.75rem;color:var(--muted);margin-top:.5rem;">Enable notifications for Sweetsteak in iOS Settings.</p>';
+      '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Notifications are blocked. Enable them in iOS Settings.</p>' +
+      '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'openNotificationSettings\'})">Open Settings</button>';
   } else {
-    html =
-      '<p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem;">Get notified when your team plays, scores, and more.</p>' +
-      '<button class="btn-ink" style="padding:.55rem 1.3rem;font-size:.85rem;" onclick="window.webkit?.messageHandlers?.sweetsteak?.postMessage({action:\'requestNotificationPermission\'})">Enable notifications</button>';
+    html = `<div class="notif-toggle-row">
+      <div>
+        <div class="notif-toggle-title">Match notifications</div>
+        <div class="notif-toggle-desc">Kick-off, results &amp; draws for your team</div>
+      </div>
+      <label class="ios-toggle">
+        <input type="checkbox" ${enabled ? 'checked' : ''} onchange="toggleNotifications(this.checked)">
+        <span class="ios-toggle-slider"></span>
+      </label>
+    </div>`;
   }
   containers.forEach(c => { c.innerHTML = html; });
 }
+window.toggleNotifications = function(on) {
+  if (on) {
+    localStorage.setItem('sg_notif_enabled', 'true');
+    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+  } else {
+    localStorage.setItem('sg_notif_enabled', 'false');
+    const token = localStorage.getItem('sg_push_token');
+    if (token) {
+      fetch('/api/notifications', { method: 'DELETE', headers: { 'x-push-token': token } }).catch(() => {});
+    }
+    renderNotifPanel();
+  }
+};
 // iOS push callbacks — called by native
 window.handlePushToken = function(data) {
   if (!data || !data.token) return;
   const token = data.token;
   localStorage.setItem('sg_push_token', token);
-  const prefs = getNotifPrefs();
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key && key.startsWith('sg_role_')) {
@@ -1643,20 +1624,30 @@ window.handlePushToken = function(data) {
       fetch('/api/notifications?g=' + gCode, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, player_name: playerName, prefs }),
+        body: JSON.stringify({ token, player_name: playerName }),
       }).catch(() => {});
     }
   }
 };
 window.handleNotificationPermission = function(data) {
   if (!data) return;
-  localStorage.setItem('sg_notif_status', data.granted ? 'authorized' : 'denied');
+  if (data.granted) {
+    localStorage.setItem('sg_notif_status', 'authorized');
+    localStorage.setItem('sg_notif_enabled', 'true');
+  } else {
+    localStorage.setItem('sg_notif_status', 'denied');
+  }
   renderNotifPanel();
 };
 window.handleNotificationStatus = function(data) {
   if (!data) return;
   localStorage.setItem('sg_notif_status', data.status || 'notDetermined');
-  if (data.token) localStorage.setItem('sg_push_token', data.token);
+  if (data.token) {
+    localStorage.setItem('sg_push_token', data.token);
+  } else if (data.status === 'authorized' && localStorage.getItem('sg_notif_enabled') !== 'false') {
+    // Authorized in iOS Settings but no token yet — register to get one
+    window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'requestNotificationPermission' });
+  }
   renderNotifPanel();
 };
 window.handleNotificationTap = function() {
@@ -2874,6 +2865,12 @@ document.getElementById('adminLeaveBtn').addEventListener('click', leaveGame);
 // ─── iOS LOG OUT ──────────────────────────────────────────────────────────────
 function iosLogOut() {
   if (!confirm('Log out? You can sign back in any time — your games stay saved on this device.')) return;
+  const token = localStorage.getItem('sg_push_token');
+  if (token) {
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'x-push-token': token }, keepalive: true }).catch(() => {});
+  }
+  localStorage.removeItem('sg_push_token');
+  localStorage.removeItem('sg_notif_enabled');
   localStorage.removeItem('sg_apple_id');
   localStorage.removeItem('sg_apple_name');
   window.location.href = window.location.pathname + window.location.search;

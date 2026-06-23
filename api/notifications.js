@@ -34,7 +34,7 @@ async function getDb() {
 
 export default async function handler(req, res) {
   const code = req.query.g;
-  if (!code) return res.status(400).json({ error: 'Missing group code' });
+  if (!code && req.method !== 'DELETE') return res.status(400).json({ error: 'Missing group code' });
 
   const sql = await getDb();
 
@@ -78,6 +78,18 @@ export default async function handler(req, res) {
     `;
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     return res.json({ prefs: rows[0].prefs });
+  }
+
+  // DELETE — remove push token; omit ?g to remove from all groups (e.g. on logout/disable)
+  if (req.method === 'DELETE') {
+    const token = req.headers['x-push-token'];
+    if (!token) return res.status(400).json({ error: 'Missing x-push-token header' });
+    if (code) {
+      await sql`DELETE FROM push_tokens WHERE token = ${token} AND group_code = ${code}`;
+    } else {
+      await sql`DELETE FROM push_tokens WHERE token = ${token}`;
+    }
+    return res.json({ ok: true });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
