@@ -5,30 +5,48 @@ export default async function handler(req, res) {
   try {
     const sql = neon(process.env.DATABASE_URL);
 
-    // Create table if not yet initialised
-    await sql`CREATE TABLE IF NOT EXISTS push_tokens (
-      id SERIAL PRIMARY KEY, token TEXT NOT NULL, group_code TEXT NOT NULL,
-      player_name TEXT, prefs JSONB NOT NULL DEFAULT '{}',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE(token, group_code)
-    )`;
+    const tokens = await sql`
+      SELECT pt.token, pt.group_code, pt.player_name, pt.prefs,
+             sg.plan, sg.group_name
+      FROM push_tokens pt
+      LEFT JOIN sweepstake_groups sg ON sg.group_code = pt.group_code
+      LIMIT 30
+    `;
 
-    const tokens = await sql`SELECT token, group_code, player_name FROM push_tokens LIMIT 20`;
-    if (!tokens.length) return res.json({ sent: 0, message: 'No tokens registered — enable notifications in the iOS app first' });
+    if (!tokens.length) return res.json({ sent: 0, message: 'No tokens registered' });
 
+    // Build per-token diagnostics: what teams does this player have?
+    const diagnostics = tokens.map(t => {
+      const playerTeams = [];
+      if (t.plan) {
+        for (const entry of t.plan) {
+          if (entry.p === t.player_name) playerTeams.push(entry.team);
+        }
+      }
+      return {
+        group: t.group_name || t.group_code,
+        group_code: t.group_code,
+        player: t.player_name,
+        teams: playerTeams,
+        token_tail: t.token.slice(-8),
+      };
+    });
+
+    // Send test push to each token
     const results = await Promise.allSettled(
       tokens.map(t => sendPush(t.token, {
-        title: '🔔 Test notification',
-        body: `Hi ${t.player_name || 'there'} — Sweetsteak notifications are working!`,
+        title: `🔔 Test — ${t.group_name || t.group_code}`,
+        body: `Hi ${t.player_name || 'there'} — Sweetsteak push is working!`,
       }))
     );
 
     const details = results.map((r, i) => ({
-      player: tokens[i].player_name,
-      result: r.status === 'fulfilled' ? r.value : { error: r.reason?.message },
+      ...diagnostics[i],
+      push: r.status === 'fulfilled' ? r.value : { error: r.reason?.message },
     }));
 
-    return res.json({ sent: results.filter(r => r.status === 'fulfilled').length, total: tokens.length, details });
+    const sent = results.filter(r => r.status === 'fulfilled' && r.value?.ok !== false).length;
+    return res.json({ sent, total: tokens.length, details });
   } catch (err) {
     return res.status(500).json({ error: err.message, stack: err.stack });
   }
