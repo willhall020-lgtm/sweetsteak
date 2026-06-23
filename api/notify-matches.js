@@ -185,6 +185,7 @@ export default async function handler(req, res) {
 
     let sent = 0;
     const pushPromises = [];
+    const pushTokensList = []; // parallel — tracks token for each promise (for 410 cleanup)
     const toLog = [];
     const sentThisRun = new Set(); // deduplicate per device within a single run
 
@@ -233,6 +234,7 @@ export default async function handler(req, res) {
           sentThisRun.add(deviceKey);
 
           pushPromises.push(sendPush(sub.token, notif));
+          pushTokensList.push(sub.token);
           toLog.push({ group_code: sub.group_code, match_id: `${matchId}_${playerTeam}`, notif_type: notifType });
           logSet.add(logKey);
           sent++;
@@ -240,7 +242,17 @@ export default async function handler(req, res) {
       }
     }
 
-    await Promise.allSettled(pushPromises);
+    const pushResults = await Promise.allSettled(pushPromises);
+
+    // Auto-remove tokens APNs says are unregistered (410)
+    const stale410 = new Set(
+      pushResults.flatMap((r, i) =>
+        r.status === 'fulfilled' && r.value?.status === 410 ? [pushTokensList[i]] : []
+      )
+    );
+    for (const token of stale410) {
+      await sql`DELETE FROM push_tokens WHERE token = ${token}`;
+    }
 
     for (const entry of toLog) {
       await sql`
