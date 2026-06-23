@@ -77,7 +77,9 @@ class ViewController: UIViewController {
     }
 
     private func loadApp() {
-        let request = URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
+        var comps = URLComponents(url: appURL, resolvingAgainstBaseURL: false)!
+        comps.queryItems = [URLQueryItem(name: "_t", value: String(Int(Date().timeIntervalSince1970)))]
+        let request = URLRequest(url: comps.url!, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
         webView.load(request)
     }
 

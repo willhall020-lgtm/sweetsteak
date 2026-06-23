@@ -884,8 +884,7 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
-#member-notif-panel, #admin-notif-panel { display: none; }
-.ios-app #member-notif-panel, .ios-app #admin-notif-panel { display: block !important; }
+.ios-injected-notif { display: block; }
 .notif-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: .65rem 0; border-bottom: 1px solid var(--rule);
@@ -1443,10 +1442,6 @@ html.ios-app > body > header { display: none !important; }
   <section id="settings-view">
     <p class="kicker">Your game</p>
     <h2 class="display">More</h2>
-    <div id="member-notif-panel" class="panel" style="margin-top:1.5rem;display:block!important;">
-      <h3>Notifications</h3>
-      <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
-    </div>
     <div class="panel" style="margin-top:1.5rem;">
       <h3>Game code</h3>
       <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="member-share-url">—</p>
@@ -1503,10 +1498,6 @@ html.ios-app > body > header { display: none !important; }
     </div>
 
     <div class="asec active" id="atab-code">
-      <div id="admin-notif-panel" class="panel" style="margin-top:1.25rem;display:block!important;">
-        <h3>Notifications</h3>
-        <div class="notif-panel-content"><p style="font-size:.88rem;color:var(--muted);">Loading…</p></div>
-      </div>
       <div class="panel" style="margin-top:1.25rem;">
         <h3>Game code</h3>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:.12em;margin-bottom:.5rem;" id="admin-share-url">—</p>
@@ -3145,7 +3136,7 @@ function initIOS() {
     'fixtures':    { kicker: '', title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
     'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
-    'admin':       { kicker: '',                title: 'More',        emoji: '🔔', ticker: true },
+    'admin':       { kicker: '',                title: 'More',        emoji: '⚙️', ticker: true },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
