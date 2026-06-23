@@ -27,7 +27,7 @@ function kickoffCopy(playerTeam, homeTeam, awayTeam) {
   if (isUnderdog) {
     return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opponent} just kicked off`, body: 'Can they do it?' };
   }
-  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `vs ${of} ${opponent}. Come on!` };
+  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `— vs ${of} ${opponent}. Come on!` };
 }
 
 function halftimeCopy(playerTeam, homeTeam, awayTeam, s) {
@@ -59,7 +59,8 @@ function fulltimeCopy(playerTeam, homeTeam, awayTeam, s) {
     const gk = giantKillTiers(playerTeam, opponent);
     if (gk >= 2) return { title: `GIANT KILLING! 🪓🪓 ${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Massive.' };
     if (gk === 1) return { title: `Giant Killing! 🪓 ${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Bonus pts incoming.' };
-    return { title: `Full time: ${scoreStr}`, body: '' };
+    const pts = 3 + myGoals;
+    return { title: `Full time: ${scoreStr}`, body: `You earned ${pts}pts.` };
   }
   if (myGoals === theirGoals) return { title: `Full time: ${scoreStr}`, body: 'A point each.' };
   return { title: `Full time: ${scoreStr}`, body: '' };
