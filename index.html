@@ -3040,7 +3040,7 @@ function initIOS() {
   if (_adminView && !_adminView.querySelector('.ios-injected-notif')) {
     const _notifPanel = document.createElement('div');
     _notifPanel.className = 'panel ios-injected-notif';
-    _notifPanel.style.cssText = 'margin:0 16px 16px;display:block;';
+    _notifPanel.style.cssText = 'margin:16px 16px 0;display:block;';
     _notifPanel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
     _adminView.insertBefore(_notifPanel, _adminView.firstChild);
   }
@@ -3136,7 +3136,7 @@ function initIOS() {
     'fixtures':    { kicker: '', title: 'Fixtures',    emoji: '⚽', ticker: true },
     'draw':        { kicker: '',                title: 'The Draw',    emoji: '🎲', ticker: true },
     'rules':       { kicker: '',               title: 'Rules',       emoji: '📋', ticker: true },
-    'admin':       { kicker: '',                title: 'More',        emoji: '🔔', ticker: true },
+    'admin':       { kicker: '',                title: 'More',        emoji: '⚙️', ticker: true },
   };
 
   Object.entries(VIEW_HEADERS).forEach(([id, cfg]) => {
