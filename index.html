@@ -1600,7 +1600,7 @@ function setNotifPref(key, value) {
   }
 }
 function renderNotifPanel() {
-  const containers = document.querySelectorAll('#member-notif-panel .notif-panel-content, #admin-notif-panel .notif-panel-content');
+  const containers = document.querySelectorAll('.notif-panel-content');
   if (!containers.length) return;
   const status = localStorage.getItem('sg_notif_status') || 'notDetermined';
   let html;
@@ -3043,7 +3043,16 @@ if (GROUP_CODE) {
 function initIOS() {
   if (!document.documentElement.classList.contains('ios-app')) return;
 
-  // Populate notifications panels immediately (panels visible via CSS on iOS)
+  // Inject notifications panel directly into DOM (bypasses any CSS hide issues)
+  ['settings-view', 'atab-code'].forEach(containerId => {
+    const container = document.getElementById(containerId);
+    if (!container || container.querySelector('.ios-injected-notif')) return;
+    const panel = document.createElement('div');
+    panel.className = 'panel ios-injected-notif';
+    panel.setAttribute('style', 'margin:0 0 1.25rem;display:block;');
+    panel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
+    container.insertBefore(panel, container.firstChild);
+  });
   renderNotifPanel();
   window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
 
