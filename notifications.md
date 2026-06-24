@@ -9,29 +9,28 @@ Quiet hours should be respected based on the player's device timezone, since man
 ## Match Notifications (your team only)
 
 ### Kick-Off
-Sent at kick-off for the player's team. Opponent is surfaced naturally in the message — no separate "who are they playing?" notification needed.
+Sent at kick-off for the player's team. Includes the opponent and which player in the group holds that team.
 
-- *"🏟️ 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are playing now — vs 🇪🇸 Spain. Come on!"*
-- *"🏟️ 🇲🇦 Morocco vs 🇫🇷 France just kicked off. Can they do it?"*
+- *"🏟️ 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are playing now"* / *"vs 🇪🇸 Spain (Marcus). Come on!"*
 
 ### Half-Time Score
 Optional — sent at half-time for the player's team only.
 
-- *"Half-time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 1–0 🇪🇸 Spain"*
-- *"Half-time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0–1 🇪🇸 Spain — still 45 to go."* (if losing)
+- *"Half-time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 1-0 🇪🇸 Spain"*
+- *"Half-time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 0-1 🇪🇸 Spain - still 45 to go."* (if losing)
 
 ### Full-Time Result
 Sent at final whistle. Tone varies by outcome:
 
 **Win (standard)**
-- *"Full time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 2–1 🇪🇸 Spain. You earned 6pts."*
+- *"Full time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 2-1 🇪🇸 Spain. You earned 6pts."*
 
 **Giant Killing**
-- 1 tier above: *"Giant Killing! 🪓 🇲🇦 Morocco beat 🇫🇷 France 1–0. Bonus pts incoming."*
+- 1 tier above: *"Giant Killing! 🪓 🇲🇦 Morocco beat 🇫🇷 France 1-0. Bonus pts incoming."*
 - 2+ tiers above: *"GIANT KILLING! 🪓🪓 🇲🇦 Morocco beat 🇧🇷 Brazil. Massive."*
 
 **Draw**
-- *"Full time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 1–1 🇪🇸 Spain. A point each."*
+- *"Full time: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England 1-1 🇪🇸 Spain. A point each."*
 
 **Loss**
 - *"Full time: 🇪🇸 Spain 2–0 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England."*
@@ -39,7 +38,7 @@ Sent at final whistle. Tone varies by outcome:
 ### Knockout Elimination
 When the player's team is knocked out.
 
-- *"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are out — Quarter-Final exit. You earned 34pts from your team."*
+- *"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England are out - Quarter-Final exit. You earned 34pts from your team."*
 
 ---
 

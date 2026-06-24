@@ -7,52 +7,49 @@ import { normalizeMatch, computeScores } from '../lib/scores.js';
 // Tier C vs Tier A: Canada vs England  (2-tier GK)
 // Tier B vs Tier A: Türkiye vs England (1-tier GK)
 
-function notifForType(type, playerTeam) {
+function notifForType(type, playerTeam, opponentPlayer) {
   const pf = teamFlag(playerTeam) || '';
 
   switch (type) {
     case 'kickoff': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `vs ${of} ${opp}. Come on!` };
-    }
-    case 'kickoff_underdog': {
-      const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opp}`, body: 'Just kicked off. Can they do it?' };
+      const body = opponentPlayer ? `vs ${of} ${opp} (${opponentPlayer}). Come on!` : `vs ${of} ${opp}. Come on!`;
+      return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body };
     }
     case 'halftime_win': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: 'Half-time', subtitle: `${pf} ${playerTeam} 1–0 ${of} ${opp}`, body: '' };
+      return { title: 'Half-time', subtitle: `${pf} ${playerTeam} 1-0 ${of} ${opp}`, body: '' };
     }
     case 'halftime_lose': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: 'Half-time', subtitle: `${of} ${opp} 1–0 ${pf} ${playerTeam}`, body: 'Still 45 to go.' };
+      return { title: 'Half-time', subtitle: `${of} ${opp} 1-0 ${pf} ${playerTeam}`, body: 'Still 45 to go.' };
     }
     case 'win': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 2–1 ${of} ${opp}`, body: 'You earned 5pts.' };
+      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 2-1 ${of} ${opp}`, body: 'You earned 5pts.' };
     }
     case 'draw': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 1–1 ${of} ${opp}`, body: 'A point each.' };
+      return { title: 'Full time', subtitle: `${pf} ${playerTeam} 1-1 ${of} ${opp}`, body: 'A point each.' };
     }
     case 'loss': {
       const opp = 'Spain'; const of = teamFlag(opp);
-      return { title: 'Full time', subtitle: `${of} ${opp} 2–0 ${pf} ${playerTeam}`, body: '' };
+      return { title: 'Full time', subtitle: `${of} ${opp} 2-0 ${pf} ${playerTeam}`, body: '' };
     }
     case 'gk1': {
       const opp = 'Germany'; const of = teamFlag(opp);
-      return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Bonus pts incoming.' };
+      return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1-0`, body: 'Bonus pts incoming.' };
     }
     case 'gk2': {
       const opp = 'Brazil'; const of = teamFlag(opp);
-      return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1–0`, body: 'Massive.' };
+      return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opp} 1-0`, body: 'Massive.' };
     }
     default:
       return null;
   }
 }
 
-const ALL_TYPES = ['kickoff','kickoff_underdog','halftime_win','halftime_lose','win','draw','loss','gk1','gk2'];
+const ALL_TYPES = ['kickoff','halftime_win','halftime_lose','win','draw','loss','gk1','gk2'];
 
 export default async function handler(req, res) {
   try {
@@ -69,16 +66,20 @@ export default async function handler(req, res) {
     `;
 
     const tokenTeam = {};
+    // team → player_name per group (for opponent attribution in kickoff tests)
+    const teamToPlayer = {};
     for (const g of groups) {
+      teamToPlayer[g.group_code] = {};
       const playerTeams = {};
       for (const entry of g.plan || []) {
         if (!playerTeams[entry.p]) playerTeams[entry.p] = [];
         playerTeams[entry.p].push(entry.team);
+        teamToPlayer[g.group_code][entry.team] = entry.p;
       }
       for (const t of tokens.filter(t => t.group_code === g.group_code)) {
         if (!tokenTeam[t.token]) {
           const teams = playerTeams[t.player_name] || [];
-          if (teams.length) tokenTeam[t.token] = teams[0];
+          if (teams.length) tokenTeam[t.token] = { team: teams[0], group_code: g.group_code };
         }
       }
     }
@@ -144,7 +145,7 @@ export default async function handler(req, res) {
           const r = await sendPush(t.token, {
             title: '[TEST] 🥇 You\'re leading!',
             subtitle: g.group_name || g.group_code,
-            body: `${topPts}pts — you're top of the leaderboard`,
+            body: `${topPts}pts - you're top of the leaderboard`,
           }).catch(err => ({ error: err.message }));
           leaderResults[leaderResults.length - 1].push = r;
         }
@@ -161,13 +162,15 @@ export default async function handler(req, res) {
     const results = [];
     for (const t of typesToSend) {
       for (const tok of uniqueTokens) {
-        const team = tokenTeam[tok.token];
-        if (!team) { results.push({ type: t, token_tail: tok.token.slice(-8), skipped: 'no team' }); continue; }
-        const notif = notifForType(t, team);
+        const entry = tokenTeam[tok.token];
+        if (!entry) { results.push({ type: t, token_tail: tok.token.slice(-8), skipped: 'no team' }); continue; }
+        const { team, group_code } = entry;
+        const opponentPlayer = t === 'kickoff' ? teamToPlayer[group_code]?.['Spain'] : undefined;
+        const notif = notifForType(t, team, opponentPlayer);
         if (!notif) { results.push({ type: t, token_tail: tok.token.slice(-8), skipped: 'unknown type' }); continue; }
         notif.title = `[TEST] ${notif.title}`;
         const r = await sendPush(tok.token, notif).catch(err => ({ error: err.message }));
-        results.push({ type: t, token_tail: tok.token.slice(-8), team, push: r });
+        results.push({ type: t, token_tail: tok.token.slice(-8), team, opponentPlayer, push: r });
       }
     }
 

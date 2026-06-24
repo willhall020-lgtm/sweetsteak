@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless';
 import { sendPush } from '../lib/apns.js';
-import { normTeam, teamFlag, giantKillTiers, TIER_MAP, TIER_RANK } from '../lib/team-data.js';
+import { normTeam, teamFlag, giantKillTiers } from '../lib/team-data.js';
 import { normalizeMatch, computeScores } from '../lib/scores.js';
 
 const KNOCKOUT_STAGES = new Set([
@@ -18,17 +18,12 @@ function htScore(m) {
   return { home: m.score?.halfTime?.home ?? 0, away: m.score?.halfTime?.away ?? 0 };
 }
 
-function kickoffCopy(playerTeam, homeTeam, awayTeam) {
+function kickoffCopy(playerTeam, homeTeam, awayTeam, opponentPlayer) {
   const opponent = playerTeam === homeTeam ? awayTeam : homeTeam;
   const pf = teamFlag(playerTeam);
   const of = teamFlag(opponent);
-  const pt = TIER_MAP[playerTeam];
-  const ot = TIER_MAP[opponent];
-  const isUnderdog = pt && ot && TIER_RANK[pt] > TIER_RANK[ot];
-  if (isUnderdog) {
-    return { title: `🏟️ ${pf} ${playerTeam} vs ${of} ${opponent}`, body: 'Just kicked off. Can they do it?' };
-  }
-  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: `vs ${of} ${opponent}. Come on!` };
+  const vsLine = opponentPlayer ? `vs ${of} ${opponent} (${opponentPlayer}). Come on!` : `vs ${of} ${opponent}. Come on!`;
+  return { title: `🏟️ ${pf} ${playerTeam} are playing now`, body: vsLine };
 }
 
 function halftimeCopy(playerTeam, homeTeam, awayTeam, s) {
@@ -39,8 +34,8 @@ function halftimeCopy(playerTeam, homeTeam, awayTeam, s) {
   const myGoals    = isHome ? s.home : s.away;
   const theirGoals = isHome ? s.away : s.home;
   const scoreStr   = isHome
-    ? `${pf} ${playerTeam} ${s.home}–${s.away} ${of} ${awayTeam}`
-    : `${of} ${homeTeam} ${s.home}–${s.away} ${pf} ${playerTeam}`;
+    ? `${pf} ${playerTeam} ${s.home}-${s.away} ${of} ${awayTeam}`
+    : `${of} ${homeTeam} ${s.home}-${s.away} ${pf} ${playerTeam}`;
   const body = myGoals < theirGoals ? 'Still 45 to go.' : '';
   return { title: 'Half-time', subtitle: scoreStr, body };
 }
@@ -53,13 +48,13 @@ function fulltimeCopy(playerTeam, homeTeam, awayTeam, s) {
   const myGoals    = isHome ? s.home : s.away;
   const theirGoals = isHome ? s.away : s.home;
   const scoreStr   = isHome
-    ? `${pf} ${playerTeam} ${s.home}–${s.away} ${of} ${awayTeam}`
-    : `${of} ${homeTeam} ${s.home}–${s.away} ${pf} ${playerTeam}`;
+    ? `${pf} ${playerTeam} ${s.home}-${s.away} ${of} ${awayTeam}`
+    : `${of} ${homeTeam} ${s.home}-${s.away} ${pf} ${playerTeam}`;
 
   if (myGoals > theirGoals) {
     const gk = giantKillTiers(playerTeam, opponent);
-    if (gk >= 2) return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Massive.' };
-    if (gk === 1) return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}–${theirGoals}`, body: 'Bonus pts incoming.' };
+    if (gk >= 2) return { title: 'GIANT KILLING! 🪓🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}-${theirGoals}`, body: 'Massive.' };
+    if (gk === 1) return { title: 'Giant Killing! 🪓', subtitle: `${pf} ${playerTeam} beat ${of} ${opponent} ${myGoals}-${theirGoals}`, body: 'Bonus pts incoming.' };
     const pts = 3 + myGoals;
     return { title: 'Full time', subtitle: scoreStr, body: `You earned ${pts}pts.` };
   }
@@ -113,7 +108,7 @@ async function checkLeaderChanges(sql, groups, tokens, rawMatches) {
       await sendPush(t.token, {
         title: '🥇 You\'re leading!',
         subtitle: g.group_name || g.group_code,
-        body: `${topPts}pts — you're top of the leaderboard`,
+        body: `${topPts}pts - you're top of the leaderboard`,
       }).catch(() => {});
       sent++;
     }
@@ -141,7 +136,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. Fetch registered tokens
-    const tokens = await sql`SELECT token, group_code, player_name, prefs FROM push_tokens`;
+    const tokens = await sql`SELECT token, group_code, player_name, prefs, created_at FROM push_tokens`;
     if (!tokens.length) return res.json({ sent: 0, message: 'No registered tokens' });
 
     const groupCodes = [...new Set(tokens.map(t => t.group_code))];
@@ -151,6 +146,15 @@ export default async function handler(req, res) {
       SELECT group_code, group_name, plan FROM sweepstake_groups
       WHERE group_code = ANY(${groupCodes}) AND completed = TRUE
     `;
+
+    // Build team → player_name per group (for opponent attribution in kickoff copy)
+    const teamToPlayer = {};
+    for (const g of groups) {
+      teamToPlayer[g.group_code] = {};
+      for (const entry of g.plan || []) {
+        teamToPlayer[g.group_code][entry.team] = entry.p;
+      }
+    }
 
     // Build team → [{ token, group_code, prefs }]
     const teamSubs = {};
@@ -164,7 +168,7 @@ export default async function handler(req, res) {
       for (const t of tokens.filter(t => t.group_code === g.group_code)) {
         for (const team of playerTeams[t.player_name] || []) {
           if (!teamSubs[team]) teamSubs[team] = [];
-          teamSubs[team].push({ token: t.token, group_code: t.group_code, prefs: t.prefs });
+          teamSubs[team].push({ token: t.token, group_code: t.group_code, prefs: t.prefs, registered_at: t.created_at });
         }
       }
     }
@@ -209,13 +213,13 @@ export default async function handler(req, res) {
         else if (status === 'FINISHED') notifType = 'fulltime';
         else continue;
 
-        // Build notification copy
-        let notif;
-        if (notifType === 'kickoff')  notif = kickoffCopy(playerTeam, homeTeam, awayTeam);
-        if (notifType === 'halftime') notif = halftimeCopy(playerTeam, homeTeam, awayTeam, ht);
-        if (notifType === 'fulltime') notif = fulltimeCopy(playerTeam, homeTeam, awayTeam, s);
+        const halftimeNotif = notifType === 'halftime' ? halftimeCopy(playerTeam, homeTeam, awayTeam, ht) : null;
+        const fulltimeNotif = notifType === 'fulltime' ? fulltimeCopy(playerTeam, homeTeam, awayTeam, s) : null;
 
         for (const sub of subs) {
+          // Skip past matches for newly-registered tokens
+          if (sub.registered_at && m.utcDate && new Date(m.utcDate) < new Date(sub.registered_at)) continue;
+
           const logKey = `${sub.group_code}|${matchId}_${playerTeam}|${notifType}`;
           if (logSet.has(logKey)) continue;
 
@@ -232,6 +236,15 @@ export default async function handler(req, res) {
             continue;
           }
           sentThisRun.add(deviceKey);
+
+          let notif;
+          if (notifType === 'kickoff') {
+            const opponent = playerTeam === homeTeam ? awayTeam : homeTeam;
+            const opponentPlayer = teamToPlayer[sub.group_code]?.[opponent];
+            notif = kickoffCopy(playerTeam, homeTeam, awayTeam, opponentPlayer);
+          } else {
+            notif = halftimeNotif ?? fulltimeNotif;
+          }
 
           pushPromises.push(sendPush(sub.token, notif));
           pushTokensList.push(sub.token);

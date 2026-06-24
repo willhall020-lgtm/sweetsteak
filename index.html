@@ -76,6 +76,7 @@ table.lb tr.row-last td{background:#FFF8F8;}
 .bB{background:#E1EEF3;color:#1A6E8A;}
 .bC{background:#F6EADB;color:#A05A18;}
 .bD{background:#EDE8F5;color:#6B3FA0;}
+.badge.out{opacity:0.35;text-decoration:line-through;}
 .prize-tag{font-size:.7rem;font-weight:600;color:var(--pitch);}
 .prize-tag.gold{color:var(--gold-dark);}
 .prize-tag.spoon{color:#C0392B;}
@@ -877,9 +878,11 @@ html.ios-app > body > header { display: none !important; }
 .ios-app #leaveGameBtn, .ios-app #leaveGameHint,
 .ios-app #adminLeaveBtn, .ios-app #adminLeaveHint { display: none !important; }
 .ios-app #iosLogoutBtn, .ios-app #iosAdminLogoutBtn,
-.ios-app #iosLeaveGameBtn, .ios-app #iosAdminLeaveBtn { display: inline-block !important; }
+.ios-app #iosLeaveGameBtn, .ios-app #iosAdminLeaveBtn,
+.ios-app #iosDeleteAccountBtn, .ios-app #iosAdminDeleteAccountBtn { display: inline-block !important; }
 .ios-app #iosLogoutHint, .ios-app #iosAdminLogoutHint,
-.ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint { display: block !important; }
+.ios-app #iosLeaveGameHint, .ios-app #iosAdminLeaveHint,
+.ios-app #iosDeleteAccountHint, .ios-app #iosAdminDeleteAccountHint { display: block !important; }
 
 /* ── Notifications panel (iOS only) ─────────────────────────────── */
 .ios-injected-notif { display: block; }
@@ -950,8 +953,10 @@ html.ios-app > body > header { display: none !important; }
   position: fixed; inset: 0; z-index: 550;
   background: linear-gradient(180deg,#0E5A33 0%,#0B3D1F 100%);
   overflow: hidden; color: #fff; font-family: 'Inter', sans-serif;
+  touch-action: none;
 }
 .ios-app #ios-signin.active { display: flex; flex-direction: column; }
+.ios-app.ios-scroll-lock { overflow: hidden; }
 .ios-ob-glow {
   position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
   width: 460px; height: 460px; border-radius: 50%;
@@ -1050,6 +1055,9 @@ html.ios-app > body > header { display: none !important; }
   posthog.init('phc_ywjrmNaZ4aXYX6bLLPqHWtppZpThAqFDAVPq5Y4KWCJg', {
     api_host: 'https://eu.i.posthog.com',
     person_profiles: 'identified_only',
+    loaded: function(ph) {
+      ph.register({ platform: window.IS_NATIVE_APP ? 'ios_app' : 'web' });
+    },
   });
 </script>
 </head>
@@ -1159,12 +1167,12 @@ html.ios-app > body > header { display: none !important; }
 
   <!-- Page 2: notification pre-prompt -->
   <div id="ios-pick-page-notif" style="display:none;flex-direction:column;flex:1;">
-    <div class="ios-pick-header" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:32px;">
+    <div class="ios-pick-header" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:80px;">
       <div class="ios-pick-kicker">STAY IN THE GAME</div>
       <h1 class="ios-pick-title">Know when<br>your team plays</h1>
       <p class="ios-pick-sub" style="margin-top:14px;">Kick-off alerts, half-time scores, and giant killings — only for your teams. No general match spam.</p>
     </div>
-    <div class="ios-pick-cta" style="flex-direction:column;gap:10px;">
+    <div class="ios-pick-cta" style="flex-direction:column;gap:10px;margin-bottom:48px;">
       <button class="ios-pick-cta-btn" id="ios-notif-enable-btn">Turn on notifications</button>
       <button id="ios-notif-skip-btn" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:14px;font-family:'Inter',sans-serif;cursor:pointer;padding:10px 0;">Maybe later</button>
     </div>
@@ -1302,7 +1310,7 @@ html.ios-app > body > header { display: none !important; }
             <th>Teams</th>
             <th class="r" title="Goals scored (excl. penalties)" data-tip="Goals scored (excl. penalties)">⚽</th>
             <th class="r" title="Points from wins & draws" data-tip="Points from wins & draws">Win</th>
-            <th class="r" title="Progression bonus — reaching R16, QF, SF, Final, Winner" data-tip="Progression bonus — R16/QF/SF/Final/Winner">Prog</th>
+            <th class="r" title="Progression bonus — reaching R32, R16, QF, SF, Final, Winner" data-tip="Progression bonus — R32/R16/QF/SF/Final/Winner">Prog</th>
             <th class="r" title="Giant-killing bonus — beating a higher-tier team" data-tip="Giant-killing bonus — beating a higher-tier team">GK</th>
             <th class="r">Pts</th>
           </tr>
@@ -1335,13 +1343,13 @@ html.ios-app > body > header { display: none !important; }
         <tr><td>Group stage draw</td><td>+1 pt (per team)</td></tr>
         <tr><td>Every goal scored (excl. penalties)</td><td>+1 pt per goal</td></tr>
         <tr><td>Giant-killing (beat a team from 1 / 2 / 3 tiers above)</td><td>+3 / +6 / +10 pts bonus</td></tr>
+        <tr><td>Reach Round of 32</td><td>+1 pt</td></tr>
         <tr><td>Reach Round of 16</td><td>+2 pts</td></tr>
         <tr><td>Reach Quarter-finals</td><td>+3 pts</td></tr>
         <tr><td>Reach Semi-finals</td><td>+4 pts</td></tr>
         <tr><td>Reach Final</td><td>+5 pts</td></tr>
         <tr><td>Win the tournament</td><td>+5 pts</td></tr>
       </table>
-      <p style="margin-top:.75rem;font-size:.8rem;color:var(--muted);">Progression bonuses stack — a champion earns all five (+19 pts in total). Giant-killing applies on wins only, not draws. Tiers: 1 (Contenders) = ranks 1–12, 2 (Challengers) = 13–24, 3 (Outsiders) = 25–36, 4 (Wildcards) = 37–48.</p>
     </div>
     <details class="tiers">
       <summary>View all 48 teams — ranked &amp; tiered</summary>
@@ -1471,6 +1479,8 @@ html.ios-app > body > header { display: none !important; }
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLogoutHint">Signs you out of Apple ID. Your games stay saved on this device — sign back in any time.</p>
       <button class="btn-danger" id="iosLeaveGameBtn" style="display:none;margin-top:.75rem;">Leave game</button>
       <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosLeaveGameHint">Removes this game from your device. Your player slot stays in the game — rejoin with the code any time.</p>
+      <button class="btn-danger" id="iosDeleteAccountBtn" style="display:none;margin-top:1.25rem;">Delete account</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosDeleteAccountHint">Removes your Apple ID and signs you out of all games. The games still exist — you can rejoin with the code.</p>
     </div>
     <div class="panel" style="margin-top:1.25rem;">
       <h3>Admin access</h3>
@@ -1549,6 +1559,8 @@ html.ios-app > body > header { display: none !important; }
         <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosAdminLogoutHint">Signs you out of Apple ID. Your games stay saved on this device — sign back in any time.</p>
         <button class="btn-danger" id="iosAdminLeaveBtn" style="display:none;margin-top:.75rem;">Leave game</button>
         <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosAdminLeaveHint">Removes this game from your device. You remain the admin — rejoin with the same code any time.</p>
+        <button class="btn-danger" id="iosAdminDeleteAccountBtn" style="display:none;margin-top:1.25rem;">Delete account</button>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem;display:none;" id="iosAdminDeleteAccountHint">Removes your Apple ID and signs you out of all games. The games still exist — you can rejoin with the code.</p>
       </div>
     </div>
   </section>
@@ -1863,6 +1875,7 @@ document.getElementById('tipsDismissBtn').addEventListener('click', () => {
   document.getElementById('ios-launch').style.display = 'block';
   if (!localStorage.getItem('sg_apple_id')) {
     document.getElementById('ios-signin').classList.add('active');
+    document.documentElement.classList.add('ios-scroll-lock');
   }
   const launch = document.getElementById('ios-launch');
   setTimeout(() => {
@@ -1898,6 +1911,7 @@ window.handleAppleSignIn = function(payload) {
   localStorage.setItem('sg_apple_id', userId);
   if (name) localStorage.setItem('sg_apple_name', name);
   document.getElementById('ios-signin').classList.remove('active');
+  document.documentElement.classList.remove('ios-scroll-lock');
   if (GROUP_CODE && !IS_ADMIN && drawData?.admin_apple_id === userId) {
     setRole(GROUP_CODE, 'admin');
     window.location.reload();
@@ -2107,6 +2121,7 @@ let drawData      = null;   // from /api/draw
 let apiMatches    = [];     // finished + live matches (for leaderboard)
 let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
 let lastUpdated   = null;
+let _lbBaselineRanks = null; // set by renderLeaderboard, shared with renderLBCards
 let localDraw   = { names:[], plan:[], idx:0 };
 let revealing   = false;
 
@@ -2146,6 +2161,12 @@ async function loadDraw() {
     updatePrizesDisplay();
     renderLeaderboard();
     renderFixtures();
+    // iOS: show pick-player if draw is complete and identity not yet set.
+    // Covers admin who just saved the draw, and players who joined before the draw ran.
+    const isIOS = document.documentElement.classList.contains('ios-app');
+    if (isIOS && drawData.completed && drawData.names?.length && !localStorage.getItem('sg_player_' + GROUP_CODE)) {
+      iosShowPickPlayer(GROUP_CODE, drawData.names, drawData.group_name || '');
+    }
   } catch (e) { console.warn('Draw fetch failed', e); }
 }
 
@@ -2194,7 +2215,7 @@ function transformMatch(m) {
   if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
-           utcDate: m.utcDate || null, minute: m.minute ?? null,
+           utcDate: m.utcDate || null,
            isLive: m.status !== 'FINISHED', status: m.status };
 }
 
@@ -2242,7 +2263,7 @@ function transformFixture(m) {
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate, penaltyWinner,
            status: m.status, isLive: liveStatuses.includes(m.status),
-           isHalfTime: m.status === 'PAUSED', minute: m.minute ?? null };
+           isHalfTime: m.status === 'PAUSED' };
 }
 
 function buildTeamPlayerMap(draw) {
@@ -2328,7 +2349,7 @@ function renderFixtures() {
         ${teamCard(m.homeTeam, 'home')}
         <div class="fix-mid">
           <span class="fix-score is-live">${scoreStr}</span>
-          ${m.isHalfTime ? '<span class="fix-ht">HT</span>' : m.minute != null ? `<span class="fix-min">${m.minute}'</span>` : ''}
+          ${m.isHalfTime ? '<span class="fix-ht">HT</span>' : ''}
           <span class="fix-stage">${stageLabel(m.stage)}</span>
         </div>
         ${teamCard(m.awayTeam, 'away')}
@@ -2423,9 +2444,9 @@ function computeProgress(matches) {
   return { prog, PROG_ORDER };
 }
 
-const PROG_PTS = {r16:2,qf:3,sf:4,final:5,champion:5};
+const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:5};
 const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
-const PROG_EVENT_LABEL  = {r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
+const PROG_EVENT_LABEL  = {r32:'Reached Round of 32',r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
 
 function computeScores(assignments, matches) {
   const scores = {};
@@ -2483,6 +2504,20 @@ function computeScores(assignments, matches) {
 
   for (const s of Object.values(scores)) s.total = s.goals + s.matchPts + s.progressPts + s.bonusPts;
   return scores;
+}
+
+function computeEliminated(matches) {
+  const eliminated = new Set();
+  for (const m of matches) {
+    if (m.stage === 'group' || m.stage === '3rd' || m.isLive) continue;
+    const { homeTeam, awayTeam, homeGoals, awayGoals, penaltyWinner } = m;
+    let winner = null;
+    if (homeGoals > awayGoals)      winner = homeTeam;
+    else if (awayGoals > homeGoals) winner = awayTeam;
+    else if (penaltyWinner)         winner = penaltyWinner;
+    if (winner) eliminated.add(winner === homeTeam ? awayTeam : homeTeam);
+  }
+  return eliminated;
 }
 
 function buildDetailHTML(detail) {
@@ -2552,28 +2587,36 @@ function renderLeaderboard() {
   }
 
   const scores = computeScores(assignments, apiMatches);
+  const eliminated = computeEliminated(apiMatches);
   const sorted = Object.entries(scores).sort((a,b) => {
     const s = (f) => b[1][f] - a[1][f];
     return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
   });
 
-  // Baseline: scores before the current live match(es), or before the most recent kick-off batch
-  const liveMatches = apiMatches.filter(m => m.isLive);
-  let baselineMatches;
-  if (liveMatches.length) {
-    baselineMatches = apiMatches.filter(m => !m.isLive);
+  // Baseline: stored snapshot from last leaderboard view; fall back to last-game on first use
+  const _snapshotKey = GROUP_CODE ? 'lb_snapshot_' + GROUP_CODE : null;
+  const _storedSnapshot = _snapshotKey ? JSON.parse(localStorage.getItem(_snapshotKey) || 'null') : null;
+  if (_storedSnapshot) {
+    _lbBaselineRanks = _storedSnapshot;
   } else {
-    const finished = apiMatches.filter(m => m.utcDate);
-    const mostRecentKO = finished.map(m => m.utcDate).sort((a,b) => new Date(b)-new Date(a))[0];
-    baselineMatches = mostRecentKO ? apiMatches.filter(m => m.utcDate !== mostRecentKO) : apiMatches;
+    const liveMatches = apiMatches.filter(m => m.isLive);
+    let baselineMatches;
+    if (liveMatches.length) {
+      baselineMatches = apiMatches.filter(m => !m.isLive);
+    } else {
+      const finished = apiMatches.filter(m => m.utcDate);
+      const mostRecentKO = finished.map(m => m.utcDate).sort((a,b) => new Date(b)-new Date(a))[0];
+      baselineMatches = mostRecentKO ? apiMatches.filter(m => m.utcDate !== mostRecentKO) : apiMatches;
+    }
+    const baselineScores = computeScores(assignments, baselineMatches);
+    const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
+      const s = (f) => b[1][f] - a[1][f];
+      return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
+    });
+    _lbBaselineRanks = {};
+    baselineSorted.forEach(([player], i) => _lbBaselineRanks[player] = i + 1);
   }
-  const baselineScores = computeScores(assignments, baselineMatches);
-  const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
-    const s = (f) => b[1][f] - a[1][f];
-    return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
-  });
-  const baselineRanks = {};
-  baselineSorted.forEach(([player], i) => baselineRanks[player] = i + 1);
+  const baselineRanks = _lbBaselineRanks;
 
   loading.classList.add('hidden');
   nodraw.classList.add('hidden');
@@ -2592,7 +2635,8 @@ function renderLeaderboard() {
     const tms = assignments[player] || [];
     const badges = tms.map(team => {
       const tier = TIER_MAP[team];
-      return `<span class="badge b${tier}" title="${esc(team)}">${esc(team)}</span>`;
+      const out = eliminated.has(team) ? ' out' : '';
+      return `<span class="badge b${tier}${out}" title="${esc(team)}">${esc(team)}</span>`;
     }).join('');
 
     const prizes = computePrizes();
@@ -2631,6 +2675,13 @@ function renderLeaderboard() {
       row.classList.toggle('open', !nowHidden);
     });
   });
+
+  // Save current ranks as snapshot for next-view comparison
+  if (_snapshotKey) {
+    const snap = {};
+    sorted.forEach(([player], i) => snap[player] = i + 1);
+    try { localStorage.setItem(_snapshotKey, JSON.stringify(snap)); } catch(e) {}
+  }
 
 }
 
@@ -2918,6 +2969,32 @@ if (iosLeaveGameBtn) iosLeaveGameBtn.addEventListener('click', iosLeaveGame);
 const iosAdminLeaveBtn = document.getElementById('iosAdminLeaveBtn');
 if (iosAdminLeaveBtn) iosAdminLeaveBtn.addEventListener('click', iosLeaveGame);
 
+// ─── iOS DELETE ACCOUNT ───────────────────────────────────────────────────────
+async function iosDeleteAccount() {
+  if (!confirm('Delete your Sweetsteak account?\n\nYou\'ll be removed from all games on this device. The games still exist — you can rejoin with the code. This also removes your Apple ID from Sweetsteak.')) return;
+  const appleId = localStorage.getItem('sg_apple_id');
+  const token   = localStorage.getItem('sg_push_token');
+  try {
+    const calls = [];
+    if (appleId) calls.push(fetch('/api/account', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apple_id: appleId }) }));
+    if (token)   calls.push(fetch('/api/notifications', { method: 'DELETE', headers: { 'x-push-token': token } }));
+    await Promise.allSettled(calls);
+  } catch (_) {}
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('sg_')) keysToRemove.push(k);
+  }
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+  // Prevent handleNotificationStatus auto-enabling before sign-in on next launch
+  localStorage.setItem('sg_notif_enabled', 'false');
+  window.location.href = '/';
+}
+const iosDeleteAccountBtn = document.getElementById('iosDeleteAccountBtn');
+if (iosDeleteAccountBtn) iosDeleteAccountBtn.addEventListener('click', iosDeleteAccount);
+const iosAdminDeleteAccountBtn = document.getElementById('iosAdminDeleteAccountBtn');
+if (iosAdminDeleteAccountBtn) iosAdminDeleteAccountBtn.addEventListener('click', iosDeleteAccount);
+
 if (document.documentElement.classList.contains('ios-app')) {
   const leaveTab = document.querySelector('[data-atab="leave"]');
   if (leaveTab) leaveTab.textContent = 'Log out';
@@ -3061,15 +3138,29 @@ if (GROUP_CODE) {
 function initIOS() {
   if (!document.documentElement.classList.contains('ios-app')) return;
 
-  // Inject notifications panel into view-admin, right after the iOS header
-  // (inserted at view level so it's visible regardless of member/admin state)
+  // Inject notifications panel:
+  // Members — insert inside #settings-view before the "Game" panel so order is
+  //   Other games → Game code → Notifications → Game → Admin access
+  // Admins  — append to #view-admin below the tab interface (existing behaviour)
   const _adminView = document.getElementById('view-admin');
   if (_adminView && !_adminView.querySelector('.ios-injected-notif')) {
     const _notifPanel = document.createElement('div');
     _notifPanel.className = 'panel ios-injected-notif';
-    _notifPanel.style.cssText = 'margin:16px 16px 0;display:block;';
     _notifPanel.innerHTML = '<h3>Notifications</h3><div class="notif-panel-content"></div>';
-    _adminView.appendChild(_notifPanel);
+    if (!IS_ADMIN) {
+      _notifPanel.style.cssText = 'margin-top:1.25rem;display:block;';
+      const _settingsView = document.getElementById('settings-view');
+      const _panels = _settingsView ? _settingsView.querySelectorAll('.panel') : [];
+      // panels[2] is the "Game" panel (0=Other games, 1=Game code, 2=Game, 3=Admin access)
+      if (_panels.length >= 3) {
+        _settingsView.insertBefore(_notifPanel, _panels[2]);
+      } else {
+        (_settingsView || _adminView).appendChild(_notifPanel);
+      }
+    } else {
+      _notifPanel.style.cssText = 'margin:16px 16px 0;display:block;';
+      _adminView.appendChild(_notifPanel);
+    }
   }
   renderNotifPanel();
   window.webkit?.messageHandlers?.sweetsteak?.postMessage({ action: 'getNotificationStatus' });
@@ -3273,28 +3364,14 @@ function initIOS() {
     if (!assignments) { container.innerHTML = ''; return; }
 
     const scores = computeScores(assignments, apiMatches);
+    const eliminated = computeEliminated(apiMatches);
     const sorted = Object.entries(scores).sort((a,b) => {
       const s = (f) => b[1][f] - a[1][f];
       return s('total') || s('wins') || s('goals') || s('progressPts') || s('bonusPts');
     });
 
-    // baseline for move arrows (same logic as renderLeaderboard)
-    const liveMatches = apiMatches.filter(m => m.isLive);
-    let baselineMatches;
-    if (liveMatches.length) {
-      baselineMatches = apiMatches.filter(m => !m.isLive);
-    } else {
-      const finished = apiMatches.filter(m => m.utcDate);
-      const mostRecentKO = finished.map(m => m.utcDate).sort((a,b) => new Date(b)-new Date(a))[0];
-      baselineMatches = mostRecentKO ? apiMatches.filter(m => m.utcDate !== mostRecentKO) : apiMatches;
-    }
-    const baselineScores = computeScores(assignments, baselineMatches);
-    const baselineSorted = Object.entries(baselineScores).sort((a,b) => {
-      const s=(f)=>b[1][f]-a[1][f];
-      return s('total')||s('wins')||s('goals')||s('progressPts')||s('bonusPts');
-    });
-    const baselineRanks = {};
-    baselineSorted.forEach(([p], i) => baselineRanks[p] = i+1);
+    // Use baseline set by renderLeaderboard (last-view snapshot)
+    const baselineRanks = _lbBaselineRanks || {};
 
     const prizes = computePrizes();
     const prizeMap = {'1': prizes?.first || '£40', '2': prizes?.second || '£15', '3': prizes?.third || '£10'};
@@ -3323,7 +3400,8 @@ function initIOS() {
         const tier = TIER_MAP[team];
         const tierColors = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}};
         const c = tierColors[tier] || {bg:'#eee',fg:'#333'};
-        return `<span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;color:${c.fg};background:${c.bg};border-radius:5px;padding:2px 6px">${esc(team.substring(0,3).toUpperCase())}</span>`;
+        const outStyle = eliminated.has(team) ? 'opacity:0.35;text-decoration:line-through;' : '';
+        return `<span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;color:${c.fg};background:${c.bg};border-radius:5px;padding:2px 6px;${outStyle}">${esc(team.substring(0,3).toUpperCase())}</span>`;
       }).join('');
 
       const prizes2 = computePrizes();
@@ -3400,6 +3478,7 @@ function initIOS() {
       { title: 'Match won', sub: '', pts: '+3 pts' },
       { title: 'Group stage draw', sub: '', pts: '+1 pt' },
       { title: 'Giant-killing', sub: 'Beat a team 1 / 2 / 3 tiers above', pts: '+3/6/10' },
+      { title: 'Reach Round of 32', sub: '', pts: '+1 pt' },
       { title: 'Reach Round of 16', sub: '', pts: '+2 pts' },
       { title: 'Reach Quarter-finals', sub: '', pts: '+3 pts' },
       { title: 'Reach Semi-finals', sub: '', pts: '+4 pts' },
