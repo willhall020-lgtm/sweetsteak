@@ -2096,8 +2096,17 @@ tickerEl.style.animation = `tick ${(tickerEl.offsetWidth / 2 / 35).toFixed(1)}s 
 });
 
 // ─── TAB NAV ──────────────────────────────────────────────────────────────────
+function flushLBSnapshot() {
+  if (_pendingLBSnapshot && GROUP_CODE) {
+    try { localStorage.setItem('lb_snapshot_' + GROUP_CODE, JSON.stringify(_pendingLBSnapshot)); } catch(e) {}
+  }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushLBSnapshot(); });
+window.addEventListener('pagehide', flushLBSnapshot);
+
 document.querySelectorAll('.tab-bar button').forEach(btn =>
   btn.addEventListener('click', () => {
+    flushLBSnapshot();
     document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     btn.classList.add('active');
@@ -2121,7 +2130,8 @@ let drawData      = null;   // from /api/draw
 let apiMatches    = [];     // finished + live matches (for leaderboard)
 let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
 let lastUpdated   = null;
-let _lbBaselineRanks = null; // set by renderLeaderboard, shared with renderLBCards
+let _lbBaselineRanks = null;  // set by renderLeaderboard, shared with renderLBCards
+let _pendingLBSnapshot = null; // saved to localStorage only when user navigates away
 let localDraw   = { names:[], plan:[], idx:0 };
 let revealing   = false;
 
@@ -2676,12 +2686,9 @@ function renderLeaderboard() {
     });
   });
 
-  // Save current ranks as snapshot for next-view comparison
-  if (_snapshotKey) {
-    const snap = {};
-    sorted.forEach(([player], i) => snap[player] = i + 1);
-    try { localStorage.setItem(_snapshotKey, JSON.stringify(snap)); } catch(e) {}
-  }
+  // Stage current ranks — written to localStorage only when user navigates away
+  _pendingLBSnapshot = {};
+  sorted.forEach(([player], i) => _pendingLBSnapshot[player] = i + 1);
 
 }
 
