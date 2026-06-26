@@ -3486,6 +3486,9 @@ function initIOS() {
     container.querySelectorAll('.ios-lb-card').forEach(card => {
       card.addEventListener('click', () => card.classList.toggle('expanded'));
     });
+    container.querySelectorAll('.ios-detail-group-section > summary').forEach(s => {
+      s.addEventListener('click', e => e.stopPropagation());
+    });
 
     // Live status pill
     updateIOSStatusPill();
