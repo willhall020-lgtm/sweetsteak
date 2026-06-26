@@ -16,7 +16,6 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(red: 0.055, green: 0.239, blue: 0.122, alpha: 1) // #0E3D1F
         setupWebView()
         setupRefreshControl()
         injectUserSelectNone()
@@ -36,9 +35,6 @@ class ViewController: UIViewController {
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.backgroundColor = .clear
         webView.uiDelegate = self
         webView.navigationDelegate = self
         webView.scrollView.contentInsetAdjustmentBehavior = .never
@@ -81,20 +77,12 @@ class ViewController: UIViewController {
     }
 
     private func loadApp() {
-        let cacheTypes: Set<String> = [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache]
-        WKWebsiteDataStore.default().removeData(ofTypes: cacheTypes, modifiedSince: .distantPast) { [weak self] in
-            guard let self else { return }
-            self.webView.load(URLRequest(url: self.appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData))
-        }
+        let request = URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
+        webView.load(request)
     }
 
     @objc private func handleRefresh() {
-        let target = webView.url ?? appURL
-        let cacheTypes: Set<String> = [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache]
-        WKWebsiteDataStore.default().removeData(ofTypes: cacheTypes, modifiedSince: .distantPast) { [weak self] in
-            guard let self else { return }
-            self.webView.load(URLRequest(url: target, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData))
-        }
+        loadApp()
     }
 
     // MARK: - Notifications
@@ -105,11 +93,8 @@ class ViewController: UIViewController {
             self?.sendToWeb("window.handlePushToken && window.handlePushToken({token:'\(token)'})")
         }
         NotificationCenter.default.addObserver(forName: .notificationTapped, object: nil, queue: .main) { [weak self] _ in
+            // Route to leaderboard on any notification tap
             self?.sendToWeb("window.handleNotificationTap && window.handleNotificationTap()")
-        }
-        // Re-check status when returning from background (e.g. user toggled in iOS Settings)
-        NotificationCenter.default.addObserver(forName: UIScene.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
-            self?.handleGetNotificationStatus()
         }
     }
 
@@ -158,24 +143,8 @@ class ViewController: UIViewController {
 // MARK: - WKNavigationDelegate
 
 extension ViewController: WKNavigationDelegate {
-
-    func webView(_ webView: WKWebView,
-                 decidePolicyFor navigationAction: WKNavigationAction,
-                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if webView === popupWebView,
-           let url = navigationAction.request.url,
-           url.path != "/privacy.html" {
-            decisionHandler(.cancel)
-            popupWebView?.removeFromSuperview()
-            popupWebView = nil
-            return
-        }
-        decisionHandler(.allow)
-    }
-
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         refreshControl.endRefreshing()
-        webView.evaluateJavaScript("window.IS_NATIVE_APP = true;")
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {

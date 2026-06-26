@@ -703,6 +703,20 @@ html.ios-app > body > header { display: none !important; }
   font-size: 12px; white-space: nowrap;
 }
 .ios-lb-detail-empty { font-size: 12px; color: #5C6A60; font-style: italic; padding: 4px 0; }
+.ios-detail-group-section { border-bottom: 1px solid #f0ede5; margin-bottom: 2px; }
+.ios-detail-group-section summary { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 5px; cursor: pointer; list-style: none; }
+.ios-detail-group-section summary::-webkit-details-marker { display: none; }
+.ios-detail-group-section[open] > summary { border-bottom: 1px solid #f0ede5; margin-bottom: 3px; }
+.ios-detail-section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #5C6A60; font-weight: 600; }
+.ios-detail-section-label::before { content: '▸ '; font-size: 9px; }
+.ios-detail-group-section[open] .ios-detail-section-label::before { content: '▾ '; }
+.ios-detail-section-pts { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: #166534; font-size: 11px; }
+details.detail-group-section { margin-bottom: .4rem; }
+details.detail-group-section summary { cursor: pointer; font-size: .82rem; padding: .3rem .7rem; display: flex; align-items: center; justify-content: space-between; color: #5C6A60; font-weight: 600; list-style: none; }
+details.detail-group-section summary::-webkit-details-marker { display: none; }
+details.detail-group-section summary::before { content: '▸ '; font-size: .75rem; }
+details.detail-group-section[open] summary::before { content: '▾ '; }
+.detail-section-pts { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: #166534; font-size: .82rem; }
 .ios-lb-chevron-icon {
   font-size: 14px; color: #5C6A60;
   transition: transform 0.15s; flex-shrink: 0; align-self: center;
@@ -2472,8 +2486,8 @@ function computeScores(assignments, matches) {
     const isKO = stage !== 'group';
     const sl = MATCH_STAGE_LABEL[stage] || stage;
 
-    if (hp) { scores[hp].goals += homeGoals; if (homeGoals > 0) scores[hp].detail.push({team:homeTeam, event:`${homeGoals} goal${homeGoals!==1?'s':''} vs ${awayTeam} (${sl})`, pts:homeGoals}); }
-    if (ap) { scores[ap].goals += awayGoals; if (awayGoals > 0) scores[ap].detail.push({team:awayTeam, event:`${awayGoals} goal${awayGoals!==1?'s':''} vs ${homeTeam} (${sl})`, pts:awayGoals}); }
+    if (hp) { scores[hp].goals += homeGoals; if (homeGoals > 0) scores[hp].detail.push({team:homeTeam, event:`${homeGoals} goal${homeGoals!==1?'s':''} vs ${awayTeam} (${sl})`, pts:homeGoals, cat:isKO?'ko':'group'}); }
+    if (ap) { scores[ap].goals += awayGoals; if (awayGoals > 0) scores[ap].detail.push({team:awayTeam, event:`${awayGoals} goal${awayGoals!==1?'s':''} vs ${homeTeam} (${sl})`, pts:awayGoals, cat:isKO?'ko':'group'}); }
 
     let winner=null, loser=null;
     if (homeGoals > awayGoals)       {winner=homeTeam;loser=awayTeam;}
@@ -2485,17 +2499,17 @@ function computeScores(assignments, matches) {
       if (wp) {
         scores[wp].wins += 1;
         scores[wp].matchPts += 3;
-        scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3});
+        scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3, cat:isKO?'ko':'group'});
         const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
         let gkBonus = 0;
         if (tierDiff >= 3) gkBonus = 10;
         else if (tierDiff >= 2) gkBonus = 6;
         else if (tierDiff >= 1) gkBonus = 3;
-        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus}); }
+        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus, cat:isKO?'ko':'group'}); }
       }
     } else if (!isKO) {
-      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1}); }
-      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:isLive ? `Drawing vs ${homeTeam} (${sl})` : `Drew with ${homeTeam} (${sl})`, pts:1}); }
+      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1, cat:'group'}); }
+      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:isLive ? `Drawing vs ${homeTeam} (${sl})` : `Drew with ${homeTeam} (${sl})`, pts:1, cat:'group'}); }
     }
   }
 
@@ -2506,7 +2520,7 @@ function computeScores(assignments, matches) {
     for (const ms of PROG_ORDER) {
       if (PROG_PTS[ms]) {
         scores[player].progressPts += PROG_PTS[ms];
-        scores[player].detail.push({team, event:PROG_EVENT_LABEL[ms]||ms, pts:PROG_PTS[ms]});
+        scores[player].detail.push({team, event:PROG_EVENT_LABEL[ms]||ms, pts:PROG_PTS[ms], cat:'prog'});
       }
       if (ms === stage) break;
     }
@@ -2532,11 +2546,21 @@ function computeEliminated(matches) {
 
 function buildDetailHTML(detail) {
   if (!detail || detail.length === 0) return `<p class="detail-empty">No points scored yet.</p>`;
-  const rows = detail.map(d => {
+  const renderRow = d => {
     const tier = TIER_MAP[d.team] || 'A';
     return `<tr><td class="d-team"><span class="badge b${tier}">${esc(d.team)}</span></td><td class="d-event">${esc(d.event)}</td><td class="d-pts">+${d.pts}</td></tr>`;
-  }).join('');
-  return `<table class="detail-tbl"><tbody>${rows}</tbody></table>`;
+  };
+  const groupItems = detail.filter(d => d.cat === 'group');
+  const otherItems = detail.filter(d => d.cat !== 'group');
+  let html = '';
+  if (groupItems.length) {
+    const gTotal = groupItems.reduce((s,d) => s+d.pts, 0);
+    html += `<details class="detail-group-section"><summary>Group Stage <span class="detail-section-pts">+${gTotal}</span></summary><table class="detail-tbl"><tbody>${groupItems.map(renderRow).join('')}</tbody></table></details>`;
+  }
+  if (otherItems.length) {
+    html += `<table class="detail-tbl"><tbody>${otherItems.map(renderRow).join('')}</tbody></table>`;
+  }
+  return html || `<p class="detail-empty">No points scored yet.</p>`;
 }
 
 function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
@@ -3420,12 +3444,23 @@ function initIOS() {
       if (isFirst) classes.push('is-first');
       if (isLast) classes.push('is-last');
 
-      const detailRows = s.detail && s.detail.length
-        ? s.detail.map(d => {
-            const tc = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}}[TIER_MAP[d.team]] || {bg:'#eee',fg:'#333'};
-            return `<div class="ios-lb-detail-row"><span class="ios-lb-detail-team" style="background:${tc.bg};color:${tc.fg}">${esc(d.team)}</span><span class="ios-lb-detail-event">${esc(d.event)}</span><span class="ios-lb-detail-pts">+${d.pts}</span></div>`;
-          }).join('')
-        : `<div class="ios-lb-detail-empty">No points scored yet</div>`;
+      const renderDetailRow = d => {
+        const tc = {A:{bg:'#E3EFE7',fg:'#0E5A33'},B:{bg:'#E1EEF3',fg:'#1A6E8A'},C:{bg:'#F6EADB',fg:'#A05A18'},D:{bg:'#EDE8F5',fg:'#6B3FA0'}}[TIER_MAP[d.team]] || {bg:'#eee',fg:'#333'};
+        return `<div class="ios-lb-detail-row"><span class="ios-lb-detail-team" style="background:${tc.bg};color:${tc.fg}">${esc(d.team)}</span><span class="ios-lb-detail-event">${esc(d.event)}</span><span class="ios-lb-detail-pts">+${d.pts}</span></div>`;
+      };
+      const groupItems = s.detail ? s.detail.filter(d => d.cat === 'group') : [];
+      const otherItems = s.detail ? s.detail.filter(d => d.cat !== 'group') : [];
+      let detailRows;
+      if (!s.detail || !s.detail.length) {
+        detailRows = `<div class="ios-lb-detail-empty">No points scored yet</div>`;
+      } else {
+        detailRows = '';
+        if (groupItems.length) {
+          const gTotal = groupItems.reduce((a,d) => a+d.pts, 0);
+          detailRows += `<details class="ios-detail-group-section"><summary><span class="ios-detail-section-label">Group Stage</span><span class="ios-detail-section-pts">+${gTotal}</span></summary>${groupItems.map(renderDetailRow).join('')}</details>`;
+        }
+        if (otherItems.length) detailRows += otherItems.map(renderDetailRow).join('');
+      }
 
       return `<div class="${classes.join(' ')}">
         ${rankHtml}
