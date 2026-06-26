@@ -714,8 +714,8 @@ html.ios-app > body > header { display: none !important; }
 details.detail-group-section { margin-bottom: .4rem; }
 details.detail-group-section summary { cursor: pointer; font-size: .82rem; padding: .3rem .7rem; display: flex; align-items: center; justify-content: space-between; color: #5C6A60; font-weight: 600; list-style: none; }
 details.detail-group-section summary::-webkit-details-marker { display: none; }
-details.detail-group-section summary::before { content: '▸ '; font-size: .75rem; }
-details.detail-group-section[open] summary::before { content: '▾ '; }
+.detail-group-label::before { content: '▸ '; font-size: .75rem; }
+details.detail-group-section[open] .detail-group-label::before { content: '▾ '; }
 .detail-section-pts { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: #166534; font-size: .82rem; }
 .ios-lb-chevron-icon {
   font-size: 14px; color: #5C6A60;
@@ -2555,7 +2555,7 @@ function buildDetailHTML(detail) {
   let html = '';
   if (groupItems.length) {
     const gTotal = groupItems.reduce((s,d) => s+d.pts, 0);
-    html += `<details class="detail-group-section"><summary>Group Stage <span class="detail-section-pts">+${gTotal}</span></summary><table class="detail-tbl"><tbody>${groupItems.map(renderRow).join('')}</tbody></table></details>`;
+    html += `<details class="detail-group-section"><summary><span class="detail-group-label">Group Stage</span><span class="detail-section-pts">+${gTotal}</span></summary><table class="detail-tbl"><tbody>${groupItems.map(renderRow).join('')}</tbody></table></details>`;
   }
   if (otherItems.length) {
     html += `<table class="detail-tbl"><tbody>${otherItems.map(renderRow).join('')}</tbody></table>`;
