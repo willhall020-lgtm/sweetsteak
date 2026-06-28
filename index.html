@@ -2141,6 +2141,7 @@ document.querySelectorAll('.admin-tabs button').forEach(btn =>
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let drawData      = null;   // from /api/draw
+let rawApiMatches = [];     // all raw matches from API (for group standings)
 let apiMatches    = [];     // finished + live matches (for leaderboard)
 let apiFixtures   = [];     // upcoming + live matches (for fixtures tab)
 let lastUpdated   = null;
@@ -2210,6 +2211,7 @@ async function loadMatches(bust = false) {
     const r = await fetch(url);
     if (!r.ok) return;
     const { matches, lastUpdated: ts } = await r.json();
+    rawApiMatches = matches;
     apiMatches  = matches.map(transformMatch).filter(Boolean);
     apiFixtures = matches.map(transformFixture).filter(Boolean);
     lastUpdated = ts;
@@ -2443,12 +2445,56 @@ function buildAssignments(draw) {
   return a;
 }
 
+function computeGroupQualifiers(rawMatches) {
+  const groups = {};
+  for (const m of rawMatches) {
+    const stage = API_STAGE[m.stage] || 'group';
+    if (stage !== 'group' || !m.group) continue;
+    const grp = m.group;
+    if (!groups[grp]) groups[grp] = { stats: {}, total: 0, finished: 0 };
+    const g = groups[grp];
+    const ht = norm(m.homeTeam?.name, m.homeTeam?.tla);
+    const at = norm(m.awayTeam?.name, m.awayTeam?.tla);
+    if (ht && !g.stats[ht]) g.stats[ht] = { pts: 0, gd: 0, gf: 0 };
+    if (at && !g.stats[at]) g.stats[at] = { pts: 0, gd: 0, gf: 0 };
+    g.total++;
+    if (m.status === 'FINISHED') {
+      g.finished++;
+      const hg = m.score?.fullTime?.home ?? 0;
+      const ag = m.score?.fullTime?.away ?? 0;
+      if (ht) { g.stats[ht].gf += hg; g.stats[ht].gd += hg - ag; }
+      if (at) { g.stats[at].gf += ag; g.stats[at].gd += ag - hg; }
+      if (hg > ag)      { if (ht) g.stats[ht].pts += 3; }
+      else if (ag > hg) { if (at) g.stats[at].pts += 3; }
+      else              { if (ht) g.stats[ht].pts += 1; if (at) g.stats[at].pts += 1; }
+    }
+  }
+  const cmp = (a, b, s) => s[b].pts - s[a].pts || s[b].gd - s[a].gd || s[b].gf - s[a].gf;
+  const qualifiers = new Set();
+  const thirds = [];
+  for (const g of Object.values(groups)) {
+    if (g.finished < g.total) continue;
+    const sorted = Object.keys(g.stats).sort((a, b) => cmp(a, b, g.stats));
+    if (sorted[0]) qualifiers.add(sorted[0]);
+    if (sorted[1]) qualifiers.add(sorted[1]);
+    if (sorted[2]) thirds.push({ team: sorted[2], ...g.stats[sorted[2]] });
+  }
+  const totalGroups = Object.keys(groups).length;
+  const completeGroups = Object.values(groups).filter(g => g.finished === g.total).length;
+  if (totalGroups > 0 && completeGroups === totalGroups) {
+    thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+    thirds.slice(0, 8).forEach(t => qualifiers.add(t.team));
+  }
+  return qualifiers;
+}
+
 function computeProgress(matches) {
   const prog = {};
   const set_ = (team, stage) => {
     if (!prog[team] || PROG_ORDER.indexOf(stage) > PROG_ORDER.indexOf(prog[team])) prog[team] = stage;
   };
   const PROG_ORDER = ['r32','r16','qf','sf','final','champion'];
+  for (const team of computeGroupQualifiers(rawApiMatches)) set_(team, 'r32');
   for (const m of matches) {
     const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
     if (stage==='group'||stage==='3rd') continue;
@@ -2530,8 +2576,50 @@ function computeScores(assignments, matches) {
   return scores;
 }
 
-function computeEliminated(matches) {
+function computeGroupEliminated(rawMatches) {
   const eliminated = new Set();
+  const groups = {};
+  for (const m of rawMatches) {
+    const stage = API_STAGE[m.stage] || 'group';
+    if (stage !== 'group' || !m.group) continue;
+    const grp = m.group;
+    if (!groups[grp]) groups[grp] = { stats: {}, total: 0, finished: 0 };
+    const g = groups[grp];
+    const ht = norm(m.homeTeam?.name, m.homeTeam?.tla);
+    const at = norm(m.awayTeam?.name, m.awayTeam?.tla);
+    if (ht && !g.stats[ht]) g.stats[ht] = { pts: 0, gd: 0, gf: 0 };
+    if (at && !g.stats[at]) g.stats[at] = { pts: 0, gd: 0, gf: 0 };
+    g.total++;
+    if (m.status === 'FINISHED') {
+      g.finished++;
+      const hg = m.score?.fullTime?.home ?? 0;
+      const ag = m.score?.fullTime?.away ?? 0;
+      if (ht) { g.stats[ht].gf += hg; g.stats[ht].gd += hg - ag; }
+      if (at) { g.stats[at].gf += ag; g.stats[at].gd += ag - hg; }
+      if (hg > ag)      { if (ht) g.stats[ht].pts += 3; }
+      else if (ag > hg) { if (at) g.stats[at].pts += 3; }
+      else              { if (ht) g.stats[ht].pts += 1; if (at) g.stats[at].pts += 1; }
+    }
+  }
+  const cmp = (a, b, s) => s[b].pts - s[a].pts || s[b].gd - s[a].gd || s[b].gf - s[a].gf;
+  const thirds = [];
+  const allGroups = Object.values(groups);
+  const allComplete = allGroups.length > 0 && allGroups.every(g => g.finished === g.total);
+  for (const g of allGroups) {
+    if (g.finished < g.total) continue;
+    const sorted = Object.keys(g.stats).sort((a, b) => cmp(a, b, g.stats));
+    if (sorted[3]) eliminated.add(sorted[3]);
+    if (sorted[2]) thirds.push({ team: sorted[2], ...g.stats[sorted[2]] });
+  }
+  if (allComplete) {
+    thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+    thirds.slice(8).forEach(t => eliminated.add(t.team));
+  }
+  return eliminated;
+}
+
+function computeEliminated(matches) {
+  const eliminated = computeGroupEliminated(rawApiMatches);
   for (const m of matches) {
     if (m.stage === 'group' || m.stage === '3rd' || m.isLive) continue;
     const { homeTeam, awayTeam, homeGoals, awayGoals, penaltyWinner } = m;
@@ -2551,14 +2639,15 @@ function buildDetailHTML(detail) {
     return `<tr><td class="d-team"><span class="badge b${tier}">${esc(d.team)}</span></td><td class="d-event">${esc(d.event)}</td><td class="d-pts">+${d.pts}</td></tr>`;
   };
   const groupItems = detail.filter(d => d.cat === 'group');
-  const otherItems = detail.filter(d => d.cat !== 'group');
+  const koItems    = detail.filter(d => d.cat === 'ko' || d.cat === 'prog');
   let html = '';
   if (groupItems.length) {
     const gTotal = groupItems.reduce((s,d) => s+d.pts, 0);
     html += `<details class="detail-group-section"><summary><span class="detail-group-label">Group Stage</span><span class="detail-section-pts">+${gTotal}</span></summary><table class="detail-tbl"><tbody>${groupItems.map(renderRow).join('')}</tbody></table></details>`;
   }
-  if (otherItems.length) {
-    html += `<table class="detail-tbl"><tbody>${otherItems.map(renderRow).join('')}</tbody></table>`;
+  if (koItems.length) {
+    const koTotal = koItems.reduce((s,d) => s+d.pts, 0);
+    html += `<details class="detail-group-section"><summary><span class="detail-group-label">Knockouts</span><span class="detail-section-pts">+${koTotal}</span></summary><table class="detail-tbl"><tbody>${koItems.map(renderRow).join('')}</tbody></table></details>`;
   }
   return html || `<p class="detail-empty">No points scored yet.</p>`;
 }
@@ -3449,7 +3538,7 @@ function initIOS() {
         return `<div class="ios-lb-detail-row"><span class="ios-lb-detail-team" style="background:${tc.bg};color:${tc.fg}">${esc(d.team)}</span><span class="ios-lb-detail-event">${esc(d.event)}</span><span class="ios-lb-detail-pts">+${d.pts}</span></div>`;
       };
       const groupItems = s.detail ? s.detail.filter(d => d.cat === 'group') : [];
-      const otherItems = s.detail ? s.detail.filter(d => d.cat !== 'group') : [];
+      const koItems    = s.detail ? s.detail.filter(d => d.cat === 'ko' || d.cat === 'prog') : [];
       let detailRows;
       if (!s.detail || !s.detail.length) {
         detailRows = `<div class="ios-lb-detail-empty">No points scored yet</div>`;
@@ -3459,7 +3548,10 @@ function initIOS() {
           const gTotal = groupItems.reduce((a,d) => a+d.pts, 0);
           detailRows += `<details class="ios-detail-group-section"><summary><span class="ios-detail-section-label">Group Stage</span><span class="ios-detail-section-pts">+${gTotal}</span></summary>${groupItems.map(renderDetailRow).join('')}</details>`;
         }
-        if (otherItems.length) detailRows += otherItems.map(renderDetailRow).join('');
+        if (koItems.length) {
+          const koTotal = koItems.reduce((a,d) => a+d.pts, 0);
+          detailRows += `<details class="ios-detail-group-section"><summary><span class="ios-detail-section-label">Knockouts</span><span class="ios-detail-section-pts">+${koTotal}</span></summary>${koItems.map(renderDetailRow).join('')}</details>`;
+        }
       }
 
       return `<div class="${classes.join(' ')}">
