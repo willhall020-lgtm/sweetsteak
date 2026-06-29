@@ -2490,34 +2490,28 @@ function computeGroupQualifiers(rawMatches) {
 
 function computeProgress(matches) {
   const prog = {};
-  const progLive = new Set();
-  const PROG_ORDER = ['r32','r16','qf','sf','final','champion'];
-  const set_ = (team, stage, live=false) => {
-    const cur = PROG_ORDER.indexOf(prog[team] ?? '');
-    const nxt = PROG_ORDER.indexOf(stage);
-    if (nxt > cur) {
-      prog[team] = stage;
-      if (live) progLive.add(team); else progLive.delete(team);
-    }
+  const set_ = (team, stage) => {
+    if (!prog[team] || PROG_ORDER.indexOf(stage) > PROG_ORDER.indexOf(prog[team])) prog[team] = stage;
   };
+  const PROG_ORDER = ['r32','r16','qf','sf','final','champion'];
   for (const team of computeGroupQualifiers(rawApiMatches)) set_(team, 'r32');
   for (const m of matches) {
-    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner, isLive } = m;
+    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
     if (stage==='group'||stage==='3rd') continue;
-    set_(homeTeam, stage, isLive); set_(awayTeam, stage, isLive);
+    set_(homeTeam, stage); set_(awayTeam, stage);
     let winner = null;
     if (homeGoals > awayGoals)      winner = homeTeam;
     else if (awayGoals > homeGoals) winner = awayTeam;
     else if (penaltyWinner)         winner = penaltyWinner;
     if (winner) {
-      if (stage==='r32')      set_(winner,'r16', isLive);
-      else if (stage==='r16') set_(winner,'qf', isLive);
-      else if (stage==='qf')  set_(winner,'sf', isLive);
-      else if (stage==='sf')  set_(winner,'final', isLive);
-      else if (stage==='final') set_(winner,'champion', isLive);
+      if (stage==='r32')    set_(winner,'r16');
+      else if (stage==='r16') set_(winner,'qf');
+      else if (stage==='qf')  set_(winner,'sf');
+      else if (stage==='sf')  set_(winner,'final');
+      else if (stage==='final') set_(winner,'champion');
     }
   }
-  return { prog, progLive, PROG_ORDER };
+  return { prog, PROG_ORDER };
 }
 
 const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:5};
@@ -2566,7 +2560,19 @@ function computeScores(assignments, matches) {
     }
   }
 
-  const { prog, progLive, PROG_ORDER } = computeProgress(matches);
+  // Teams currently winning a live KO match get "Progressing to X" label for their top stage
+  const progLive = new Set();
+  for (const m of matches) {
+    if (!m.isLive || m.stage === 'group' || m.stage === '3rd') continue;
+    const { homeTeam, awayTeam, homeGoals, awayGoals, penaltyWinner } = m;
+    let winner = null;
+    if (homeGoals > awayGoals)      winner = homeTeam;
+    else if (awayGoals > homeGoals) winner = awayTeam;
+    else if (penaltyWinner)         winner = penaltyWinner;
+    if (winner) progLive.add(winner);
+  }
+
+  const { prog, PROG_ORDER } = computeProgress(matches);
   for (const [team, stage] of Object.entries(prog)) {
     const player = t2p[team];
     if (!player) continue;
