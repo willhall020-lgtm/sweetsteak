@@ -2490,33 +2490,40 @@ function computeGroupQualifiers(rawMatches) {
 
 function computeProgress(matches) {
   const prog = {};
-  const set_ = (team, stage) => {
-    if (!prog[team] || PROG_ORDER.indexOf(stage) > PROG_ORDER.indexOf(prog[team])) prog[team] = stage;
-  };
+  const progLive = new Set();
   const PROG_ORDER = ['r32','r16','qf','sf','final','champion'];
+  const set_ = (team, stage, live=false) => {
+    const cur = PROG_ORDER.indexOf(prog[team] ?? '');
+    const nxt = PROG_ORDER.indexOf(stage);
+    if (nxt > cur) {
+      prog[team] = stage;
+      if (live) progLive.add(team); else progLive.delete(team);
+    }
+  };
   for (const team of computeGroupQualifiers(rawApiMatches)) set_(team, 'r32');
   for (const m of matches) {
-    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner } = m;
+    const { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner, isLive } = m;
     if (stage==='group'||stage==='3rd') continue;
-    set_(homeTeam, stage); set_(awayTeam, stage);
+    set_(homeTeam, stage, isLive); set_(awayTeam, stage, isLive);
     let winner = null;
     if (homeGoals > awayGoals)      winner = homeTeam;
     else if (awayGoals > homeGoals) winner = awayTeam;
     else if (penaltyWinner)         winner = penaltyWinner;
     if (winner) {
-      if (stage==='r32')    set_(winner,'r16');
-      else if (stage==='r16') set_(winner,'qf');
-      else if (stage==='qf')  set_(winner,'sf');
-      else if (stage==='sf')  set_(winner,'final');
-      else if (stage==='final') set_(winner,'champion');
+      if (stage==='r32')      set_(winner,'r16', isLive);
+      else if (stage==='r16') set_(winner,'qf', isLive);
+      else if (stage==='qf')  set_(winner,'sf', isLive);
+      else if (stage==='sf')  set_(winner,'final', isLive);
+      else if (stage==='final') set_(winner,'champion', isLive);
     }
   }
-  return { prog, PROG_ORDER };
+  return { prog, progLive, PROG_ORDER };
 }
 
 const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:5};
 const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
 const PROG_EVENT_LABEL  = {r32:'Reached Round of 32',r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
+const PROG_LIVE_LABEL   = {r32:'Progressing to Round of 32',r16:'Progressing to Round of 16',qf:'Progressing to Quarter-finals',sf:'Progressing to Semi-finals',final:'Progressing to the Final',champion:'On course to win the tournament'};
 
 function computeScores(assignments, matches) {
   const scores = {};
@@ -2559,14 +2566,16 @@ function computeScores(assignments, matches) {
     }
   }
 
-  const { prog, PROG_ORDER } = computeProgress(matches);
+  const { prog, progLive, PROG_ORDER } = computeProgress(matches);
   for (const [team, stage] of Object.entries(prog)) {
     const player = t2p[team];
     if (!player) continue;
+    const isTeamLive = progLive.has(team);
     for (const ms of PROG_ORDER) {
       if (PROG_PTS[ms]) {
         scores[player].progressPts += PROG_PTS[ms];
-        scores[player].detail.push({team, event:PROG_EVENT_LABEL[ms]||ms, pts:PROG_PTS[ms], cat:'prog'});
+        const label = (isTeamLive && ms === stage) ? (PROG_LIVE_LABEL[ms]||ms) : (PROG_EVENT_LABEL[ms]||ms);
+        scores[player].detail.push({team, event:label, pts:PROG_PTS[ms], cat:'prog'});
       }
       if (ms === stage) break;
     }
