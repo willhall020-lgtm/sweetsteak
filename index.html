@@ -2518,6 +2518,8 @@ const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:5};
 const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
 const PROG_EVENT_LABEL  = {r32:'Reached Round of 32',r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
 const PROG_LIVE_LABEL   = {r32:'Progressing to Round of 32',r16:'Progressing to Round of 16',qf:'Progressing to Quarter-finals',sf:'Progressing to Semi-finals',final:'Progressing to the Final',champion:'On course to win the tournament'};
+const KO_MATCH_SORT     = {r32:1, r16:2, qf:3, sf:4, final:5, '3rd':5};
+const KO_PROG_SORT      = {r32:11, r16:12, qf:13, sf:14, final:15, champion:16};
 
 function computeScores(assignments, matches) {
   const scores = {};
@@ -2533,8 +2535,9 @@ function computeScores(assignments, matches) {
     const isKO = stage !== 'group';
     const sl = MATCH_STAGE_LABEL[stage] || stage;
 
-    if (hp) { scores[hp].goals += homeGoals; if (homeGoals > 0) scores[hp].detail.push({team:homeTeam, event:`${homeGoals} goal${homeGoals!==1?'s':''} vs ${awayTeam} (${sl})`, pts:homeGoals, cat:isKO?'ko':'group'}); }
-    if (ap) { scores[ap].goals += awayGoals; if (awayGoals > 0) scores[ap].detail.push({team:awayTeam, event:`${awayGoals} goal${awayGoals!==1?'s':''} vs ${homeTeam} (${sl})`, pts:awayGoals, cat:isKO?'ko':'group'}); }
+    const sk = isKO ? (KO_MATCH_SORT[stage] || 1) : 0;
+    if (hp) { scores[hp].goals += homeGoals; if (homeGoals > 0) scores[hp].detail.push({team:homeTeam, event:`${homeGoals} goal${homeGoals!==1?'s':''} vs ${awayTeam} (${sl})`, pts:homeGoals, cat:isKO?'ko':'group', sortKey:sk}); }
+    if (ap) { scores[ap].goals += awayGoals; if (awayGoals > 0) scores[ap].detail.push({team:awayTeam, event:`${awayGoals} goal${awayGoals!==1?'s':''} vs ${homeTeam} (${sl})`, pts:awayGoals, cat:isKO?'ko':'group', sortKey:sk}); }
 
     let winner=null, loser=null;
     if (homeGoals > awayGoals)       {winner=homeTeam;loser=awayTeam;}
@@ -2546,17 +2549,17 @@ function computeScores(assignments, matches) {
       if (wp) {
         scores[wp].wins += 1;
         scores[wp].matchPts += 3;
-        scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3, cat:isKO?'ko':'group'});
+        scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3, cat:isKO?'ko':'group', sortKey:sk});
         const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
         let gkBonus = 0;
         if (tierDiff >= 3) gkBonus = 10;
         else if (tierDiff >= 2) gkBonus = 6;
         else if (tierDiff >= 1) gkBonus = 3;
-        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus, cat:isKO?'ko':'group'}); }
+        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus, cat:isKO?'ko':'group', sortKey:sk}); }
       }
     } else if (!isKO) {
-      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1, cat:'group'}); }
-      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:isLive ? `Drawing vs ${homeTeam} (${sl})` : `Drew with ${homeTeam} (${sl})`, pts:1, cat:'group'}); }
+      if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1, cat:'group', sortKey:0}); }
+      if (ap) { scores[ap].matchPts += 1; scores[ap].detail.push({team:awayTeam, event:isLive ? `Drawing vs ${homeTeam} (${sl})` : `Drew with ${homeTeam} (${sl})`, pts:1, cat:'group', sortKey:0}); }
     }
   }
 
@@ -2581,7 +2584,7 @@ function computeScores(assignments, matches) {
       if (PROG_PTS[ms]) {
         scores[player].progressPts += PROG_PTS[ms];
         const label = (isTeamLive && ms === stage) ? (PROG_LIVE_LABEL[ms]||ms) : (PROG_EVENT_LABEL[ms]||ms);
-        scores[player].detail.push({team, event:label, pts:PROG_PTS[ms], cat:'prog'});
+        scores[player].detail.push({team, event:label, pts:PROG_PTS[ms], cat:'prog', sortKey:KO_PROG_SORT[ms]||11});
       }
       if (ms === stage) break;
     }
@@ -2654,7 +2657,7 @@ function buildDetailHTML(detail) {
     return `<tr><td class="d-team"><span class="badge b${tier}">${esc(d.team)}</span></td><td class="d-event">${esc(d.event)}</td><td class="d-pts">+${d.pts}</td></tr>`;
   };
   const groupItems = detail.filter(d => d.cat === 'group');
-  const koItems    = detail.filter(d => d.cat === 'ko' || d.cat === 'prog');
+  const koItems    = detail.filter(d => d.cat === 'ko' || d.cat === 'prog').sort((a,b) => (a.sortKey||0) - (b.sortKey||0));
   let html = '';
   if (groupItems.length) {
     const gTotal = groupItems.reduce((s,d) => s+d.pts, 0);
@@ -3553,7 +3556,7 @@ function initIOS() {
         return `<div class="ios-lb-detail-row"><span class="ios-lb-detail-team" style="background:${tc.bg};color:${tc.fg}">${esc(d.team)}</span><span class="ios-lb-detail-event">${esc(d.event)}</span><span class="ios-lb-detail-pts">+${d.pts}</span></div>`;
       };
       const groupItems = s.detail ? s.detail.filter(d => d.cat === 'group') : [];
-      const koItems    = s.detail ? s.detail.filter(d => d.cat === 'ko' || d.cat === 'prog') : [];
+      const koItems    = s.detail ? s.detail.filter(d => d.cat === 'ko' || d.cat === 'prog').sort((a,b) => (a.sortKey||0) - (b.sortKey||0)) : [];
       let detailRows;
       if (!s.detail || !s.detail.length) {
         detailRows = `<div class="ios-lb-detail-empty">No points scored yet</div>`;
