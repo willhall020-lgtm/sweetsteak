@@ -2233,12 +2233,17 @@ function transformMatch(m) {
   const awayTeam = norm(m.awayTeam?.name, m.awayTeam?.tla);
   const stage    = API_STAGE[m.stage] || 'group';
 
-  const homeGoals = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? 0;
-  const awayGoals = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? 0;
-
   let penaltyWinner = null;
   const ph = m.score?.penalties?.home, pa = m.score?.penalties?.away;
   if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
+
+  const hasPens = penaltyWinner != null;
+  const homeGoals = hasPens
+    ? (m.score?.extraTime?.home ?? m.score?.regularTime?.home ?? 0)
+    : (m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? 0);
+  const awayGoals = hasPens
+    ? (m.score?.extraTime?.away ?? m.score?.regularTime?.away ?? 0)
+    : (m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? 0);
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
            utcDate: m.utcDate || null,
@@ -2280,12 +2285,17 @@ function transformFixture(m) {
   const stage    = API_STAGE[m.stage] || 'group';
   const utcDate  = m.utcDate || null;
 
-  const homeGoals = m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? null;
-  const awayGoals = m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? null;
-
   let penaltyWinner = null;
   const ph = m.score?.penalties?.home, pa = m.score?.penalties?.away;
   if (ph != null && pa != null) penaltyWinner = ph > pa ? homeTeam : awayTeam;
+
+  const hasPens = penaltyWinner != null;
+  const homeGoals = hasPens
+    ? (m.score?.extraTime?.home ?? m.score?.regularTime?.home ?? null)
+    : (m.score?.fullTime?.home ?? m.score?.regularTime?.home ?? m.score?.halfTime?.home ?? null);
+  const awayGoals = hasPens
+    ? (m.score?.extraTime?.away ?? m.score?.regularTime?.away ?? null)
+    : (m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? null);
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate, penaltyWinner,
            status: m.status, isLive: liveStatuses.includes(m.status),
