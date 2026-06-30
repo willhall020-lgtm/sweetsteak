@@ -2112,7 +2112,7 @@ tickerEl.style.animation = `tick ${(tickerEl.offsetWidth / 2 / 35).toFixed(1)}s 
 // ─── TAB NAV ──────────────────────────────────────────────────────────────────
 function flushLBSnapshot() {
   if (_pendingLBSnapshot && GROUP_CODE) {
-    try { localStorage.setItem('lb_snapshot_' + GROUP_CODE, JSON.stringify(_pendingLBSnapshot)); } catch(e) {}
+    try { localStorage.setItem('lb_snapshot_v2_' + GROUP_CODE, JSON.stringify(_pendingLBSnapshot)); } catch(e) {}
   }
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) flushLBSnapshot(); });
@@ -2745,7 +2745,7 @@ function renderLeaderboard() {
   });
 
   // Baseline: stored snapshot from last leaderboard view; fall back to last-game on first use
-  const _snapshotKey = GROUP_CODE ? 'lb_snapshot_' + GROUP_CODE : null;
+  const _snapshotKey = GROUP_CODE ? 'lb_snapshot_v2_' + GROUP_CODE : null;
   const _storedSnapshot = _snapshotKey ? JSON.parse(localStorage.getItem(_snapshotKey) || 'null') : null;
   if (_storedSnapshot) {
     _lbBaselineRanks = _storedSnapshot;
