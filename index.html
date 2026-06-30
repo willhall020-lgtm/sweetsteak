@@ -2406,7 +2406,7 @@ function renderFixtures() {
       }
       const scoreStr = `${m.homeGoals} – ${m.awayGoals}`;
       const pensTag  = m.penaltyWinner
-        ? `<span class="fix-pens">${m.penScore ? `${m.penScore.home}–${m.penScore.away} pens` : 'pens'}</span>`
+        ? `<span class="fix-pens">${m.penScore ? `${m.penaltyWinner} win ${m.penScore.home}–${m.penScore.away} on pens` : `${m.penaltyWinner} win on pens`}</span>`
         : '';
       resultsHtml += `<div class="fix-card">
         ${teamCard(m.homeTeam, 'home')}
