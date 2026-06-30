@@ -2246,6 +2246,7 @@ function transformMatch(m) {
     : (m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? 0);
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, penaltyWinner,
+           penScore: hasPens ? { home: ph, away: pa } : null,
            utcDate: m.utcDate || null,
            isLive: m.status !== 'FINISHED', status: m.status };
 }
@@ -2298,6 +2299,7 @@ function transformFixture(m) {
     : (m.score?.fullTime?.away ?? m.score?.regularTime?.away ?? m.score?.halfTime?.away ?? null);
 
   return { homeTeam, awayTeam, homeGoals, awayGoals, stage, utcDate, penaltyWinner,
+           penScore: hasPens ? { home: ph, away: pa } : null,
            status: m.status, isLive: liveStatuses.includes(m.status),
            isHalfTime: m.status === 'PAUSED' };
 }
@@ -2403,7 +2405,9 @@ function renderFixtures() {
         lastKey = key;
       }
       const scoreStr = `${m.homeGoals} – ${m.awayGoals}`;
-      const pensTag  = m.penaltyWinner ? `<span class="fix-pens">pens</span>` : '';
+      const pensTag  = m.penaltyWinner
+        ? `<span class="fix-pens">${m.penScore ? `${m.penScore.home}–${m.penScore.away} pens` : 'pens'}</span>`
+        : '';
       resultsHtml += `<div class="fix-card">
         ${teamCard(m.homeTeam, 'home')}
         <div class="fix-mid">
