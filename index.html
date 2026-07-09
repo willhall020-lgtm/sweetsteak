@@ -1362,7 +1362,7 @@ details.detail-group-section[open] .detail-group-label::before { content: '▾ '
         <tr><td>Reach Quarter-finals</td><td>+3 pts</td></tr>
         <tr><td>Reach Semi-finals</td><td>+4 pts</td></tr>
         <tr><td>Reach Final</td><td>+5 pts</td></tr>
-        <tr><td>Win the tournament</td><td>+5 pts</td></tr>
+        <tr><td>Win the tournament</td><td>+3 pts</td></tr>
       </table>
     </div>
     <details class="tiers">
@@ -2528,7 +2528,7 @@ function computeProgress(matches) {
   return { prog, PROG_ORDER };
 }
 
-const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:5};
+const PROG_PTS = {r32:1,r16:2,qf:3,sf:4,final:5,champion:3};
 const MATCH_STAGE_LABEL = {group:'Group',r32:'R32',r16:'R16',qf:'QF',sf:'SF','3rd':'3rd place',final:'Final'};
 const PROG_EVENT_LABEL  = {r32:'Reached Round of 32',r16:'Reached Round of 16',qf:'Reached Quarter-finals',sf:'Reached Semi-finals',final:'Reached Final',champion:'Won the tournament'};
 const PROG_LIVE_LABEL   = {r32:'Progressing to Round of 32',r16:'Progressing to Round of 16',qf:'Progressing to Quarter-finals',sf:'Progressing to Semi-finals',final:'Progressing to the Final',champion:'On course to win the tournament'};
@@ -3652,7 +3652,7 @@ function initIOS() {
       { title: 'Reach Quarter-finals', sub: '', pts: '+3 pts' },
       { title: 'Reach Semi-finals', sub: '', pts: '+4 pts' },
       { title: 'Reach the Final', sub: '', pts: '+5 pts' },
-      { title: 'Win the tournament', sub: '', pts: '+5 pts', accent: true },
+      { title: 'Win the tournament', sub: '', pts: '+3 pts', accent: true },
     ];
     const tiers = [
       { k:1, label:'Contenders', desc:'Top seeds (1–12)', bg:'#E3EFE7', fg:'#0E5A33' },
