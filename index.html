@@ -2083,7 +2083,7 @@ function norm(name, tla) {
 }
 
 // ─── TICKER ───────────────────────────────────────────────────────────────────
-const tickerBase = 'And then there were 3... 🇪🇸 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇦🇷     ';
+const tickerBase = '🇪🇸 🇦🇷     🇦🇷 🇦🇷 🇦🇷     ';
 const tickerEl = document.getElementById('ticker');
 // Repeat enough copies so the element always spans > 3× viewport width on any screen.
 // The @keyframes tick animates translateX(0 → -50%), scrolling exactly half the element.
@@ -2564,12 +2564,14 @@ function computeScores(assignments, matches) {
         scores[wp].wins += 1;
         scores[wp].matchPts += 3;
         scores[wp].detail.push({team:winner, event:isLive ? `Winning vs ${loser} (${sl})` : `Beat ${loser} (${sl})`, pts:3, cat:isKO?'ko':'group', sortKey:sk});
-        const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
-        let gkBonus = 0;
-        if (tierDiff >= 3) gkBonus = 10;
-        else if (tierDiff >= 2) gkBonus = 6;
-        else if (tierDiff >= 1) gkBonus = 3;
-        if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus, cat:isKO?'ko':'group', sortKey:sk}); }
+        if (stage !== '3rd') {
+          const tierDiff = TIER_RANK[TIER_MAP[winner]] - TIER_RANK[TIER_MAP[loser]];
+          let gkBonus = 0;
+          if (tierDiff >= 3) gkBonus = 10;
+          else if (tierDiff >= 2) gkBonus = 6;
+          else if (tierDiff >= 1) gkBonus = 3;
+          if (gkBonus) { scores[wp].bonusPts += gkBonus; scores[wp].detail.push({team:winner, event:`Giant-killing bonus vs ${loser}`, pts:gkBonus, cat:isKO?'ko':'group', sortKey:sk}); }
+        }
       }
     } else if (!isKO) {
       if (hp) { scores[hp].matchPts += 1; scores[hp].detail.push({team:homeTeam, event:isLive ? `Drawing vs ${awayTeam} (${sl})` : `Drew with ${awayTeam} (${sl})`, pts:1, cat:'group', sortKey:0}); }
